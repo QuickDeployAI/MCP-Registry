@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/registry/main/docs/reference/server-json/server.schema.json",
+  "name": "com.example/weather",
+  "description": "Weather information server for MCP clients",
+  "status": "active",
+  "version": "1.2.0",
+  "repository": {
+    "url": "https://github.com/example/weather-mcp",
+    "source": "github",
+    "id": "example/weather-mcp"
+  },
+  "website_url": "https://weather-mcp.example.com",
+  "packages": [
+    {
+      "registry_type": "npm",
+      "identifier": "@example/weather-mcp",
+      "version": "1.2.0",
+      "runtime_hint": "node",
+      "runtime_arguments": [
+        {
+          "type": "positional",
+          "description": "API key for weather service",
+          "is_required": true,
+          "format": "string",
+          "is_secret": true
+        }
+      ],
+      "environment_variables": [
+        {
+          "name": "WEATHER_API_URL",
+          "description": "Base URL for weather API",
+          "format": "string",
+          "default": "https://api.weatherservice.com/v1"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "http",
+      "url": "https://weather-mcp.example.com/mcp"
+    }
+  ]
+}

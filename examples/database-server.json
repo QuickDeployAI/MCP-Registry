@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/registry/main/docs/reference/server-json/server.schema.json",
+  "name": "io.github.myorg/database-tools",
+  "description": "Database query and management tools for MCP",
+  "status": "active",
+  "version": "2.1.5",
+  "repository": {
+    "url": "https://github.com/myorg/database-mcp-tools",
+    "source": "github",
+    "id": "myorg/database-mcp-tools",
+    "subfolder": "packages/database"
+  },
+  "website_url": "https://myorg.github.io/database-mcp-tools",
+  "packages": [
+    {
+      "registry_type": "pypi",
+      "identifier": "mcp-database-tools",
+      "version": "2.1.5",
+      "runtime_hint": "python",
+      "runtime_arguments": [
+        {
+          "type": "named",
+          "name": "--connection-string",
+          "description": "Database connection string",
+          "is_required": true,
+          "format": "string",
+          "is_secret": true
+        },
+        {
+          "type": "named",
+          "name": "--timeout",
+          "description": "Query timeout in seconds",
+          "format": "number",
+          "default": "30"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "stdio"
+    },
+    {
+      "type": "ws",
+      "url": "wss://db-mcp.myorg.io/connect"
+    }
+  ]
+}
