@@ -1,25 +1,22 @@
 /**
  * MCP tool registrations.
- * Each tool is a thin adapter that resolves feedUrl, invokes a use case,
- * and serialises the result as a JSON text content block.
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { NativeItem } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
 import type { ContentStore } from "../content/content-store.js";
-import type { FetcherFn, ParserFn, NormalizerFn } from "../polling/coordinator.js";
+import type { FetcherFn, ParserFn } from "../polling/coordinator.js";
 import { QueryFeedItemsUseCase } from "../application/query-feed-items.use-case.js";
 import { RefreshFeedUseCase } from "../application/refresh-feed.use-case.js";
 import { GetFeedInfoUseCase } from "../application/get-feed-info.use-case.js";
 import { GetFeedItemUseCase } from "../application/get-feed-item.use-case.js";
 import { GetFeedStatsUseCase } from "../application/get-feed-stats.use-case.js";
 import { GetSchemaUseCase } from "../application/get-schema.use-case.js";
-import { GetFieldAliasesUseCase } from "../application/get-field-aliases.use-case.js";
 import { GetQueryExamplesUseCase } from "../application/get-query-examples.use-case.js";
 import {
   GetFeedInfoSchema,
   RefreshFeedSchema,
   GetSchemaSchema,
-  GetFieldAliasesSchema,
   QueryFeedItemsSchema,
   GetFeedItemSchema,
   GetQueryExamplesSchema,
@@ -28,12 +25,11 @@ import {
   GetNewItemsSinceSchema,
 } from "./schemas.js";
 
-export interface ToolDeps {
-  store: StoreAdapter;
+export interface ToolDeps<TItem extends NativeItem = NativeItem> {
+  store: StoreAdapter<TItem>;
   contentStore: ContentStore;
   fetcher: FetcherFn;
   parser: ParserFn;
-  normalizer: NormalizerFn;
   defaultFeed: string | null;
   maxResults: number;
   maxFieldSize: number;
@@ -55,11 +51,11 @@ function missingFeedError() {
   });
 }
 
-export function registerTools(server: McpServer, deps: ToolDeps): void {
-  const {
-    store, contentStore, fetcher, parser, normalizer,
-    defaultFeed, maxResults, maxFieldSize,
-  } = deps;
+export function registerTools<TItem extends NativeItem = NativeItem>(
+  server: McpServer,
+  deps: ToolDeps<TItem>,
+): void {
+  const { store, contentStore, fetcher, parser, defaultFeed, maxResults, maxFieldSize } = deps;
 
   server.tool(
     "get_schema",
@@ -70,13 +66,6 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
       if (!url) return missingFeedError();
       return ok(await new GetSchemaUseCase(store).execute(url));
     },
-  );
-
-  server.tool(
-    "get_field_aliases",
-    "Returns the alias registry mapping native feed field names (e.g. pubDate, dc:creator) to internal FeedItem field names (e.g. publishedAt, author).",
-    GetFieldAliasesSchema.shape,
-    async () => ok(new GetFieldAliasesUseCase().execute()),
   );
 
   server.tool(
@@ -104,13 +93,13 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
     async ({ feedUrl }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
       if (!url) return missingFeedError();
-      return ok(await new RefreshFeedUseCase(store, fetcher, parser, normalizer).execute(url));
+      return ok(await new RefreshFeedUseCase(store, fetcher, parser).execute(url));
     },
   );
 
   server.tool(
     "query_feed_items",
-    "Query feed items with optional filter (RSQL), full-text search, sorting, and pagination. Large fields (contentText/contentHtml) are excluded by default.",
+    "Query feed items with optional filter (RSQL), full-text search, sorting, and pagination.",
     QueryFeedItemsSchema.shape,
     async ({ feedUrl, select, filter, search, orderBy, top, skip }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
@@ -122,7 +111,7 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "get_feed_item",
-    "Retrieve a single item by ID with optional field projection. Large fields are returned as ContentRef objects (use the rss2mcp://content resource to read them).",
+    "Retrieve a single item by its _id with optional field projection. Large string fields are returned as ContentRef objects.",
     GetFeedItemSchema.shape,
     async ({ feedUrl, id, select }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
@@ -133,7 +122,7 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "get_feed_stats",
-    "Returns aggregate statistics for a feed: item count, date range, author count, category count, and how many items have full content.",
+    "Returns aggregate statistics for a feed: item count and the ingestion timestamp range (oldest and newest _fetchedAt).",
     GetFeedStatsSchema.shape,
     async ({ feedUrl }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
@@ -144,27 +133,34 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "get_recent_items",
-    "Shorthand for querying the most recent N items sorted by publishedAt descending.",
+    "Shorthand for querying the most recent N items sorted by ingestion time descending.",
     GetRecentItemsSchema.shape,
     async ({ feedUrl, limit }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
       if (!url) return missingFeedError();
       const useCase = new QueryFeedItemsUseCase(store, { maxResults, maxFieldSize });
-      return ok(await useCase.execute(url, { orderBy: ["publishedAt desc"], top: limit ?? 10 }));
+      // Sort by _fetchedAt (ingestion metadata, always present) so the tool works
+      // regardless of which date field name the feed format uses.
+      return ok(await useCase.execute(url, {
+        orderBy: ["_fetchedAt desc"],
+        top: limit ?? 10,
+      }));
     },
   );
 
   server.tool(
     "get_new_items_since",
-    "Returns items published at or after the given ISO-8601 timestamp.",
+    "Returns items ingested at or after the given ISO-8601 timestamp (based on ingestion time).",
     GetNewItemsSinceSchema.shape,
     async ({ feedUrl, since }) => {
       const url = resolveFeed(feedUrl, defaultFeed);
       if (!url) return missingFeedError();
       const useCase = new QueryFeedItemsUseCase(store, { maxResults, maxFieldSize });
+      // Filter on _fetchedAt (ingestion metadata, always present) to avoid assuming
+      // a specific date field name (pubDate vs published vs date_published, etc.).
       return ok(await useCase.execute(url, {
-        filter: `publishedAt=ge=${since}`,
-        orderBy: ["publishedAt desc"],
+        filter: `_fetchedAt=ge=${since}`,
+        orderBy: ["_fetchedAt desc"],
       }));
     },
   );

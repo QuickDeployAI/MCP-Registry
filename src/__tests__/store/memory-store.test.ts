@@ -1,36 +1,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { MemoryStore } from "../../store/index.js";
-import type { FeedItem } from "../../types.js";
-import type { IngestPair } from "../../store/adapter.js";
 
 const FEED_URL = "https://example.com/feed.rss";
 
-function makeItem(overrides: Partial<FeedItem> = {}): FeedItem {
-  const id = overrides.id ?? "item-1";
+/** A minimal RSS-like item — any shape is valid now. */
+function makeItem(id: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    id,
-    sourceName: "Test Feed",
-    sourceUrl: FEED_URL,
     title: "Test Article",
     link: `https://example.com/${id}`,
-    author: "Author",
-    publishedAt: "2024-06-01T00:00:00.000Z",
-    updatedAt: null,
-    summary: "Summary",
-    contentText: null,
-    contentHtml: null,
-    categories: [],
-    language: "en",
-    guid: id,
-    fetchedAt: new Date().toISOString(),
-    contentHash: `hash-${id}`,
-    hasFullContent: false,
-    ...overrides,
+    pubDate: "2024-06-01T00:00:00.000Z",
+    description: "Summary",
+    guid: { value: id },
+    ...extra,
   };
-}
-
-function makePair(overrides: Partial<FeedItem> = {}): IngestPair {
-  return { internal: makeItem(overrides), native: {} };
 }
 
 describe("MemoryStore", () => {
@@ -51,15 +33,15 @@ describe("MemoryStore", () => {
 
   it("ingest returns count of new items", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    const count = await store.ingest(FEED_URL, [makePair({ id: "a" }), makePair({ id: "b" })]);
+    const count = await store.ingest(FEED_URL, [makeItem("a"), makeItem("b")]);
     expect(count).toBe(2);
   });
 
-  it("deduplicates items by contentHash", async () => {
+  it("deduplicates items by content hash", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    const pair = makePair({ id: "a", contentHash: "same-hash" });
-    await store.ingest(FEED_URL, [pair]);
-    const count = await store.ingest(FEED_URL, [pair]);
+    const item = makeItem("a");
+    await store.ingest(FEED_URL, [item]);
+    const count = await store.ingest(FEED_URL, [item]);
     expect(count).toBe(0);
     const items = await store.getAllItems(FEED_URL);
     expect(items).toHaveLength(1);
@@ -67,20 +49,20 @@ describe("MemoryStore", () => {
 
   it("deduplicates items by ID", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    const pair1 = makePair({ id: "dup", contentHash: "h1" });
-    const pair2 = makePair({ id: "dup", contentHash: "h2" });
-    await store.ingest(FEED_URL, [pair1]);
-    const count = await store.ingest(FEED_URL, [pair2]);
+    const item1 = makeItem("dup");
+    // item2 has a different guid but same structure — computeContentHash determines dedup
+    // Two items with the same content hash will be deduped regardless of any "id" field
+    const item2 = { ...item1 }; // identical content → same hash
+    await store.ingest(FEED_URL, [item1]);
+    const count = await store.ingest(FEED_URL, [item2]);
     expect(count).toBe(0);
   });
 
   it("respects maxItems cap", async () => {
     const smallStore = new MemoryStore(3);
     await smallStore.initFeed(FEED_URL, "Feed");
-    const pairs = Array.from({ length: 5 }, (_, i) =>
-      makePair({ id: `item-${i}`, contentHash: `h${i}` }),
-    );
-    await smallStore.ingest(FEED_URL, pairs);
+    const items = Array.from({ length: 5 }, (_, i) => makeItem(`item-${i}`));
+    await smallStore.ingest(FEED_URL, items);
     const stored = await smallStore.getAllItems(FEED_URL);
     expect(stored).toHaveLength(3);
   });
@@ -93,18 +75,31 @@ describe("MemoryStore", () => {
     expect(info!.feedUrl).toBe(FEED_URL);
   });
 
-  it("getItem retrieves item by ID", async () => {
+  it("getItem retrieves item by _id (content hash)", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    await store.ingest(FEED_URL, [makePair({ id: "target" })]);
-    const item = await store.getItem(FEED_URL, "target");
-    expect(item).not.toBeNull();
-    expect(item!.id).toBe("target");
+    const item = makeItem("target");
+    await store.ingest(FEED_URL, [item]);
+    const allItems = await store.getAllItems(FEED_URL);
+    const storedId = allItems[0]._id as string;
+    // _id is the SHA-256 content hash
+    expect(storedId).toHaveLength(64);
+    const found = await store.getItem(FEED_URL, storedId);
+    expect(found).not.toBeNull();
   });
 
   it("getItem returns null for unknown ID", async () => {
     await store.initFeed(FEED_URL, "Feed");
     const item = await store.getItem(FEED_URL, "nonexistent");
     expect(item).toBeNull();
+  });
+
+  it("getAllItems augments items with _id (hash) and _fetchedAt", async () => {
+    await store.initFeed(FEED_URL, "Feed");
+    await store.ingest(FEED_URL, [makeItem("x")]);
+    const items = await store.getAllItems(FEED_URL);
+    expect(typeof items[0]._id).toBe("string");
+    expect((items[0]._id as string)).toHaveLength(64); // SHA-256 hex
+    expect(typeof items[0]._fetchedAt).toBe("string");
   });
 
   it("recordRefreshAttempt updates metadata", async () => {

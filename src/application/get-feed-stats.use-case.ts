@@ -1,21 +1,24 @@
 /**
  * Use case: compute feed statistics.
+ *
+ * Returns only information available without assuming any item field structure:
+ * - item count
+ * - ingestion timestamp range (`_fetchedAt` metadata added by the store)
  */
+import type { NativeItem, ToolError } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import type { ToolError } from "../types.js";
 
 export interface FeedStats {
   feedUrl: string;
   itemCount: number;
-  oldestItem: string | null;
-  newestItem: string | null;
-  authorsCount: number;
-  categoriesCount: number;
-  hasFullContentCount: number;
+  /** _fetchedAt of the oldest stored item (ISO-8601). */
+  oldestItemFetchedAt: string | null;
+  /** _fetchedAt of the newest stored item (ISO-8601). */
+  newestItemFetchedAt: string | null;
 }
 
-export class GetFeedStatsUseCase {
-  constructor(private readonly store: StoreAdapter) {}
+export class GetFeedStatsUseCase<TItem extends NativeItem = NativeItem> {
+  constructor(private readonly store: StoreAdapter<TItem>) {}
 
   async execute(feedUrl: string): Promise<FeedStats | ToolError> {
     if (!this.store.hasFeed(feedUrl)) {
@@ -28,38 +31,15 @@ export class GetFeedStatsUseCase {
 
     const items = await this.store.getAllItems(feedUrl);
     if (items.length === 0) {
-      return this.emptyStats(feedUrl);
+      return { feedUrl, itemCount: 0, oldestItemFetchedAt: null, newestItemFetchedAt: null };
     }
 
-    const dates = items
-      .map((i) => i.publishedAt ?? i.fetchedAt)
-      .filter(Boolean)
-      .sort();
-
-    const authors = new Set(items.map((i) => i.author).filter(Boolean));
-    const categories = new Set(items.flatMap((i) => i.categories));
-    const hasFullContentCount = items.filter((i) => i.hasFullContent).length;
-
+    const dates = items.map((i) => i._fetchedAt as string).sort();
     return {
       feedUrl,
       itemCount: items.length,
-      oldestItem: dates[0] ?? null,
-      newestItem: dates[dates.length - 1] ?? null,
-      authorsCount: authors.size,
-      categoriesCount: categories.size,
-      hasFullContentCount,
-    };
-  }
-
-  private emptyStats(feedUrl: string): FeedStats {
-    return {
-      feedUrl,
-      itemCount: 0,
-      oldestItem: null,
-      newestItem: null,
-      authorsCount: 0,
-      categoriesCount: 0,
-      hasFullContentCount: 0,
+      oldestItemFetchedAt: dates[0] ?? null,
+      newestItemFetchedAt: dates[dates.length - 1] ?? null,
     };
   }
 }

@@ -1,6 +1,5 @@
 /**
  * Core TypeScript types for the RSS-to-MCP server.
- * These interfaces define the canonical data model.
  */
 
 /**
@@ -22,8 +21,6 @@ export interface ObservedFieldSchema {
   large: boolean;
   /** A representative example value (truncated to 120 chars). */
   example: string | null;
-  /** Canonical alias in the internal model, if one exists (e.g. "publishedAt"). */
-  alias: string | null;
   /** Operators valid for this field in filter expressions. */
   allowedOperators: string[];
 }
@@ -41,49 +38,11 @@ export interface ObservedFeedSchema {
 }
 
 /**
- * A native feed entry: the raw parsed fields as they appear in the feed.
- * This is what query_items returns in item records.
- * Key = native field name, Value = raw field value.
+ * A raw feed entry as stored — the feedsmith item augmented with internal
+ * metadata (`_id`, `_fetchedAt`) added at ingest time.
+ * Key = field name, Value = raw field value.
  */
 export type NativeItem = Record<string, unknown>;
-
-/** Normalized representation of a single feed item. */
-export interface FeedItem {
-  /** Unique internal identifier (stable hash of guid/link/title). */
-  id: string;
-  /** Human-readable name of the feed source. */
-  sourceName: string;
-  /** URL or path of the configured feed source. */
-  sourceUrl: string;
-  /** Article title. */
-  title: string;
-  /** Canonical link to the article. */
-  link: string;
-  /** Author name, if provided. */
-  author: string | null;
-  /** Publication date (ISO-8601). */
-  publishedAt: string | null;
-  /** Last-updated date (ISO-8601). */
-  updatedAt: string | null;
-  /** Short summary / excerpt (kept under maxFieldSize by default). */
-  summary: string | null;
-  /** Plain-text body (large field – not returned by default). */
-  contentText: string | null;
-  /** Raw HTML body (large field – not returned by default). */
-  contentHtml: string | null;
-  /** Categories / tags. */
-  categories: string[];
-  /** Language tag, e.g. "en". */
-  language: string | null;
-  /** Original guid from the feed. */
-  guid: string | null;
-  /** Timestamp when this item was first ingested (ISO-8601). */
-  fetchedAt: string;
-  /** SHA-256 content hash used for deduplication. */
-  contentHash: string;
-  /** True if contentText or contentHtml is available. */
-  hasFullContent: boolean;
-}
 
 /** Field-level metadata exposed via get_schema. */
 export interface FieldMeta {
@@ -128,8 +87,8 @@ export interface FeedQuery {
   skip?: number;
 }
 
-/** A single query result record (sparse – only requested fields). */
-export type FeedItemRecord = Partial<FeedItem>;
+/** A single query result record (arbitrary feed item fields). */
+export type FeedItemRecord = Record<string, unknown>;
 
 /** Full structured query response. */
 export interface QueryResult {

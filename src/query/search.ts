@@ -1,5 +1,7 @@
 /**
- * Full-text search over searchable FeedItem fields.
+ * Full-text search over feed item string fields.
+ *
+ * Searches all top-level string values in the item — no fixed schema required.
  *
  * Supports:
  *   - plain terms (AND logic)
@@ -7,8 +9,6 @@
  *   - OR grouping:  MCP OR agent
  *   - negation:     -unwanted
  */
-import { SEARCHABLE_FIELDS } from "../schema.js";
-import type { FeedItem } from "../types.js";
 
 interface SearchToken {
   type: "phrase" | "term" | "or" | "not";
@@ -49,16 +49,14 @@ function tokenizeSearch(query: string): SearchToken[] {
   return tokens;
 }
 
-function getSearchableText(item: FeedItem): string {
-  return SEARCHABLE_FIELDS.map((f) => {
-    const v = (item as unknown as Record<string, unknown>)[f];
-    return typeof v === "string" ? v : "";
-  })
+function getSearchableText(item: Record<string, unknown>): string {
+  return Object.values(item)
+    .filter((v): v is string => typeof v === "string")
     .join(" ")
     .toLowerCase();
 }
 
-export function matchesSearch(item: FeedItem, query: string): boolean {
+export function matchesSearch(item: Record<string, unknown>, query: string): boolean {
   const text = getSearchableText(item);
   const tokens = tokenizeSearch(query);
   if (tokens.length === 0) return true;

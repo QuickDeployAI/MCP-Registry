@@ -1,28 +1,16 @@
 /**
  * Query executor.
  *
- * Takes a FeedQuery, validates it, applies filters/search/sort/page,
- * then projects the requested fields onto the result set.
- * Native field names (e.g. "pubDate", "dc:creator") are resolved to
- * internal FeedItem fields via the alias registry for filter/sort;
- * projection supports both native and internal field names.
+ * Takes a FeedQuery, applies filters/search/sort/pagination, then projects
+ * the requested fields from the raw feedsmith items (augmented with `_id`
+ * and `_fetchedAt`). Works on any Record<string,unknown> item shape.
  *
- * Large fields (contentText, contentHtml) are NEVER returned inline — even
- * when explicitly selected. Use get_feed_item to retrieve them.
+ * Large fields — any string value longer than LARGE_FIELD_THRESHOLD — are
+ * replaced with a marker object in query results. Use get_feed_item to
+ * retrieve them.
  */
-import {
-  SORTABLE_FIELDS,
-  DEFAULT_SELECT,
-  LARGE_FIELDS,
-} from "../schema.js";
-import type {
-  FeedItem,
-  FeedItemRecord,
-  FeedQuery,
-  NativeItem,
-  QueryResult,
-} from "../types.js";
-import { NATIVE_TO_INTERNAL } from "../introspection/field-aliases.js";
+import { LARGE_FIELD_THRESHOLD } from "../schema.js";
+import type { FeedItemRecord, FeedQuery, QueryResult } from "../types.js";
 import { compileFilter } from "./filter.js";
 import { matchesSearch } from "./search.js";
 
@@ -42,57 +30,23 @@ export interface ExecuteResult {
 }
 
 // ---------------------------------------------------------------------------
-// Field resolution
-// ---------------------------------------------------------------------------
-
-/**
- * Resolve a field name to an internal FeedItem key.
- * Accepts either native names (via alias) or internal names directly.
- */
-function resolveToInternal(fieldName: string): string {
-  return NATIVE_TO_INTERNAL.get(fieldName) ?? fieldName;
-}
-
-// ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
 
-/**
- * Validate the query. The select list accepts any field name — unknown native
- * fields are silently skipped during projection. Only sort direction and the
- * top limit are hard-validated here; sort field existence is validated only
- * for known internal/alias fields so that the executor can accept any
- * observed native field name without needing the ObservedFeedSchema.
- */
-function validateQuery(
-  query: FeedQuery,
-  opts: ExecutorOptions,
-): ValidationError[] {
+function validateQuery(query: FeedQuery, opts: ExecutorOptions): ValidationError[] {
   const errors: ValidationError[] = [];
-
   if (query.orderBy) {
     for (const clause of query.orderBy) {
       const parts = clause.trim().split(/\s+/);
-      const fieldName = parts[0];
       const dir = (parts[1] ?? "asc").toLowerCase();
-      const resolved = resolveToInternal(fieldName);
-      // Only reject fields that are explicitly known to be non-sortable internal fields.
-      // Unknown native fields are allowed through for best-effort comparison.
-      const isKnownInternal = SORTABLE_FIELDS.has(fieldName);
-      const isResolvable = resolved !== fieldName; // alias resolved successfully
-      if (!isKnownInternal && !isResolvable && !SORTABLE_FIELDS.has(resolved)) {
-        // Not a known sortable internal field and not a recognised alias —
-        // allow it through; sort will use empty-string fallback for unknown fields.
-      }
       if (dir !== "asc" && dir !== "desc") {
         errors.push({
           field: "orderBy",
-          message: `Invalid sort direction '${dir}' for field '${fieldName}'. Use 'asc' or 'desc'.`,
+          message: `Invalid sort direction '${dir}' for field '${parts[0]}'. Use 'asc' or 'desc'.`,
         });
       }
     }
   }
-
   const top = query.top ?? opts.maxResults;
   if (top > opts.maxResults) {
     errors.push({
@@ -100,11 +54,10 @@ function validateQuery(
       message: `Requested top=${top} exceeds server maximum of ${opts.maxResults}. Use skip/top to page.`,
     });
   }
-
   return errors;
 }
 
-/** Marker returned in query results when a field is too large to inline. */
+/** Marker returned in results when a field value is too large to inline. */
 const LARGE_FIELD_MARKER = {
   type: "large-field" as const,
   hint: "Use get_feed_item with this field in select[] to retrieve the full content.",
@@ -115,56 +68,63 @@ const LARGE_FIELD_MARKER = {
 // ---------------------------------------------------------------------------
 
 function projectItem(
-  item: FeedItem,
-  native: NativeItem,
+  item: Record<string, unknown>,
   fields: string[],
   maxFieldSize: number,
 ): FeedItemRecord {
   const record: Record<string, unknown> = {};
-
   for (const f of fields) {
-    const internalKey = resolveToInternal(f);
-    const isLarge = LARGE_FIELDS.has(internalKey) || LARGE_FIELDS.has(f);
-
-    // Large fields are never inlined — return a structured marker instead.
-    if (isLarge) {
+    const val = item[f];
+    if (typeof val === "string" && val.length > LARGE_FIELD_THRESHOLD) {
       record[f] = LARGE_FIELD_MARKER;
-      continue;
+    } else if (typeof val === "string" && val.length > maxFieldSize) {
+      record[f] = val.slice(0, maxFieldSize) + "…";
+    } else {
+      record[f] = val;
     }
-
-    // Prefer native item value when field exists there.
-    if (f in native) {
-      const val = native[f];
-      record[f] = typeof val === "string" && val.length > maxFieldSize
-        ? val.slice(0, maxFieldSize) + "…"
-        : val;
-      continue;
-    }
-
-    // Fall back to internal FeedItem field (direct or alias-resolved).
-    const val = item[internalKey as keyof FeedItem];
-    record[f] = typeof val === "string" && val.length > maxFieldSize
-      ? val.slice(0, maxFieldSize) + "…"
-      : val;
   }
   return record;
+}
+
+// ---------------------------------------------------------------------------
+// Default field selection
+// ---------------------------------------------------------------------------
+
+/**
+ * When no select is given, return all fields present on the item that are not
+ * large strings or deeply nested plain objects. This is fully dynamic — no fixed field list.
+ * Arrays (e.g. categories, authors) are included.
+ */
+function defaultFields(item: Record<string, unknown>): string[] {
+  const fields = new Set<string>();
+  for (const [k, v] of Object.entries(item)) {
+    // Always include metadata fields
+    if (k.startsWith("_")) { fields.add(k); continue; }
+    // Include arrays, scalars, and null; exclude plain nested objects and large strings
+    if (
+      v === null
+      || Array.isArray(v)
+      || (typeof v !== "object" && (typeof v !== "string" || v.length <= LARGE_FIELD_THRESHOLD))
+    ) {
+      fields.add(k);
+    }
+  }
+  return [...fields];
 }
 
 // ---------------------------------------------------------------------------
 // Sort
 // ---------------------------------------------------------------------------
 
-function sortItems(items: FeedItem[], orderBy: string[]): FeedItem[] {
+function sortItems(items: Record<string, unknown>[], orderBy: string[]): Record<string, unknown>[] {
   const sorted = [...items];
-  // Apply in reverse so that the first clause has highest priority.
   for (const clause of [...orderBy].reverse()) {
     const parts = clause.trim().split(/\s+/);
-    const rawField = parts[0];
-    const field = resolveToInternal(rawField) as keyof FeedItem;
+    const field = parts[0];
     const dir = (parts[1] ?? "asc").toLowerCase();
     sorted.sort((a, b) => {
-      const av = (a[field] as string | null) ?? "";
-      const bv = (b[field] as string | null) ?? "";
+      const av = String(a[field] ?? "");
+      const bv = String(b[field] ?? "");
       const cmp = av < bv ? -1 : av > bv ? 1 : 0;
       return dir === "desc" ? -cmp : cmp;
     });
@@ -177,8 +137,7 @@ function sortItems(items: FeedItem[], orderBy: string[]): FeedItem[] {
 // ---------------------------------------------------------------------------
 
 export function executeQuery(
-  items: FeedItem[],
-  nativeItems: NativeItem[],
+  items: Record<string, unknown>[],
   query: FeedQuery,
   opts: ExecutorOptions,
 ): ExecuteResult {
@@ -186,72 +145,34 @@ export function executeQuery(
   if (errors.length > 0) return { errors };
 
   let candidates = [...items];
-  // Keep native items aligned with candidates by index
-  let nativeCandidates = [...nativeItems];
 
-  // Apply structured filter
   if (query.filter?.trim()) {
     let compiledFilter;
     try {
       compiledFilter = compileFilter(query.filter);
     } catch (err) {
-      return {
-        errors: [
-          {
-            field: "filter",
-            message: `Invalid filter expression: ${(err as Error).message}`,
-          },
-        ],
-      };
+      return { errors: [{ field: "filter", message: `Invalid filter expression: ${(err as Error).message}` }] };
     }
-    const filteredPairs = candidates
-      .map((item, i) => ({ item, native: nativeCandidates[i] ?? {} }))
-      .filter(({ item }) => compiledFilter.test(item));
-    candidates = filteredPairs.map((p) => p.item);
-    nativeCandidates = filteredPairs.map((p) => p.native);
+    candidates = candidates.filter((item) => compiledFilter.test(item));
   }
 
-  // Apply full-text search
   if (query.search?.trim()) {
-    const filteredPairs = candidates
-      .map((item, i) => ({ item, native: nativeCandidates[i] ?? {} }))
-      .filter(({ item }) => matchesSearch(item, query.search!));
-    candidates = filteredPairs.map((p) => p.item);
-    nativeCandidates = filteredPairs.map((p) => p.native);
+    candidates = candidates.filter((item) => matchesSearch(item, query.search!));
   }
 
-  // Sort
   if (query.orderBy?.length) {
-    const sorted = sortItems(candidates, query.orderBy);
-    // Re-align native items to match new order
-    const idToNative = new Map(candidates.map((item, i) => [item.id, nativeCandidates[i] ?? {}]));
-    candidates = sorted;
-    nativeCandidates = sorted.map((item) => idToNative.get(item.id) ?? {});
+    candidates = sortItems(candidates, query.orderBy);
   }
 
   const totalMatched = candidates.length;
   const skip = query.skip ?? 0;
   const top = Math.min(query.top ?? opts.maxResults, opts.maxResults);
+  const page = candidates.slice(skip, skip + top);
 
-  const pagePairs = candidates
-    .map((item, i) => ({ item, native: nativeCandidates[i] ?? {} }))
-    .slice(skip, skip + top);
-
-  // Determine projection fields. Large fields are always included in the list
-  // but projectItem will replace their value with a LARGE_FIELD_MARKER.
-  const projectionFields = query.select ?? (DEFAULT_SELECT as string[]);
-
-  const projected = pagePairs.map(({ item, native }) =>
-    projectItem(item, native, projectionFields, opts.maxFieldSize),
-  );
+  const projectionFields = query.select ?? (page.length > 0 ? defaultFields(page[0]) : ["_id"]);
+  const projected = page.map((item) => projectItem(item, projectionFields, opts.maxFieldSize));
 
   return {
-    result: {
-      items: projected,
-      totalMatched,
-      returned: projected.length,
-      skip,
-      top,
-    },
+    result: { items: projected, totalMatched, returned: projected.length, skip, top },
   };
 }

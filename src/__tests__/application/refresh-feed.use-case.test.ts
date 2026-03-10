@@ -1,60 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { RefreshFeedUseCase } from "../../application/refresh-feed.use-case.js";
 import type { StoreAdapter } from "../../store/adapter.js";
-import type { FeedItem, NativeItem } from "../../types.js";
-import type { ParsedFeed } from "../../ingestion/parser.js";
 
 const FEED_URL = "https://example.com/feed.rss";
 
-const SAMPLE_XML = `<rss><channel><title>Test</title></channel></rss>`;
+const SAMPLE_SOURCE = `<rss><channel><title>Test</title></channel></rss>`;
 
-const PARSED_FEED: ParsedFeed = {
-  title: "Test Feed",
-  feedUrl: FEED_URL,
-  description: "A test feed",
-  language: "en",
-  items: [
-    {
-      guid: "item-1",
-      title: "Article 1",
-      link: "https://example.com/1",
-      isoDate: "2024-06-01T00:00:00.000Z",
-      rawFields: { guid: "item-1", title: "Article 1" },
-    },
-    {
-      guid: "item-2",
-      title: "Article 2",
-      link: "https://example.com/2",
-      isoDate: "2024-06-02T00:00:00.000Z",
-      rawFields: { guid: "item-2", title: "Article 2" },
-    },
-  ],
+const PARSED_FEED = {
+  format: "rss" as const,
+  feed: {
+    title: "Test Feed",
+    description: "A test feed",
+    language: "en",
+    items: [
+      { guid: { value: "item-1" }, title: "Article 1", link: "https://example.com/1", pubDate: "Sat, 01 Jun 2024 00:00:00 GMT" },
+      { guid: { value: "item-2" }, title: "Article 2", link: "https://example.com/2", pubDate: "Sun, 02 Jun 2024 00:00:00 GMT" },
+    ],
+  },
 };
-
-function makeNormalizedPairs(): Array<{ internal: FeedItem; native: NativeItem }> {
-  return PARSED_FEED.items.map((item) => ({
-    internal: {
-      id: item.guid!,
-      sourceName: "Test Feed",
-      sourceUrl: FEED_URL,
-      title: item.title ?? "",
-      link: item.link ?? "",
-      author: null,
-      publishedAt: item.isoDate ?? null,
-      updatedAt: null,
-      summary: null,
-      contentText: null,
-      contentHtml: null,
-      categories: [],
-      language: "en",
-      guid: item.guid ?? null,
-      fetchedAt: new Date().toISOString(),
-      contentHash: `hash-${item.guid}`,
-      hasFullContent: false,
-    },
-    native: item.rawFields ?? {},
-  }));
-}
 
 function makeMockStore(feedExists = false): StoreAdapter {
   return {
@@ -65,10 +28,8 @@ function makeMockStore(feedExists = false): StoreAdapter {
     getFeedInfo: vi.fn().mockResolvedValue(null),
     getItem: vi.fn().mockResolvedValue(null),
     getAllItems: vi.fn().mockResolvedValue([]),
-    getAllNativeItems: vi.fn().mockResolvedValue([]),
     storeObservedSchema: vi.fn().mockResolvedValue(undefined),
     getObservedSchema: vi.fn().mockResolvedValue(null),
-    getNativeItem: vi.fn().mockResolvedValue(null),
     hasFeed: vi.fn().mockReturnValue(feedExists),
     close: vi.fn().mockResolvedValue(undefined),
   };
@@ -77,11 +38,10 @@ function makeMockStore(feedExists = false): StoreAdapter {
 describe("RefreshFeedUseCase", () => {
   it("returns newItems count on success", async () => {
     const store = makeMockStore(false);
-    const fetcher = vi.fn().mockResolvedValue(SAMPLE_XML);
-    const parser = vi.fn().mockResolvedValue(PARSED_FEED);
-    const normalizer = vi.fn().mockReturnValue(makeNormalizedPairs());
+    const fetcher = vi.fn().mockResolvedValue(SAMPLE_SOURCE);
+    const parser = vi.fn().mockReturnValue(PARSED_FEED);
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     const result = await useCase.execute(FEED_URL);
 
     expect("error" in result).toBe(false);
@@ -93,11 +53,10 @@ describe("RefreshFeedUseCase", () => {
 
   it("calls initFeed when feed is new", async () => {
     const store = makeMockStore(false);
-    const fetcher = vi.fn().mockResolvedValue(SAMPLE_XML);
-    const parser = vi.fn().mockResolvedValue(PARSED_FEED);
-    const normalizer = vi.fn().mockReturnValue(makeNormalizedPairs());
+    const fetcher = vi.fn().mockResolvedValue(SAMPLE_SOURCE);
+    const parser = vi.fn().mockReturnValue(PARSED_FEED);
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     await useCase.execute(FEED_URL);
 
     expect(store.initFeed).toHaveBeenCalledWith(FEED_URL, "Test Feed");
@@ -105,11 +64,10 @@ describe("RefreshFeedUseCase", () => {
 
   it("does not call initFeed when feed already exists", async () => {
     const store = makeMockStore(true);
-    const fetcher = vi.fn().mockResolvedValue(SAMPLE_XML);
-    const parser = vi.fn().mockResolvedValue(PARSED_FEED);
-    const normalizer = vi.fn().mockReturnValue(makeNormalizedPairs());
+    const fetcher = vi.fn().mockResolvedValue(SAMPLE_SOURCE);
+    const parser = vi.fn().mockReturnValue(PARSED_FEED);
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     await useCase.execute(FEED_URL);
 
     expect(store.initFeed).not.toHaveBeenCalled();
@@ -117,11 +75,10 @@ describe("RefreshFeedUseCase", () => {
 
   it("records refresh attempt on success", async () => {
     const store = makeMockStore(true);
-    const fetcher = vi.fn().mockResolvedValue(SAMPLE_XML);
-    const parser = vi.fn().mockResolvedValue(PARSED_FEED);
-    const normalizer = vi.fn().mockReturnValue(makeNormalizedPairs());
+    const fetcher = vi.fn().mockResolvedValue(SAMPLE_SOURCE);
+    const parser = vi.fn().mockReturnValue(PARSED_FEED);
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     await useCase.execute(FEED_URL);
 
     expect(store.recordRefreshAttempt).toHaveBeenCalledWith(
@@ -134,9 +91,8 @@ describe("RefreshFeedUseCase", () => {
     const store = makeMockStore(true);
     const fetcher = vi.fn().mockRejectedValue(new Error("Network error"));
     const parser = vi.fn();
-    const normalizer = vi.fn();
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     const result = await useCase.execute(FEED_URL);
 
     expect("error" in result).toBe(true);
@@ -147,9 +103,8 @@ describe("RefreshFeedUseCase", () => {
     const store = makeMockStore(true);
     const fetcher = vi.fn().mockRejectedValue(new Error("Timeout"));
     const parser = vi.fn();
-    const normalizer = vi.fn();
 
-    const useCase = new RefreshFeedUseCase(store, fetcher, parser, normalizer);
+    const useCase = new RefreshFeedUseCase(store, fetcher, parser);
     await useCase.execute(FEED_URL);
 
     expect(store.recordRefreshAttempt).toHaveBeenCalledWith(

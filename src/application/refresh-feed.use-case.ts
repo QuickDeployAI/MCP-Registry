@@ -1,9 +1,10 @@
 /**
  * Use case: refresh a feed from its source URL.
  */
+import type { NativeItem, ToolError } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import type { ToolError } from "../types.js";
-import type { FetcherFn, ParserFn, NormalizerFn } from "../polling/coordinator.js";
+import type { FetcherFn, ParserFn } from "../polling/coordinator.js";
+import { extractFeedMeta, extractItems, toSourceFormat } from "../ingestion/feed-utils.js";
 import { inspectSchema } from "../introspection/schema-inspector.js";
 
 export interface RefreshResult {
@@ -13,51 +14,38 @@ export interface RefreshResult {
   error?: string;
 }
 
-export class RefreshFeedUseCase {
+export class RefreshFeedUseCase<TItem extends NativeItem = NativeItem> {
   constructor(
-    private readonly store: StoreAdapter,
+    private readonly store: StoreAdapter<TItem>,
     private readonly fetcher: FetcherFn,
     private readonly parser: ParserFn,
-    private readonly normalizer: NormalizerFn,
   ) {}
 
   async execute(feedUrl: string): Promise<RefreshResult | ToolError> {
     try {
-      const xml = await this.fetcher(feedUrl);
-      const parsed = await this.parser(xml);
-      const items = this.normalizer(parsed, feedUrl);
+      const source = await this.fetcher(feedUrl);
+      const parsed = this.parser(source);
+      const { title, description } = extractFeedMeta(parsed);
+      const items = extractItems(parsed) as TItem[];
 
       if (!this.store.hasFeed(feedUrl)) {
-        await this.store.initFeed(feedUrl, parsed.title ?? null);
+        await this.store.initFeed(feedUrl, title ?? null);
       }
 
       const newItems = await this.store.ingest(feedUrl, items);
-      await this.store.recordRefreshAttempt(feedUrl, {
-        success: true,
-        feedTitle: parsed.title,
-        feedDescription: parsed.description,
-      });
+      await this.store.recordRefreshAttempt(feedUrl, { success: true, feedTitle: title, feedDescription: description });
 
-      // Derive and persist the observed schema from current native items.
-      const nativeItems = await this.store.getAllNativeItems(feedUrl);
-      const schema = inspectSchema(feedUrl, nativeItems);
+      const allItems = await this.store.getAllItems(feedUrl);
+      const schema = inspectSchema(feedUrl, allItems, toSourceFormat(parsed.format));
       await this.store.storeObservedSchema(feedUrl, schema);
 
-      return {
-        feedUrl,
-        newItems,
-        feedTitle: parsed.title ?? null,
-      };
+      return { feedUrl, newItems, feedTitle: title ?? null };
     } catch (err) {
       const msg = (err as Error).message;
       if (this.store.hasFeed(feedUrl)) {
         await this.store.recordRefreshAttempt(feedUrl, { success: false, error: msg });
       }
-      return {
-        error: "Refresh failed",
-        reason: msg,
-        suggestion: "Check that the feed URL is valid and accessible.",
-      };
+      return { error: "Refresh failed", reason: msg, suggestion: "Check that the feed URL is valid and accessible." };
     }
   }
 }

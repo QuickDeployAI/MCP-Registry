@@ -12,8 +12,7 @@ import type { StoreAdapter } from "./store/adapter.js";
 import { ContentStore } from "./content/content-store.js";
 import { PollingCoordinator } from "./polling/coordinator.js";
 import { fetchFeedSource } from "./ingestion/fetcher.js";
-import { parseFeedXml } from "./ingestion/parser.js";
-import { normalizeFeed } from "./ingestion/normalizer.js";
+import { parseFeed } from "feedsmith";
 import { OpenAIEmbeddingProvider } from "./store/vector-store.js";
 import { createMcpServer } from "./mcp/server.js";
 
@@ -47,8 +46,7 @@ async function main(): Promise<void> {
   const coordinator = new PollingCoordinator(
     store,
     fetchFeedSource,
-    parseFeedXml,
-    normalizeFeed,
+    parseFeed,
   );
 
   if (config.defaultFeed) {
@@ -63,8 +61,7 @@ async function main(): Promise<void> {
     store,
     contentStore,
     fetcher: fetchFeedSource,
-    parser: parseFeedXml,
-    normalizer: normalizeFeed,
+    parser: parseFeed,
     defaultFeed: config.defaultFeed,
     maxResults: config.maxQueryResults,
     maxFieldSize: config.maxFieldSize,

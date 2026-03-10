@@ -18,6 +18,16 @@ describe("inspectSchema", () => {
     expect(schema.sourceFormat).toBe("unknown");
   });
 
+  it("uses the sourceFormat passed directly", () => {
+    const schema = inspectSchema("https://feed.example.com", makeItems(), "rss2");
+    expect(schema.sourceFormat).toBe("rss2");
+  });
+
+  it("defaults sourceFormat to 'unknown' when not provided", () => {
+    const schema = inspectSchema("https://feed.example.com", makeItems());
+    expect(schema.sourceFormat).toBe("unknown");
+  });
+
   it("detects field presence correctly", () => {
     const items = makeItems();
     const schema = inspectSchema("https://feed.example.com", items);
@@ -63,32 +73,48 @@ describe("inspectSchema", () => {
     expect(field?.large).toBe(true);
   });
 
-  it("sets sortable=true for datetime fields", () => {
+  it("sets sortable=true for datetime fields (derived from type, not field name)", () => {
     const items = makeItems();
     const schema = inspectSchema("https://feed.example.com", items);
     const dateField = schema.fields.find((f) => f.name === "pubDate");
     expect(dateField?.sortable).toBe(true);
   });
 
-  it("derives alias pubDate -> publishedAt", () => {
+  it("sets filterable=true for string fields (derived from type)", () => {
     const items = makeItems();
     const schema = inspectSchema("https://feed.example.com", items);
-    const dateField = schema.fields.find((f) => f.name === "pubDate");
-    expect(dateField?.alias).toBe("publishedAt");
+    const titleField = schema.fields.find((f) => f.name === "title");
+    expect(titleField?.filterable).toBe(true);
   });
 
-  it("detects rss2 format from pubDate field", () => {
+  it("sets filterable=true for number fields (derived from type)", () => {
+    const items: NativeItem[] = [{ count: 5 }];
+    const schema = inspectSchema("https://feed.example.com", items);
+    const field = schema.fields.find((f) => f.name === "count");
+    expect(field?.filterable).toBe(true);
+  });
+
+  it("sets filterable=false for object fields (not a scalar type)", () => {
+    const items: NativeItem[] = [{ nested: { a: 1 } }];
+    const schema = inspectSchema("https://feed.example.com", items);
+    const field = schema.fields.find((f) => f.name === "nested");
+    expect(field?.filterable).toBe(false);
+  });
+
+  it("sets searchable=false for large string fields", () => {
+    const longText = "A".repeat(600);
+    const items: NativeItem[] = [{ body: longText }, { body: longText }];
+    const schema = inspectSchema("https://feed.example.com", items);
+    const field = schema.fields.find((f) => f.name === "body");
+    expect(field?.searchable).toBe(false);
+  });
+
+  it("does not include an alias field on ObservedFieldSchema", () => {
     const items = makeItems();
     const schema = inspectSchema("https://feed.example.com", items);
-    expect(schema.sourceFormat).toBe("rss2");
-  });
-
-  it("detects atom format from updated field", () => {
-    const items: NativeItem[] = [
-      { title: "Entry", updated: "2024-01-01T00:00:00.000Z" },
-    ];
-    const schema = inspectSchema("https://feed.example.com", items);
-    expect(schema.sourceFormat).toBe("atom");
+    const pubDate = schema.fields.find((f) => f.name === "pubDate");
+    expect(pubDate).toBeDefined();
+    expect("alias" in pubDate!).toBe(false);
   });
 });
 
@@ -102,5 +128,22 @@ describe("inspectSchema - allowedOperators", () => {
     const tagsField = schema.fields.find((f) => f.name === "tags");
     expect(tagsField?.type).toBe("string[]");
     expect(tagsField?.allowedOperators).toContain("=contains=");
+  });
+
+  it("datetime fields include comparison operators", () => {
+    const items = makeItems();
+    const schema = inspectSchema("https://feed.example.com", items);
+    const dateField = schema.fields.find((f) => f.name === "pubDate");
+    expect(dateField?.allowedOperators).toContain("=gt=");
+    expect(dateField?.allowedOperators).toContain("=ge=");
+    expect(dateField?.allowedOperators).toContain("=lt=");
+  });
+
+  it("number fields include comparison operators", () => {
+    const items: NativeItem[] = [{ score: 42 }];
+    const schema = inspectSchema("https://feed.example.com", items);
+    const field = schema.fields.find((f) => f.name === "score");
+    expect(field?.allowedOperators).toContain("=gt=");
+    expect(field?.allowedOperators).toContain("=le=");
   });
 });

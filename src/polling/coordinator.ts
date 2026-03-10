@@ -1,35 +1,30 @@
 /**
  * Polling / refresh coordinator.
  *
- * Manages periodic polling and manual refresh for registered feeds.
- * Polling is disabled by default; it is activated only when
- * pollIntervalMs > 0 is explicitly configured.
+ * Generic over TItem — the raw feedsmith item type stored in the backing
+ * store. Manages periodic polling and manual refresh for registered feeds.
  */
+import type { NativeItem } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import type { ParsedFeed } from "../ingestion/parser.js";
-import type { FeedItem, NativeItem } from "../types.js";
+import { parseFeed } from "feedsmith";
+import { extractItems, extractFeedMeta, toSourceFormat } from "../ingestion/feed-utils.js";
 import { inspectSchema } from "../introspection/schema-inspector.js";
 
 export type FetcherFn = (url: string) => Promise<string>;
-export type ParserFn = (xml: string) => Promise<ParsedFeed>;
-export type NormalizerFn = (
-  feed: ParsedFeed,
-  sourceUrl: string,
-) => Array<{ internal: FeedItem; native: NativeItem }>;
+export type ParserFn = (source: string) => ReturnType<typeof parseFeed>;
 
 interface FeedRefreshState {
   timer: ReturnType<typeof setInterval> | null;
   refreshing: boolean;
 }
 
-export class PollingCoordinator {
+export class PollingCoordinator<TItem extends NativeItem = NativeItem> {
   private feeds = new Map<string, FeedRefreshState>();
 
   constructor(
-    private store: StoreAdapter,
+    private store: StoreAdapter<TItem>,
     private fetcher: FetcherFn,
     private parser: ParserFn,
-    private normalizer: NormalizerFn,
   ) {}
 
   /**
@@ -56,28 +51,22 @@ export class PollingCoordinator {
       await this.store.initFeed(feedUrl, null);
     }
 
-    if (state.refreshing) {
-      return { newItems: 0, error: "Refresh already in progress" };
-    }
+    if (state.refreshing) return { newItems: 0, error: "Refresh already in progress" };
 
     state.refreshing = true;
     try {
-      const xml = await this.fetcher(feedUrl);
-      const parsed = await this.parser(xml);
-      const pairs = this.normalizer(parsed, feedUrl);
+      const source = await this.fetcher(feedUrl);
+      const parsed = this.parser(source);
+      const { title, description } = extractFeedMeta(parsed);
+      const items = extractItems(parsed) as TItem[];
 
       if (!this.store.hasFeed(feedUrl)) {
-        await this.store.initFeed(feedUrl, parsed.title ?? null);
+        await this.store.initFeed(feedUrl, title ?? null);
       }
 
-      const newItems = await this.store.ingest(feedUrl, pairs);
-      await this.store.recordRefreshAttempt(feedUrl, {
-        success: true,
-        feedTitle: parsed.title,
-        feedDescription: parsed.description,
-      });
-
-      await this.runSchemaInspection(feedUrl);
+      const newItems = await this.store.ingest(feedUrl, items);
+      await this.store.recordRefreshAttempt(feedUrl, { success: true, feedTitle: title, feedDescription: description });
+      await this.runSchemaInspection(feedUrl, parsed.format);
 
       return { newItems };
     } catch (err) {
@@ -89,18 +78,16 @@ export class PollingCoordinator {
     }
   }
 
-  /** Run schema inspection and persist the result. */
-  private async runSchemaInspection(feedUrl: string): Promise<void> {
+  private async runSchemaInspection(feedUrl: string, format: ReturnType<typeof parseFeed>["format"]): Promise<void> {
     try {
-      const allNativeItems = await this.store.getAllNativeItems(feedUrl);
-      const schema = inspectSchema(feedUrl, allNativeItems);
+      const allItems = await this.store.getAllItems(feedUrl);
+      const schema = inspectSchema(feedUrl, allItems, toSourceFormat(format));
       await this.store.storeObservedSchema(feedUrl, schema);
     } catch {
-      // Schema inspection is best-effort; don't fail the refresh
+      // Schema inspection is best-effort
     }
   }
 
-  /** Stop all timers (called on server shutdown). */
   shutdown(): void {
     for (const state of this.feeds.values()) {
       if (state.timer) clearInterval(state.timer);

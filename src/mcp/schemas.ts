@@ -23,8 +23,6 @@ export const GetSchemaSchema = z.object({
   feedUrl: feedUrlParam,
 });
 
-export const GetFieldAliasesSchema = z.object({});
-
 export const QueryFeedItemsSchema = z.object({
   feedUrl: feedUrlParam,
   select: z

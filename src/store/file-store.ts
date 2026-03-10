@@ -1,19 +1,13 @@
 /**
  * File-based store adapter.
  *
- * Persists all feed items and metadata as newline-delimited JSON (NDJSON)
- * files under a configured directory.  On startup the store reloads
- * persisted data so items survive server restarts.
+ * Generic over TItem. Persists items as newline-delimited JSON (NDJSON)
+ * files under a configured directory so they survive server restarts.
  *
  * Layout under storagePath/:
- *   <urlHash>/items.ndjson         – one FeedItem per line
- *   <urlHash>/native-items.ndjson  – one NativeItem per line (same order)
- *   <urlHash>/meta.json            – FeedInfo object
- *   <urlHash>/schema.json          – ObservedFeedSchema
- *
- * Writes are append-on-ingest and full-rewrite on metadata changes.
- * The store keeps an in-memory index for fast querying; the files
- * provide durability only.
+ *   <urlHash>/items.ndjson   – one StoredItem per line
+ *   <urlHash>/meta.json      – FeedInfo object
+ *   <urlHash>/schema.json    – ObservedFeedSchema
  */
 import { createHash } from "node:crypto";
 import {
@@ -25,23 +19,22 @@ import {
 } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { FeedItem, FeedInfo, NativeItem, ObservedFeedSchema } from "../types.js";
-import type { RefreshOutcome, StoreAdapter, IngestPair } from "./adapter.js";
+import type { FeedInfo, NativeItem, ObservedFeedSchema } from "../types.js";
+import type { RefreshOutcome, StoreAdapter, StoredItem } from "./adapter.js";
 import { MemoryStore } from "./index.js";
 
 function feedDirName(feedUrl: string): string {
   return createHash("sha256").update(feedUrl).digest("hex").slice(0, 16);
 }
 
-export class FileStore implements StoreAdapter {
-  /** In-memory index for fast querying – the source of truth for reads. */
-  private memory: MemoryStore;
+export class FileStore<TItem extends NativeItem = NativeItem> implements StoreAdapter<TItem> {
+  private memory: MemoryStore<TItem>;
 
   constructor(
     private readonly storagePath: string,
     private readonly maxItems: number,
   ) {
-    this.memory = new MemoryStore(maxItems);
+    this.memory = new MemoryStore<TItem>(maxItems);
   }
 
   /** Load all persisted feeds from disk into memory. Call once at startup. */
@@ -58,7 +51,6 @@ export class FileStore implements StoreAdapter {
     for (const dir of entries) {
       const metaPath = join(this.storagePath, dir, "meta.json");
       const itemsPath = join(this.storagePath, dir, "items.ndjson");
-      const nativePath = join(this.storagePath, dir, "native-items.ndjson");
       const schemaPath = join(this.storagePath, dir, "schema.json");
       if (!existsSync(metaPath)) continue;
 
@@ -67,34 +59,18 @@ export class FileStore implements StoreAdapter {
 
       // Restore metadata
       const currentInfo = await this.memory.getFeedInfo(meta.feedUrl);
-      if (currentInfo) {
-        Object.assign(currentInfo, meta);
-      }
+      if (currentInfo) Object.assign(currentInfo, meta);
 
       if (existsSync(itemsPath)) {
-        const itemLines = (await readFile(itemsPath, "utf-8"))
-          .split("\n")
-          .filter(Boolean);
-        const items: FeedItem[] = itemLines.map((l) => JSON.parse(l));
+        const lines = (await readFile(itemsPath, "utf-8")).split("\n").filter(Boolean);
+        // Items were persisted already augmented with _id/_fetchedAt.
+        // Restore them directly (preserving original _fetchedAt) via restoreItems.
+        const stored = lines
+          .map((line) => { try { return JSON.parse(line) as StoredItem<TItem>; } catch { return null; } })
+          .filter((i): i is StoredItem<TItem> => i !== null);
+        if (stored.length > 0) await this.memory.restoreItems(meta.feedUrl, stored);
 
-        let nativeItemsById: Record<string, NativeItem> = {};
-        if (existsSync(nativePath)) {
-          const nativeLines = (await readFile(nativePath, "utf-8"))
-            .split("\n")
-            .filter(Boolean);
-          const nativeItems: NativeItem[] = nativeLines.map((l) => JSON.parse(l));
-          items.forEach((item, i) => {
-            nativeItemsById[item.id] = nativeItems[i] ?? {};
-          });
-        }
-
-        const pairs: IngestPair[] = items.map((item) => ({
-          internal: item,
-          native: nativeItemsById[item.id] ?? {},
-        }));
-
-        await this.memory.ingest(meta.feedUrl, pairs);
-
+        // Restore itemCount from persisted metadata (restoreItems may cap at maxItems)
         const info = await this.memory.getFeedInfo(meta.feedUrl);
         if (info) {
           info.newItemsOnLastRefresh = meta.newItemsOnLastRefresh;
@@ -103,9 +79,7 @@ export class FileStore implements StoreAdapter {
       }
 
       if (existsSync(schemaPath)) {
-        const schema: ObservedFeedSchema = JSON.parse(
-          await readFile(schemaPath, "utf-8"),
-        );
+        const schema: ObservedFeedSchema = JSON.parse(await readFile(schemaPath, "utf-8"));
         await this.memory.storeObservedSchema(meta.feedUrl, schema);
       }
     }
@@ -129,28 +103,23 @@ export class FileStore implements StoreAdapter {
     await this.writeMeta(feedUrl);
   }
 
-  async ingest(feedUrl: string, incoming: IngestPair[]): Promise<number> {
-    const existingIds = new Set(
-      (await this.memory.getAllItems(feedUrl)).map((i) => i.id),
-    );
+  async ingest(feedUrl: string, incoming: TItem[]): Promise<number> {
+    const before = new Set((await this.memory.getAllItems(feedUrl)).map((i) => i._id));
     const newCount = await this.memory.ingest(feedUrl, incoming);
     if (newCount > 0) {
-      const newPairs = incoming.filter((p) => !existingIds.has(p.internal.id));
-      if (newPairs.length > 0) {
+      const newItems = (await this.memory.getAllItems(feedUrl)).filter(
+        (i) => !before.has(i._id),
+      );
+      if (newItems.length > 0) {
         const dir = await this.feedDir(feedUrl);
-        const itemLines = newPairs.map((p) => JSON.stringify(p.internal)).join("\n") + "\n";
-        await appendFile(join(dir, "items.ndjson"), itemLines, "utf-8");
-        const nativeLines = newPairs.map((p) => JSON.stringify(p.native)).join("\n") + "\n";
-        await appendFile(join(dir, "native-items.ndjson"), nativeLines, "utf-8");
+        const lines = newItems.map((i) => JSON.stringify(i)).join("\n") + "\n";
+        await appendFile(join(dir, "items.ndjson"), lines, "utf-8");
       }
     }
     return newCount;
   }
 
-  async recordRefreshAttempt(
-    feedUrl: string,
-    outcome: RefreshOutcome,
-  ): Promise<void> {
+  async recordRefreshAttempt(feedUrl: string, outcome: RefreshOutcome): Promise<void> {
     await this.memory.recordRefreshAttempt(feedUrl, outcome);
     await this.writeMeta(feedUrl);
   }
@@ -168,11 +137,11 @@ export class FileStore implements StoreAdapter {
     return this.memory.getFeedInfo(feedUrl);
   }
 
-  async getItem(feedUrl: string, id: string): Promise<FeedItem | null> {
+  async getItem(feedUrl: string, id: string): Promise<StoredItem<TItem> | null> {
     return this.memory.getItem(feedUrl, id);
   }
 
-  async getAllItems(feedUrl: string): Promise<FeedItem[]> {
+  async getAllItems(feedUrl: string): Promise<StoredItem<TItem>[]> {
     return this.memory.getAllItems(feedUrl);
   }
 
@@ -188,14 +157,6 @@ export class FileStore implements StoreAdapter {
 
   async getObservedSchema(feedUrl: string): Promise<ObservedFeedSchema | null> {
     return this.memory.getObservedSchema(feedUrl);
-  }
-
-  async getNativeItem(feedUrl: string, id: string): Promise<NativeItem | null> {
-    return this.memory.getNativeItem(feedUrl, id);
-  }
-
-  async getAllNativeItems(feedUrl: string): Promise<NativeItem[]> {
-    return this.memory.getAllNativeItems(feedUrl);
   }
 
   async close(): Promise<void> {

@@ -1,16 +1,16 @@
 /**
- * Use case: retrieve a single feed item by ID, with optional sparse projection.
- * Large fields are returned as ContentRef objects instead of inline content.
+ * Use case: retrieve a single feed item by its `_id`.
+ * Large string fields (> LARGE_FIELD_THRESHOLD) are returned as ContentRef objects.
  */
+import type { NativeItem, FeedItemRecord, ToolError } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import type { FeedItem, FeedItemRecord, ToolError } from "../types.js";
 import type { ContentRef } from "../content/content-store.js";
 import { ContentStore } from "../content/content-store.js";
-import { LARGE_FIELDS, DEFAULT_SELECT } from "../schema.js";
+import { LARGE_FIELD_THRESHOLD } from "../schema.js";
 
-export class GetFeedItemUseCase {
+export class GetFeedItemUseCase<TItem extends NativeItem = NativeItem> {
   constructor(
-    private readonly store: StoreAdapter,
+    private readonly store: StoreAdapter<TItem>,
     private readonly contentStore: ContentStore,
   ) {}
 
@@ -21,34 +21,28 @@ export class GetFeedItemUseCase {
   ): Promise<FeedItemRecord | ToolError> {
     const item = await this.store.getItem(feedUrl, id);
     if (!item) {
-      return {
-        error: "Item not found",
-        reason: `No item with id=${id} in feed ${feedUrl}`,
-      };
+      return { error: "Item not found", reason: `No item with id=${id} in feed ${feedUrl}` };
     }
 
-    const fields = select ?? (DEFAULT_SELECT as string[]);
-    return this.projectWithContentRefs(item, fields);
+    const fields = select ?? Object.keys(item);
+    return this.projectWithContentRefs(item as Record<string, unknown>, id, fields);
   }
 
   private async projectWithContentRefs(
-    item: FeedItem,
+    item: Record<string, unknown>,
+    id: string,
     fields: string[],
   ): Promise<FeedItemRecord> {
     const record: Record<string, unknown> = {};
-
     for (const f of fields) {
-      const key = f as keyof FeedItem;
-      const val = item[key];
-
-      if (LARGE_FIELDS.has(f) && typeof val === "string" && val.length > 0) {
-        const ref: ContentRef = await this.contentStore.store(item.id, f, val);
+      const val = item[f];
+      if (typeof val === "string" && val.length > LARGE_FIELD_THRESHOLD) {
+        const ref: ContentRef = await this.contentStore.store(id, f, val);
         record[f] = ref;
       } else {
         record[f] = val;
       }
     }
-
-    return record as FeedItemRecord;
+    return record;
   }
 }

@@ -1,26 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { matchesSearch } from "../../query/search.js";
-import type { FeedItem } from "../../types.js";
 
-function makeItem(overrides: Partial<FeedItem> = {}): FeedItem {
+function makeItem(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    id: "test-1",
-    sourceName: "Feed",
-    sourceUrl: "https://example.com",
+    _id: "test-1",
     title: "OpenAI releases new model GPT-5",
     link: "https://example.com/article",
-    author: "Reporter",
-    publishedAt: "2024-01-01T00:00:00.000Z",
-    updatedAt: null,
-    summary: "A breakthrough in artificial intelligence with a new language model.",
+    pubDate: "2024-01-01T00:00:00.000Z",
+    description: "A breakthrough in artificial intelligence with a new language model.",
     contentText: "The full article discusses machine learning advancements.",
-    contentHtml: null,
-    categories: [],
-    language: "en",
-    guid: "g1",
-    fetchedAt: "2024-01-01T01:00:00.000Z",
-    contentHash: "h1",
-    hasFullContent: true,
+    guid: { value: "g1" },
     ...overrides,
   };
 }
@@ -59,7 +48,7 @@ describe("matchesSearch", () => {
     expect(matchesSearch(makeItem(), "-OpenAI")).toBe(false);
   });
 
-  it("searches across title, summary, and contentText", () => {
+  it("searches across all string fields", () => {
     expect(matchesSearch(makeItem(), "machine learning")).toBe(true);
     expect(matchesSearch(makeItem(), "breakthrough")).toBe(true);
   });

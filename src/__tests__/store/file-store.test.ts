@@ -3,37 +3,18 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FileStore } from "../../store/file-store.js";
-import type { FeedItem } from "../../types.js";
-import type { IngestPair } from "../../store/adapter.js";
 
 const FEED_URL = "https://example.com/feed.rss";
 
-function makeItem(overrides: Partial<FeedItem> = {}): FeedItem {
-  const id = overrides.id ?? "item-1";
+function makeItem(id: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    id,
-    sourceName: "Test Feed",
-    sourceUrl: FEED_URL,
     title: "Test Article",
     link: `https://example.com/${id}`,
-    author: "Author",
-    publishedAt: "2024-06-01T00:00:00.000Z",
-    updatedAt: null,
-    summary: "Summary",
-    contentText: null,
-    contentHtml: null,
-    categories: [],
-    language: "en",
-    guid: id,
-    fetchedAt: new Date().toISOString(),
-    contentHash: `hash-${id}`,
-    hasFullContent: false,
-    ...overrides,
+    pubDate: "2024-06-01T00:00:00.000Z",
+    description: "Summary",
+    guid: { value: id },
+    ...extra,
   };
-}
-
-function makePair(overrides: Partial<FeedItem> = {}): IngestPair {
-  return { internal: makeItem(overrides), native: {} };
 }
 
 describe("FileStore", () => {
@@ -57,42 +38,38 @@ describe("FileStore", () => {
 
   it("ingest persists items and returns correct new count", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    const pairs = [makePair({ id: "a" }), makePair({ id: "b" })];
-    const count = await store.ingest(FEED_URL, pairs);
+    const count = await store.ingest(FEED_URL, [makeItem("a"), makeItem("b")]);
     expect(count).toBe(2);
   });
 
-  it("correctly identifies truly new items (file-store bug fix)", async () => {
+  it("deduplicates items on re-ingest", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    const pair1 = makePair({ id: "x", contentHash: "hx" });
-    await store.ingest(FEED_URL, [pair1]);
-
-    // Second ingest with same item should return 0
-    const count = await store.ingest(FEED_URL, [pair1]);
+    const item = makeItem("x");
+    await store.ingest(FEED_URL, [item]);
+    const count = await store.ingest(FEED_URL, [item]);
     expect(count).toBe(0);
   });
 
   it("loads persisted data on restart", async () => {
     await store.initFeed(FEED_URL, "Feed");
-    await store.ingest(FEED_URL, [makePair({ id: "persist-1" })]);
+    const item = makeItem("persist-1");
+    await store.ingest(FEED_URL, [item]);
     await store.close();
 
-    // Create new store pointing to same directory
     const store2 = new FileStore(tmpDir, 100);
     await store2.load();
 
     expect(store2.hasFeed(FEED_URL)).toBe(true);
     const items = await store2.getAllItems(FEED_URL);
-    expect(items.some((i) => i.id === "persist-1")).toBe(true);
+    // Items have _id (SHA-256 hash) and _fetchedAt added
+    expect(items).toHaveLength(1);
+    expect(items[0].title).toBe("Test Article");
     await store2.close();
   });
 
   it("persists feed metadata across restarts", async () => {
     await store.initFeed(FEED_URL, "My Feed");
-    await store.recordRefreshAttempt(FEED_URL, {
-      success: true,
-      feedTitle: "My Feed Updated",
-    });
+    await store.recordRefreshAttempt(FEED_URL, { success: true, feedTitle: "My Feed Updated" });
     await store.close();
 
     const store2 = new FileStore(tmpDir, 100);

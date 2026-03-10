@@ -1,13 +1,13 @@
 /**
  * Abstract store adapter interface.
  *
- * All storage backends (memory, file, vector) implement this interface
- * so the rest of the server is decoupled from the storage mechanism.
- *
- * Internal note: FeedItem is private to the store layer; NativeItem is the
- * public representation exposed to LLMs via ObservedFeedSchema.
+ * Generic over TItem — the raw feedsmith item type (e.g. Rss.Item<string>).
+ * Items stored by the store are TItem augmented with `_id` and `_fetchedAt`
+ * metadata added at ingest time.
  */
-import type { FeedItem, FeedInfo, NativeItem, ObservedFeedSchema } from "../types.js";
+import type { FeedInfo, NativeItem, ObservedFeedSchema } from "../types.js";
+
+export type StoredItem<TItem> = TItem & { _id: string; _fetchedAt: string };
 
 export interface RefreshOutcome {
   success: boolean;
@@ -16,20 +16,16 @@ export interface RefreshOutcome {
   feedDescription?: string | null;
 }
 
-export interface IngestPair {
-  internal: FeedItem;
-  native: NativeItem;
-}
-
-export interface StoreAdapter {
+export interface StoreAdapter<TItem extends NativeItem = NativeItem> {
   /** Ensure a feed slot exists; call before first ingest. */
   initFeed(feedUrl: string, feedTitle: string | null): Promise<void>;
 
   /**
-   * Ingest normalised items, deduplicating against existing content.
+   * Ingest raw feedsmith items, deduplicating by content hash.
+   * Adds `_id` and `_fetchedAt` to each item before storage.
    * Returns the count of truly new items added.
    */
-  ingest(feedUrl: string, items: IngestPair[]): Promise<number>;
+  ingest(feedUrl: string, items: TItem[]): Promise<number>;
 
   /** Record the outcome of a refresh attempt. */
   recordRefreshAttempt(feedUrl: string, outcome: RefreshOutcome): Promise<void>;
@@ -44,15 +40,11 @@ export interface StoreAdapter {
   /** Return current feed metadata, or null if the feed is unknown. */
   getFeedInfo(feedUrl: string): Promise<FeedInfo | null>;
 
-  /** Retrieve a single item by id. */
-  getItem(feedUrl: string, id: string): Promise<FeedItem | null>;
+  /** Retrieve a single item by its `_id`. */
+  getItem(feedUrl: string, id: string): Promise<StoredItem<TItem> | null>;
 
-  /**
-   * Return all items for a feed, newest-first.
-   * For the vector backend this returns all stored items (vector search
-   * is handled separately via searchItems).
-   */
-  getAllItems(feedUrl: string): Promise<FeedItem[]>;
+  /** Return all items for a feed, newest-first. */
+  getAllItems(feedUrl: string): Promise<StoredItem<TItem>[]>;
 
   /** True if this feed has been initialised in the store. */
   hasFeed(feedUrl: string): boolean;
@@ -63,23 +55,16 @@ export interface StoreAdapter {
   /** Retrieve the observed schema for a feed, or null if not yet derived. */
   getObservedSchema(feedUrl: string): Promise<ObservedFeedSchema | null>;
 
-  /** Retrieve the native representation of one item by id. */
-  getNativeItem(feedUrl: string, id: string): Promise<NativeItem | null>;
-
-  /** Return all native items, newest-first (same order as getAllItems). */
-  getAllNativeItems(feedUrl: string): Promise<NativeItem[]>;
-
   /**
    * Optional semantic/vector search.
-   * Returns items ranked by relevance to the natural-language query.
-   * Falls back to undefined (caller uses keyword search) if the backend
-   * does not support vector search.
+   * Returns items ranked by relevance to the query.
+   * Returns undefined if the backend does not support vector search.
    */
   searchItems?(
     feedUrl: string,
     query: string,
     topK: number,
-  ): Promise<FeedItem[] | undefined>;
+  ): Promise<StoredItem<TItem>[] | undefined>;
 
   /** Release resources (timers, file handles, DB connections). */
   close(): Promise<void>;

@@ -1,8 +1,8 @@
 /**
  * Use case: query feed items with filter, search, sort, and pagination.
  */
+import type { NativeItem, FeedQuery, QueryResult, ToolError } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import type { FeedQuery, QueryResult, ToolError } from "../types.js";
 import { executeQuery } from "../query/executor.js";
 
 export interface QueryOptions {
@@ -10,9 +10,9 @@ export interface QueryOptions {
   maxFieldSize: number;
 }
 
-export class QueryFeedItemsUseCase {
+export class QueryFeedItemsUseCase<TItem extends NativeItem = NativeItem> {
   constructor(
-    private readonly store: StoreAdapter,
+    private readonly store: StoreAdapter<TItem>,
     private readonly opts: QueryOptions,
   ) {}
 
@@ -26,17 +26,13 @@ export class QueryFeedItemsUseCase {
     }
 
     const items = await this.store.getAllItems(feedUrl);
-    const nativeItems = await this.store.getAllNativeItems(feedUrl);
-    const result = executeQuery(items, nativeItems, query, {
+    const result = executeQuery(items, query, {
       maxResults: this.opts.maxResults,
       maxFieldSize: this.opts.maxFieldSize,
     });
 
     if (result.errors) {
-      return {
-        error: "Invalid query",
-        reason: result.errors.map((e) => `${e.field}: ${e.message}`).join("; "),
-      };
+      return { error: "Invalid query", reason: result.errors.map((e) => `${e.field}: ${e.message}`).join("; ") };
     }
 
     return result.result!;

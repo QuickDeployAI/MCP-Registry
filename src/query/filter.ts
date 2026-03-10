@@ -1,24 +1,11 @@
 /**
  * RSQL/FIQL-like filter parser and evaluator.
  *
- * Supported grammar (simplified RSQL):
- *
- *   expression  = constraint ( ( ";" | "," ) constraint )*
- *   constraint  = group | comparison
- *   group       = "(" expression ")"
- *   comparison  = selector operator value
- *   selector    = identifier
- *   operator    = "==" | "!=" | "=gt=" | "=ge=" | "=lt=" | "=le=" | "=like=" | "=contains="
- *   value       = string | number | boolean
- *
- *   ";"  = AND
- *   ","  = OR
- *
- * Wildcards: value may contain "*" (matches any substring) when using == / !=.
+ * Operates on any Record<string,unknown> item — no fixed field schema.
+ * Any field that exists on the item can be used in a filter expression.
+ * Field names are used as-is (no alias resolution) because items are raw
+ * feedsmith objects with native field names (pubDate, etc.).
  */
-import { FILTERABLE_FIELDS } from "../schema.js";
-import { NATIVE_TO_INTERNAL } from "../introspection/field-aliases.js";
-import type { FeedItem } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // AST types
@@ -199,18 +186,10 @@ class FilterParser {
       throw new Error(`Expected value after operator, got '${valTok.value}'`);
     }
 
-    // Resolve native name (e.g. "pubDate") to internal FeedItem field (e.g. "publishedAt")
-    const resolvedField = NATIVE_TO_INTERNAL.get(fieldTok.value) ?? fieldTok.value;
-
-    if (!FILTERABLE_FIELDS.has(resolvedField)) {
-      throw new Error(
-        `Field '${fieldTok.value}' is not filterable. Filterable fields: ${[...FILTERABLE_FIELDS].join(", ")}`,
-      );
-    }
-
+    // Store the field name as-is — items are raw feedsmith objects with native fields.
     return {
       kind: "comparison",
-      field: resolvedField, // always store the resolved internal name
+      field: fieldTok.value,
       op: opTok.value as Operator,
       value: valTok.value,
     };
@@ -221,8 +200,8 @@ class FilterParser {
 // Evaluator
 // ---------------------------------------------------------------------------
 
-function getField(item: FeedItem, field: string): unknown {
-  return (item as unknown as Record<string, unknown>)[field];
+function getField(item: Record<string, unknown>, field: string): unknown {
+  return item[field];
 }
 
 function wildcardMatch(pattern: string, value: string): boolean {
@@ -245,7 +224,7 @@ function coerceToDate(v: string): number {
   return d;
 }
 
-function evaluateComparison(node: Comparison, item: FeedItem): boolean {
+function evaluateComparison(node: Comparison, item: Record<string, unknown>): boolean {
   const raw = getField(item, node.field);
   const filterVal = node.value;
 
@@ -282,7 +261,7 @@ function evaluateComparison(node: Comparison, item: FeedItem): boolean {
   }
 }
 
-function evaluateNode(node: AstNode, item: FeedItem): boolean {
+function evaluateNode(node: AstNode, item: Record<string, unknown>): boolean {
   switch (node.kind) {
     case "comparison": return evaluateComparison(node, item);
     case "and": return evaluateNode(node.left, item) && evaluateNode(node.right, item);
@@ -290,17 +269,12 @@ function evaluateNode(node: AstNode, item: FeedItem): boolean {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
 export interface CompiledFilter {
-  test: (item: FeedItem) => boolean;
+  test: (item: Record<string, unknown>) => boolean;
 }
 
 export function compileFilter(expression: string): CompiledFilter {
   const tokens = tokenize(expression);
-  // Re-classify token types based on position (field vs. value depends on context)
   const ast = new FilterParser(tokens).parse();
   return { test: (item) => evaluateNode(ast, item) };
 }

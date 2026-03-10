@@ -1,23 +1,22 @@
 /**
- * Schema inspector – derives an ObservedFeedSchema by scanning native items.
+ * Schema inspector – derives an ObservedFeedSchema by scanning the actual
+ * items stored for a feed.
+ *
+ * No field-name constants. Filterable/sortable/searchable are derived purely
+ * from the inferred runtime type of each field's values.
  */
 import { parse as parseHtml } from "node-html-parser";
 import type { NativeItem, ObservedFeedSchema, ObservedFieldSchema } from "../types.js";
-import { NATIVE_TO_INTERNAL } from "./field-aliases.js";
-import { FILTERABLE_FIELDS, SORTABLE_FIELDS } from "../schema.js";
 
 const EXAMPLE_MAX_LENGTH = 120;
 const LARGE_FIELD_AVG_LENGTH = 500;
 
-const SEARCHABLE_KEYWORDS = ["title", "description", "summary", "content", "text", "body"];
-
 const DATETIME_OPERATORS = ["==", "!=", "=gt=", "=ge=", "=lt=", "=le="];
 const STRING_OPERATORS = ["==", "!=", "=like="];
-const BOOLEAN_OPERATORS = ["=="];
+// Booleans support equality and inequality so callers can filter `flag==true` or `flag!=false`.
+const BOOLEAN_OPERATORS = ["==", "!="];
+const NUMBER_OPERATORS = ["==", "!=", "=gt=", "=ge=", "=lt=", "=le="];
 const ARRAY_OPERATORS = ["=contains="];
-
-// Internal fields treated as sortable (mapped from native aliases)
-const SORTABLE_INTERNAL = new Set(["publishedAt", "updatedAt", "author", "title", "fetchedAt"]);
 
 /** Strip HTML tags from a string using node-html-parser. */
 function stripHtmlTags(html: string): string {
@@ -33,7 +32,6 @@ function inferType(value: unknown): FieldType {
   if (Array.isArray(value)) return "string[]";
   if (value !== null && typeof value === "object") return "object";
   if (typeof value === "string") {
-    // Heuristic: ISO-8601 datetime
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) return "datetime";
     return "string";
   }
@@ -68,34 +66,18 @@ function buildExample(value: unknown): string | null {
 function getAllowedOperators(type: FieldType): string[] {
   switch (type) {
     case "datetime": return DATETIME_OPERATORS;
+    case "number":   return NUMBER_OPERATORS;
     case "string":   return STRING_OPERATORS;
     case "boolean":  return BOOLEAN_OPERATORS;
     default:         return ARRAY_OPERATORS;
   }
 }
 
-/** Detect feed source format from the set of native field names across items. */
-function detectSourceFormat(
-  fieldNames: Set<string>,
-): ObservedFeedSchema["sourceFormat"] {
-  if (fieldNames.has("pubDate")) return "rss2";
-  if (fieldNames.has("updated")) return "atom";
-  return "unknown";
-}
-
-/** Whether this string field name looks searchable by name. */
-function isSearchableByName(name: string): boolean {
-  const lower = name.toLowerCase();
-  return SEARCHABLE_KEYWORDS.some((kw) => lower.includes(kw));
-}
-
 /** Collect all top-level keys from all items. */
-function collectAllKeys(nativeItems: NativeItem[]): Set<string> {
+function collectAllKeys(items: NativeItem[]): Set<string> {
   const keys = new Set<string>();
-  for (const item of nativeItems) {
-    for (const key of Object.keys(item)) {
-      keys.add(key);
-    }
+  for (const item of items) {
+    for (const key of Object.keys(item)) keys.add(key);
   }
   return keys;
 }
@@ -108,23 +90,13 @@ interface FieldStats {
   dominantType: FieldType;
 }
 
-/** Gather per-field statistics from all items. */
-function gatherFieldStats(
-  nativeItems: NativeItem[],
-  allKeys: Set<string>,
-): Map<string, FieldStats> {
+/** Gather per-field statistics across all items. */
+function gatherFieldStats(items: NativeItem[], allKeys: Set<string>): Map<string, FieldStats> {
   const stats = new Map<string, FieldStats>();
   for (const key of allKeys) {
-    stats.set(key, {
-      presentCount: 0,
-      exampleValue: null,
-      totalCharLength: 0,
-      charValueCount: 0,
-      dominantType: "string",
-    });
+    stats.set(key, { presentCount: 0, exampleValue: null, totalCharLength: 0, charValueCount: 0, dominantType: "string" });
   }
-
-  for (const item of nativeItems) {
+  for (const item of items) {
     for (const key of allKeys) {
       const value = item[key];
       if (!hasValue(value)) continue;
@@ -144,26 +116,16 @@ function gatherFieldStats(
 }
 
 /** Build a single ObservedFieldSchema from collected stats. */
-function buildFieldSchema(
-  name: string,
-  stats: FieldStats,
-  itemCount: number,
-): ObservedFieldSchema {
+function buildFieldSchema(name: string, stats: FieldStats, itemCount: number): ObservedFieldSchema {
   const presence = itemCount > 0 ? stats.presentCount / itemCount : 0;
-  const avgLen = stats.charValueCount > 0
-    ? stats.totalCharLength / stats.charValueCount
-    : 0;
+  const avgLen = stats.charValueCount > 0 ? stats.totalCharLength / stats.charValueCount : 0;
   const large = avgLen > LARGE_FIELD_AVG_LENGTH;
   const type = stats.dominantType;
-  const alias = NATIVE_TO_INTERNAL.get(name) ?? null;
 
-  const internalName = alias ?? name;
-  const filterable = FILTERABLE_FIELDS.has(internalName);
-  const sortable = type === "datetime" || SORTABLE_INTERNAL.has(internalName)
-    ? SORTABLE_FIELDS.has(internalName) || type === "datetime"
-    : false;
-  const searchable = (type === "string" && isSearchableByName(name))
-    || (alias !== null && isSearchableByName(alias));
+  // Derived purely from the inferred runtime type — no hardcoded field name lists.
+  const filterable = type === "string" || type === "datetime" || type === "number" || type === "boolean";
+  const sortable = type === "string" || type === "datetime" || type === "number";
+  const searchable = type === "string" && !large;
 
   return {
     name,
@@ -175,7 +137,6 @@ function buildFieldSchema(
     sortable,
     large,
     example: buildExample(stats.exampleValue),
-    alias,
     allowedOperators: getAllowedOperators(type),
   };
 }
@@ -189,34 +150,27 @@ function sortFields(fields: ObservedFieldSchema[]): ObservedFieldSchema[] {
 }
 
 /**
- * Derive an ObservedFeedSchema by scanning the native items of a feed.
+ * Derive an ObservedFeedSchema by scanning the items of a feed.
+ *
+ * @param feedUrl   The URL of the feed.
+ * @param items     Raw items as stored (any shape — no assumptions made).
+ * @param sourceFormat  The feed format, using output vocabulary directly:
+ *                  "rss2" | "atom" | "rss1" | "jsonfeed" | "unknown".
  */
 export function inspectSchema(
   feedUrl: string,
-  nativeItems: NativeItem[],
+  items: NativeItem[],
+  sourceFormat: ObservedFeedSchema["sourceFormat"] = "unknown",
 ): ObservedFeedSchema {
-  if (nativeItems.length === 0) {
-    return {
-      feedUrl,
-      sourceFormat: "unknown",
-      observedAt: new Date().toISOString(),
-      itemCount: 0,
-      fields: [],
-    };
+  if (items.length === 0) {
+    return { feedUrl, sourceFormat, observedAt: new Date().toISOString(), itemCount: 0, fields: [] };
   }
 
-  const allKeys = collectAllKeys(nativeItems);
-  const stats = gatherFieldStats(nativeItems, allKeys);
+  const allKeys = collectAllKeys(items);
+  const stats = gatherFieldStats(items, allKeys);
   const fields = sortFields(
-    [...allKeys].map((key) => buildFieldSchema(key, stats.get(key)!, nativeItems.length)),
+    [...allKeys].map((key) => buildFieldSchema(key, stats.get(key)!, items.length)),
   );
-  const sourceFormat = detectSourceFormat(allKeys);
 
-  return {
-    feedUrl,
-    sourceFormat,
-    observedAt: new Date().toISOString(),
-    itemCount: nativeItems.length,
-    fields,
-  };
+  return { feedUrl, sourceFormat, observedAt: new Date().toISOString(), itemCount: items.length, fields };
 }
