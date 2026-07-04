@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/docs",
+  "title": "QuickDeploy Docs",
+  "description": "Queryable access to official QuickDeploy AI documentation: search the llms.txt index and read markdown page variants from the public docs surfaces. Read-only; no authentication required.",
+  "version": "1.0.0",
+  "websiteUrl": "https://docs.quickdeploy.ai",
+  "repository": {
+    "url": "https://github.com/QuickDeployAI/MCP-Registry",
+    "source": "github",
+    "subfolder": "servers/quickdeploy-docs"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@quickdeployai/mcp-docs",
+      "version": "1.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

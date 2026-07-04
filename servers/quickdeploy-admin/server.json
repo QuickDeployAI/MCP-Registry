@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/admin",
+  "title": "QuickDeploy Admin",
+  "description": "Org and enterprise governance for QuickDeploy AI: list and evaluate policies, review and decide approval requests, manage cost budgets and caps, and page signed audit events.",
+  "version": "1.0.0",
+  "websiteUrl": "https://quickdeploy.ai",
+  "repository": {
+    "url": "https://github.com/QuickDeployAI/MCP-Registry",
+    "source": "github",
+    "subfolder": "servers/quickdeploy-admin"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@quickdeployai/mcp-admin",
+      "version": "1.0.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "QDAI_API_TOKEN",
+          "description": "QuickDeploy service-account bearer token with policies/approvals/costs/events scopes (see https://api.quickdeploy.ai/auth.md).",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "QDAI_API_BASE",
+          "description": "Control-Plane API origin override. Defaults to https://api.quickdeploy.ai.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

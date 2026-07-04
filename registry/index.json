@@ -1,0 +1,80 @@
+{
+  "schema_version": "2026-07-04",
+  "kind": "quickdeploy.mcp-server.registry",
+  "registry_id": "quickdeploy/default-mcp-servers",
+  "name": "QuickDeploy Official MCP Servers",
+  "description": "Official QuickDeploy AI MCP servers used to populate default entries in the marketplace capability registry.",
+  "publisher": {
+    "name": "QuickDeployAI",
+    "url": "https://github.com/QuickDeployAI"
+  },
+  "canonical_url": "https://raw.githubusercontent.com/QuickDeployAI/MCP-Registry/main/registry/index.json",
+  "mirrors": [
+    {
+      "type": "git",
+      "url": "https://github.com/QuickDeployAI/MCP-Registry"
+    }
+  ],
+  "agents": [
+    {
+      "id": "quickdeploy-docs",
+      "server": "servers/quickdeploy-docs/server.json",
+      "summary": {
+        "agent_id": "quickdeploy-docs",
+        "name": "QuickDeploy Docs",
+        "description": "Queryable access to official QuickDeploy AI documentation: search the llms.txt index and read markdown page variants. Read-only; no authentication required.",
+        "availability": "available",
+        "framework": "mcp",
+        "package": "@quickdeployai/mcp-docs",
+        "version": "1.0.0",
+        "publisher": "QuickDeployAI",
+        "repository_url": "https://github.com/QuickDeployAI/MCP-Registry/tree/main/servers/quickdeploy-docs",
+        "website_url": "https://docs.quickdeploy.ai",
+        "license": "MIT",
+        "is_official": true,
+        "is_paid": false,
+        "updated_at": "2026-07-04T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "quickdeploy-control-plane",
+      "server": "servers/quickdeploy-control-plane/server.json",
+      "summary": {
+        "agent_id": "quickdeploy-control-plane",
+        "name": "QuickDeploy Control Plane",
+        "description": "Manage QuickDeploy AI tenant deployments through the Control-Plane API: create, inspect, pause, resume, promote, rollback, quarantine, and delete deployments.",
+        "availability": "available",
+        "framework": "mcp",
+        "package": "@quickdeployai/mcp-control-plane",
+        "version": "1.0.0",
+        "publisher": "QuickDeployAI",
+        "repository_url": "https://github.com/QuickDeployAI/MCP-Registry/tree/main/servers/quickdeploy-control-plane",
+        "website_url": "https://quickdeploy.ai",
+        "license": "MIT",
+        "is_official": true,
+        "is_paid": false,
+        "updated_at": "2026-07-04T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "quickdeploy-admin",
+      "server": "servers/quickdeploy-admin/server.json",
+      "summary": {
+        "agent_id": "quickdeploy-admin",
+        "name": "QuickDeploy Admin",
+        "description": "Org and enterprise governance for QuickDeploy AI: policies, approval decisions, cost budgets and caps, and signed audit events.",
+        "availability": "available",
+        "framework": "mcp",
+        "package": "@quickdeployai/mcp-admin",
+        "version": "1.0.0",
+        "publisher": "QuickDeployAI",
+        "repository_url": "https://github.com/QuickDeployAI/MCP-Registry/tree/main/servers/quickdeploy-admin",
+        "website_url": "https://quickdeploy.ai",
+        "license": "MIT",
+        "is_official": true,
+        "is_paid": false,
+        "updated_at": "2026-07-04T00:00:00.000Z"
+      }
+    }
+  ]
+}
