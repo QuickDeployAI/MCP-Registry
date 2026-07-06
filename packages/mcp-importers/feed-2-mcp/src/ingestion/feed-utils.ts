@@ -24,7 +24,7 @@ export function toSourceFormat(format: string): ObservedFeedSchema["sourceFormat
  * generic — the server makes no assumptions about item fields.
  */
 import { createHash } from "node:crypto";
-import { parseFeed } from "feedsmith";
+import type { parseFeed } from "feedsmith";
 import type { Rss, Atom, Rdf, Json } from "feedsmith/types";
 
 type FeedEnvelope = ReturnType<typeof parseFeed>;

@@ -14,7 +14,7 @@ import { registerTools } from "./tools.js";
 import { registerResources } from "./resources.js";
 import { registerPrompts } from "./prompts.js";
 
-const SERVER_NAME = "rss-2-mcp";
+const SERVER_NAME = "feed-2-mcp";
 const SERVER_VERSION = "0.1.0";
 
 export interface ServerAssemblyOptions<TItem extends NativeItem = NativeItem> {

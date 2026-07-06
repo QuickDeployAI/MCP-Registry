@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { QueryFeedItemsUseCase } from "../../application/query-feed-items.use-case.js";
 import type { StoreAdapter } from "../../store/adapter.js";
+import type { QueryResult } from "../../types.js";
 
 const FEED_URL = "https://example.com/feed.rss";
 
@@ -51,7 +52,7 @@ describe("QueryFeedItemsUseCase", () => {
     const useCase = new QueryFeedItemsUseCase(store, opts);
     const result = await useCase.execute(FEED_URL, {});
     expect("items" in result).toBe(true);
-    const qr = result as import("../../types.js").QueryResult;
+    const qr = result as QueryResult;
     expect(qr.items).toHaveLength(1);
     expect(qr.totalMatched).toBe(1);
   });
@@ -64,7 +65,7 @@ describe("QueryFeedItemsUseCase", () => {
     const store = makeMockStore(items);
     const useCase = new QueryFeedItemsUseCase(store, opts);
     const result = await useCase.execute(FEED_URL, { filter: "title=like=*OpenAI*" });
-    const qr = result as import("../../types.js").QueryResult;
+    const qr = result as QueryResult;
     expect(qr.items).toHaveLength(1);
   });
 
@@ -80,7 +81,7 @@ describe("QueryFeedItemsUseCase", () => {
     const store = makeMockStore(items);
     const useCase = new QueryFeedItemsUseCase(store, opts);
     const result = await useCase.execute(FEED_URL, { top: 3, skip: 2 });
-    const qr = result as import("../../types.js").QueryResult;
+    const qr = result as QueryResult;
     expect(qr.returned).toBe(3);
     expect(qr.skip).toBe(2);
   });

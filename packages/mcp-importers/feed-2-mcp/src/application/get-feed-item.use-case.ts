@@ -5,7 +5,7 @@
 import type { NativeItem, FeedItemRecord, ToolError } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
 import type { ContentRef } from "../content/content-store.js";
-import { ContentStore } from "../content/content-store.js";
+import type { ContentStore } from "../content/content-store.js";
 import { LARGE_FIELD_THRESHOLD } from "../schema.js";
 
 export class GetFeedItemUseCase<TItem extends NativeItem = NativeItem> {

@@ -20,6 +20,7 @@ import * as lancedb from "@lancedb/lancedb";
 import type { FeedInfo, NativeItem, ObservedFeedSchema } from "../types.js";
 import type { RefreshOutcome, StoreAdapter, StoredItem } from "./adapter.js";
 import { MemoryStore } from "./index.js";
+import type OpenAI from "openai";
 
 // ---------------------------------------------------------------------------
 // Embedding provider
@@ -32,7 +33,7 @@ export interface EmbeddingProvider {
 
 export class OpenAIEmbeddingProvider implements EmbeddingProvider {
   readonly dimensions = 1536;
-  private client: import("openai").OpenAI | null = null;
+  private client: OpenAI | null = null;
   private readonly apiKey: string;
   private readonly model: string;
 
@@ -41,7 +42,7 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     this.model = model;
   }
 
-  private async getClient(): Promise<import("openai").OpenAI> {
+  private async getClient(): Promise<OpenAI> {
     if (!this.client) {
       const { default: OpenAI } = await import("openai");
       this.client = new OpenAI({ apiKey: this.apiKey });

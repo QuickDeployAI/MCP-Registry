@@ -1,6 +1,10 @@
-# rss-2-mcp
+# @quickdeployai/feed-2-mcp
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that exposes RSS/Atom feeds as queryable tools for LLMs.
+
+## Workspace status
+
+This package now lives in the MCP-Registry workspace at `packages/mcp-importers/feed-2-mcp`. It was previously published as `rss-2-mcp`; the workspace package and CLI are now `@quickdeployai/feed-2-mcp` and `feed-2-mcp`.
 
 ## Features
 
@@ -14,8 +18,8 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that 
 ## Quick Start
 
 ```bash
-npm install
-npm run build
+pnpm install
+pnpm --filter @quickdeployai/feed-2-mcp build
 
 # Start with a default feed
 node dist/index.js --feed https://feeds.example.com/rss.xml
@@ -227,11 +231,11 @@ node dist/index.js --storage vector --storage-path ./data \
 ## Development
 
 ```bash
-npm install
-npm run dev          # run with tsx (no build needed)
-npm run typecheck    # TypeScript type checking
-npm test             # run vitest tests
-npm run build        # compile to dist/
+pnpm install
+pnpm --filter @quickdeployai/feed-2-mcp dev          # run with tsx (no build needed)
+pnpm --filter @quickdeployai/feed-2-mcp typecheck    # TypeScript type checking
+pnpm --filter @quickdeployai/feed-2-mcp test         # run vitest tests
+pnpm --filter @quickdeployai/feed-2-mcp build        # compile to dist/
 ```
 
 ## Architecture

@@ -1,20 +1,25 @@
 {
-  "name": "rss-2-mcp",
+  "name": "@quickdeployai/feed-2-mcp",
   "version": "0.1.0",
   "description": "Model Context Protocol server for RSS/Atom feed querying",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "rss-2-mcp": "dist/index.js"
+    "feed-2-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuickDeployAI/MCP-Registry.git",
+    "directory": "packages/mcp-importers/feed-2-mcp"
   },
   "dependencies": {
     "@lancedb/lancedb": "^0.26.2",
@@ -26,16 +31,13 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10",
+    "@types/node": "catalog:",
     "@types/yargs": "^17.0.33",
-    "@typescript-eslint/eslint-plugin": "^8.26.1",
-    "@typescript-eslint/parser": "^8.26.1",
-    "eslint": "^9.22.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
+    "typescript": "catalog:",
     "vitest": "^3.0.8"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.18"
   }
 }

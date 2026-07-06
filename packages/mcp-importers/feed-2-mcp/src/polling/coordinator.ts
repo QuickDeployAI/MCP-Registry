@@ -6,7 +6,7 @@
  */
 import type { NativeItem } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
-import { parseFeed } from "feedsmith";
+import type { parseFeed } from "feedsmith";
 import { extractItems, extractFeedMeta, toSourceFormat } from "../ingestion/feed-utils.js";
 import { inspectSchema } from "../introspection/schema-inspector.js";
 

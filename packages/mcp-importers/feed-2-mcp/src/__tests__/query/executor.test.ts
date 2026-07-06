@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { executeQuery } from "../../query/executor.js";
-import type { FeedQuery } from "../../types.js";
 
 const opts = { maxResults: 50, maxFieldSize: 500 };
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { RefreshFeedUseCase } from "../../application/refresh-feed.use-case.js";
+import type { RefreshResult } from "../../application/refresh-feed.use-case.js";
 import type { StoreAdapter } from "../../store/adapter.js";
 
 const FEED_URL = "https://example.com/feed.rss";
@@ -45,7 +46,7 @@ describe("RefreshFeedUseCase", () => {
     const result = await useCase.execute(FEED_URL);
 
     expect("error" in result).toBe(false);
-    const r = result as import("../../application/refresh-feed.use-case.js").RefreshResult;
+    const r = result as RefreshResult;
     expect(r.newItems).toBe(2);
     expect(r.feedTitle).toBe("Test Feed");
     expect(r.feedUrl).toBe(FEED_URL);

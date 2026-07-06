@@ -30,7 +30,7 @@ export async function fetchFeedSource(source: string): Promise<string> {
 
 async function fetchHttp(url: string): Promise<string> {
   const response = await fetch(url, {
-    headers: { "User-Agent": "rss-2-mcp/0.1 (MCP RSS reader)" },
+    headers: { "User-Agent": "feed-2-mcp/0.1 (MCP RSS reader)" },
     signal: AbortSignal.timeout(30_000),
   });
   if (!response.ok) {

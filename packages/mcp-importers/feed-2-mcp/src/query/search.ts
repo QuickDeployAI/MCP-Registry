@@ -63,7 +63,7 @@ export function matchesSearch(item: Record<string, unknown>, query: string): boo
 
   // Evaluate left-to-right: implicit AND between non-OR-separated groups,
   // OR token separates two sides.
-  let groups: SearchToken[][] = [[]];
+  const groups: SearchToken[][] = [[]];
   for (const token of tokens) {
     if (token.type === "or") {
       groups.push([]);
