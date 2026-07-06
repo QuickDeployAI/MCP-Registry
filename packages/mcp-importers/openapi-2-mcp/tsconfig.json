@@ -1,0 +1,9 @@
+{
+  "extends": "../../core/workspace-config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "moduleDetection": "force"
+  },
+  "include": ["src/**/*", "tests/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}
