@@ -44,11 +44,13 @@
     "@readme/openapi-parser": "^6.0.0",
     "commander": "^14.0.3",
     "openapi-types": "^12.1.3",
+    "swagger2openapi": "^7.0.8",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "catalog:",
+    "@types/swagger2openapi": "^7.0.4",
     "js-yaml": "^4.1.0",
     "tsx": "^4.21.0",
     "typescript": "catalog:",

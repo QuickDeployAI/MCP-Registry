@@ -6,6 +6,7 @@ import {
   buildUrl,
   buildBody,
   parseVersion,
+  normalizeOpenApiDocument,
   openApiToMcpTools,
 } from "../src/parser.js";
 
@@ -303,6 +304,128 @@ const minimalDoc: OpenAPIV3.Document = {
   },
 };
 
+const swagger2PetstoreDoc = {
+  swagger: "2.0",
+  info: { title: "Petstore", version: "1.0.0" },
+  host: "petstore3.swagger.io",
+  basePath: "/api/v3",
+  schemes: ["https"],
+  paths: {
+    "/pet/{petId}": {
+      get: {
+        operationId: "getPetById",
+        summary: "Find pet by ID",
+        parameters: [
+          {
+            name: "petId",
+            in: "path",
+            required: true,
+            description: "ID of pet to return",
+            type: "integer",
+          },
+        ],
+        responses: { "200": { description: "ok" } },
+      },
+    },
+    "/pet/findByStatus": {
+      get: {
+        operationId: "findPetsByStatus",
+        summary: "Find pets by status",
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            description: "Status values that need to be considered for filter",
+            type: "string",
+            enum: ["available", "pending", "sold"],
+          },
+        ],
+        responses: { "200": { description: "ok" } },
+      },
+    },
+    "/pet": {
+      post: {
+        operationId: "addPet",
+        summary: "Add a new pet to the store",
+        parameters: [
+          {
+            name: "body",
+            in: "body",
+            required: true,
+            schema: {
+              type: "object",
+              required: ["name", "status"],
+              properties: {
+                name: { type: "string", description: "Pet name" },
+                status: { type: "string", enum: ["available", "pending", "sold"] },
+              },
+            },
+          },
+        ],
+        responses: { "200": { description: "ok" } },
+      },
+    },
+  },
+};
+
+const petstoreOpenApi3Doc: OpenAPIV3.Document = {
+  openapi: "3.0.3",
+  info: { title: "Petstore", version: "1.0.0" },
+  servers: [{ url: "https://petstore3.swagger.io/api/v3" }],
+  paths: {
+    "/pet/{petId}": {
+      get: {
+        operationId: "getPetById",
+        summary: "Find pet by ID",
+        parameters: [
+          {
+            name: "petId",
+            in: "path",
+            required: true,
+            description: "ID of pet to return",
+            schema: { type: "integer" },
+          },
+        ],
+      },
+    },
+    "/pet/findByStatus": {
+      get: {
+        operationId: "findPetsByStatus",
+        summary: "Find pets by status",
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            description: "Status values that need to be considered for filter",
+            schema: { type: "string", enum: ["available", "pending", "sold"] },
+          },
+        ],
+      },
+    },
+    "/pet": {
+      post: {
+        operationId: "addPet",
+        summary: "Add a new pet to the store",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["name", "status"],
+                properties: {
+                  name: { type: "string", description: "Pet name" },
+                  status: { type: "string", enum: ["available", "pending", "sold"] },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 describe("openApiToMcpTools", () => {
   const tools = openApiToMcpTools(minimalDoc, "https://api.example.com");
   const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
@@ -373,5 +496,25 @@ describe("openApiToMcpTools", () => {
     for (const tool of tools) {
       expect(typeof tool.execute).toBe("function");
     }
+  });
+});
+
+describe("normalizeOpenApiDocument", () => {
+  it("upconverts Swagger 2.0 specs to the same tool surface as OpenAPI 3", async () => {
+    const normalized = await normalizeOpenApiDocument(swagger2PetstoreDoc);
+    const swaggerTools = openApiToMcpTools(
+      normalized.document,
+      normalized.document.servers?.[0]?.url ?? "",
+    );
+    const openApiTools = openApiToMcpTools(petstoreOpenApi3Doc, "https://petstore3.swagger.io/api/v3");
+
+    expect(swaggerTools.map((tool) => tool.name)).toEqual(openApiTools.map((tool) => tool.name));
+    expect(swaggerTools.find((tool) => tool.name === "addPet")?.parameters.shape).toHaveProperty("name");
+  });
+
+  it("surfaces conversion warnings for Swagger 2.0 input", async () => {
+    const normalized = await normalizeOpenApiDocument(swagger2PetstoreDoc);
+
+    expect(normalized.warnings).toContain("Converted Swagger 2.0 document to OpenAPI 3.0.");
   });
 });

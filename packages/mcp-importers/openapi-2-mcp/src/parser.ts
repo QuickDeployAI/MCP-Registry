@@ -12,14 +12,46 @@ import {
   operationToTool,
   schemaToZod,
 } from "@quickdeployai/proxy-core";
-import type { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV2, OpenAPIV3 } from "openapi-types";
+import { convertObj } from "swagger2openapi";
 
 export type McpTool = ProxyTool;
+export interface NormalizedOpenApiDocument {
+  document: OpenAPIV3.Document;
+  warnings: string[];
+}
 
 export { parseVersion } from "@quickdeployai/importer-core";
 export { buildBody, buildUrl, schemaToZod };
 
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options"] as const;
+
+function isSwagger2Document(doc: unknown): doc is OpenAPIV2.Document {
+  return typeof doc === "object" && doc !== null && (doc as { swagger?: unknown }).swagger === "2.0";
+}
+
+function isOpenApi3Document(doc: unknown): doc is OpenAPIV3.Document {
+  return typeof doc === "object" && doc !== null && typeof (doc as { openapi?: unknown }).openapi === "string";
+}
+
+export async function normalizeOpenApiDocument(doc: unknown): Promise<NormalizedOpenApiDocument> {
+  if (isSwagger2Document(doc)) {
+    const result = await convertObj(doc, { patch: true, warnOnly: true });
+    const converterWarnings = (result.warnings ?? [])
+      .map((warning) => String(warning))
+      .filter((warning) => warning.length > 0);
+    return {
+      document: result.openapi,
+      warnings: ["Converted Swagger 2.0 document to OpenAPI 3.0.", ...converterWarnings],
+    };
+  }
+
+  if (isOpenApi3Document(doc)) {
+    return { document: doc, warnings: [] };
+  }
+
+  throw new Error("Unsupported API description: expected OpenAPI 3.x or Swagger 2.0.");
+}
 
 function toProxyParameter(parameter: OpenAPIV3.ParameterObject): ProxyParameter {
   return {
