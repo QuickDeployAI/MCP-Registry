@@ -8,7 +8,7 @@ This file records the current build/watch verdicts for importer categories and r
 
 Verdict: wrap/watch. Do not build a GraphQL converter from scratch while Apollo MCP Server, mcp-graphql, WunderGraph Cosmo, and other maintained options cover the category.
 
-Current action: seed registry references and deploy recipes for the best vendor/community options, especially Apollo MCP Server. If QuickDeploy wraps the category later, prefer curated persisted operations or operation files as per-tool units. Avoid whole-schema generated tool sets except as bounded progressive discovery.
+Current action: seed registry references and deploy recipes for the best vendor/community options, especially Apollo MCP Server. If QuickDeploy wraps the category later, prefer curated persisted operations or operation files as per-tool units. Avoid whole-schema generated tool sets except as bounded progressive discovery. Apollo MCP Server is now seeded in `registry/remote-ref-seeds.json`; see [`docs/recipes/apollo-mcp-deploy.md`](../recipes/apollo-mcp-deploy.md) for the deploy walkthrough.
 
 Promotion trigger: a customer needs a manifest-uniform GraphQL surface that existing server configuration cannot express.
 
