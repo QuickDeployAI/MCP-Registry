@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 export type ValidationResult = {
   errors: string[];
   checkedServers: number;
+  checkedRemoteRefs: number;
 };
 
 type JsonObject = Record<string, unknown>;
@@ -34,9 +35,28 @@ type RegistryAgent = JsonObject & {
   summary?: unknown;
 };
 
+type RemoteRefSeedCatalog = JsonObject & {
+  seeds?: unknown;
+};
+
+type RemoteRefSeed = JsonObject & {
+  id?: unknown;
+  category?: unknown;
+  disposition?: unknown;
+  source_issue?: unknown;
+  references?: unknown;
+  endpoint?: unknown;
+  deploy_recipe?: unknown;
+  curation?: unknown;
+};
+
 const EXACT_SEMVER =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const OCI_DIGEST = /^sha256:[a-f0-9]{64}$/i;
+const REMOTE_REF_SEED_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const LINEAR_ISSUE_ID = /^QUI-\d+$/;
+const REMOTE_REF_CATEGORIES = new Set(["data-stack", "eventing-streaming", "iot-home", "dev-platform"]);
+const REMOTE_REF_DISPOSITIONS = new Set(["remote-ref", "deploy-recipe", "watch"]);
 
 export async function validateRepository(root: string): Promise<ValidationResult> {
   const errors: string[] = [];
@@ -56,10 +76,100 @@ export async function validateRepository(root: string): Promise<ValidationResult
     await validateServerManifest(absoluteRoot, serverPath, agentsByServer, errors);
   }
 
+  const checkedRemoteRefs = await validateRemoteRefSeeds(absoluteRoot, errors);
+
   return {
     errors,
     checkedServers: serverPaths.length,
+    checkedRemoteRefs,
   };
+}
+
+async function validateRemoteRefSeeds(root: string, errors: string[]): Promise<number> {
+  const seedPath = "registry/remote-ref-seeds.json";
+  const catalog = await readOptionalJson<RemoteRefSeedCatalog>(join(root, seedPath));
+
+  if (!catalog) {
+    return 0;
+  }
+
+  if (catalog.kind !== "quickdeploy.mcp-remote-ref-seeds") {
+    errors.push(`${seedPath}: kind must be quickdeploy.mcp-remote-ref-seeds`);
+  }
+
+  if (typeof catalog.schema_version !== "string") {
+    errors.push(`${seedPath}: schema_version must be a string`);
+  }
+
+  const seeds = Array.isArray(catalog.seeds) ? (catalog.seeds as RemoteRefSeed[]) : undefined;
+
+  if (!seeds) {
+    errors.push(`${seedPath}: seeds must be an array`);
+    return 0;
+  }
+
+  const seenIds = new Set<string>();
+
+  for (const [index, seed] of seeds.entries()) {
+    validateRemoteRefSeed(`${seedPath}#seeds[${index}]`, seed, seenIds, errors);
+  }
+
+  return seeds.length;
+}
+
+function validateRemoteRefSeed(
+  label: string,
+  seed: RemoteRefSeed,
+  seenIds: Set<string>,
+  errors: string[],
+): void {
+  const id = stringValue(seed.id);
+  const category = stringValue(seed.category);
+  const disposition = stringValue(seed.disposition);
+  const sourceIssue = stringValue(seed.source_issue);
+
+  if (!id || !REMOTE_REF_SEED_ID.test(id)) {
+    errors.push(`${label}: id must be kebab-case`);
+  } else if (seenIds.has(id)) {
+    errors.push(`${label}: duplicate id ${id}`);
+  } else {
+    seenIds.add(id);
+  }
+
+  if (!category || !REMOTE_REF_CATEGORIES.has(category)) {
+    errors.push(`${label}: category must be one of ${Array.from(REMOTE_REF_CATEGORIES).join(", ")}`);
+  }
+
+  if (!disposition || !REMOTE_REF_DISPOSITIONS.has(disposition)) {
+    errors.push(`${label}: disposition must be remote-ref, deploy-recipe, or watch`);
+  }
+
+  if (!sourceIssue || !LINEAR_ISSUE_ID.test(sourceIssue)) {
+    errors.push(`${label}: source_issue must be a Linear issue id`);
+  }
+
+  const references = Array.isArray(seed.references) ? seed.references : [];
+
+  if (references.length === 0) {
+    errors.push(`${label}: references must include at least one source`);
+  }
+
+  const curation = isObject(seed.curation) ? seed.curation : undefined;
+
+  if (!curation || typeof curation.provenance !== "string") {
+    errors.push(`${label}: curation.provenance must be set`);
+  }
+
+  const endpoint = isObject(seed.endpoint) ? seed.endpoint : undefined;
+  const deployRecipe = isObject(seed.deploy_recipe) ? seed.deploy_recipe : undefined;
+
+  if (disposition === "remote-ref" && typeof endpoint?.url !== "string") {
+    errors.push(`${label}: remote-ref seeds must include endpoint.url`);
+  }
+
+  if (disposition === "deploy-recipe" && typeof deployRecipe?.summary !== "string") {
+    errors.push(`${label}: deploy-recipe seeds must include deploy_recipe.summary`);
+  }
 }
 
 async function validateServerManifest(
@@ -232,7 +342,9 @@ export async function main(): Promise<void> {
     return;
   }
 
-  console.log(`registry-cli validate passed (${result.checkedServers} server manifest(s))`);
+  console.log(
+    `registry-cli validate passed (${result.checkedServers} server manifest(s), ${result.checkedRemoteRefs} remote ref seed(s))`,
+  );
 }
 
 function parseRoot(args: string[]): string {
