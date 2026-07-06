@@ -228,6 +228,75 @@
       ]
     },
     {
+      "id": "nlweb",
+      "name": "NLWeb",
+      "category": "knowledge-docs",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-228",
+      "deploy_recipe": {
+        "summary": "Deploy a QuickDeploy-hosted NLWeb instance: every instance is itself an MCP server exposing an `ask` tool over a site's own schema.org/RSS structured data plus a vector backend. See docs/recipes/nlweb-deploy.md.",
+        "runtime": "python",
+        "auth_notes": "No client-facing auth beyond whatever QuickDeploy places in front of the deployment; vector-backend and source credentials stay server-side."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Deliberately not an importer: no x-to-MCP transform exists here, only a deploy recipe for a self-contained MCP server."
+      },
+      "references": [
+        {
+          "title": "nlweb-ai/NLWeb",
+          "url": "https://github.com/nlweb-ai/NLWeb"
+        }
+      ]
+    },
+    {
+      "id": "llamacloud-mcp-remote",
+      "name": "LlamaCloud MCP (hosted)",
+      "category": "knowledge-docs",
+      "disposition": "remote-ref",
+      "source_issue": "QUI-228",
+      "endpoint": {
+        "url": "https://mcp.llamaindex.ai/mcp",
+        "transport": "streamable-http"
+      },
+      "auth": {
+        "type": "oauth2",
+        "notes": "WorkOS OAuth login against a LlamaCloud account."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Document parsing/extraction (Parse/Classify/Extract/Split), not a generic corpus search server; requires a LlamaCloud account and consumes hosted credits."
+      },
+      "references": [
+        {
+          "title": "LlamaCloud MCP endpoint",
+          "url": "https://mcp.llamaindex.ai/mcp"
+        }
+      ]
+    },
+    {
+      "id": "llamacloud-mcp-package",
+      "name": "llamacloud-mcp (self-hosted package)",
+      "category": "knowledge-docs",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-228",
+      "deploy_recipe": {
+        "summary": "Run the llamacloud-mcp package locally/self-hosted to expose LlamaParse-backed parsing tools over MCP instead of using the hosted mcp.llamaindex.ai endpoint directly.",
+        "runtime": "node",
+        "auth_notes": "Requires a LlamaCloud API key (SaaS account); the package itself has no separate auth layer."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Same SaaS dependency as the hosted remote-ref; use this variant only when self-hosting the MCP process is required."
+      },
+      "references": [
+        {
+          "title": "run-llama/llamacloud-mcp",
+          "url": "https://github.com/run-llama/llamacloud-mcp"
+        }
+      ]
+    },
+    {
       "id": "opc-foundation-sample",
       "name": "OPC Foundation MCP Sample",
       "category": "dev-platform",
