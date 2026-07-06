@@ -497,6 +497,50 @@ describe("openApiToMcpTools", () => {
       expect(typeof tool.execute).toBe("function");
     }
   });
+
+  it("applies allow, deny, and rename curation before exposing tools", () => {
+    const curatedTools = openApiToMcpTools(minimalDoc, "https://api.example.com", {
+      expose: {
+        allow: ["getPet", "healthCheck"],
+        deny: ["healthCheck"],
+        rename: { getPet: "fetch_pet" },
+      },
+    });
+
+    expect(curatedTools.map((tool: { name: string }) => tool.name)).toEqual(["fetch_pet"]);
+  });
+
+  it("keeps the original operationId in a renamed tool description", () => {
+    const [renamed] = openApiToMcpTools(minimalDoc, "https://api.example.com", {
+      expose: { allow: ["getPet"], rename: { getPet: "fetch_pet" } },
+    });
+
+    expect(renamed.description).toContain("Original operationId: getPet");
+  });
+
+  it("returns a ContentRef for responses over the inline threshold", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ payload: "x".repeat(128) }), {
+        headers: { "Content-Type": "application/json" },
+      })) as typeof fetch;
+
+    try {
+      const [tool] = openApiToMcpTools(minimalDoc, "https://api.example.com", {
+        expose: { allow: ["getPet"] },
+        maxInlineResponseBytes: 64,
+      });
+
+      const result = JSON.parse(await tool.execute({ id: 1 }));
+      expect(result).toMatchObject({
+        type: "content-ref",
+        resourceUri: "openapi2mcp://content/getPet/1/response",
+        size: expect.any(Number),
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });
 
 describe("normalizeOpenApiDocument", () => {
