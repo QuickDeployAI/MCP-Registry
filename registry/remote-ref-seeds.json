@@ -96,6 +96,28 @@
       ]
     },
     {
+      "id": "dbhub",
+      "name": "DBHub",
+      "category": "data-stack",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-249",
+      "deploy_recipe": {
+        "summary": "Reference the multi-engine SQL gateway pattern (execute_sql + search_objects + config-defined custom tools) when a lighter-weight alternative to genai-toolbox's tools.yaml is the right fit.",
+        "runtime": "node",
+        "auth_notes": "Run in read-only mode with row limits and query timeouts; use a least-privilege database role, not a single broad service credential."
+      },
+      "curation": {
+        "provenance": "community",
+        "boundary": "General-purpose multi-engine gateway; prefer genai-toolbox's declarative tools.yaml when named, parameterized tools are the goal instead of a raw execute_sql escape hatch."
+      },
+      "references": [
+        {
+          "title": "bytebase/dbhub",
+          "url": "https://github.com/bytebase/dbhub"
+        }
+      ]
+    },
+    {
       "id": "mindsdb-mcp",
       "name": "MindsDB MCP",
       "category": "data-stack",

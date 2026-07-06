@@ -16,7 +16,7 @@ Promotion trigger: a customer needs a manifest-uniform GraphQL surface that exis
 
 Verdict: skip build. Database MCP is already heavily covered by vendor and community servers.
 
-Current action: reference mature servers and borrow design patterns. The strongest pattern is curated parameterized tools, such as tools.yaml in MCP Toolbox for Databases, instead of raw SQL or schema-wide per-table tool generation.
+Current action: reference mature servers and borrow design patterns. The strongest pattern is curated parameterized tools, such as tools.yaml in MCP Toolbox for Databases, instead of raw SQL or schema-wide per-table tool generation. DBHub is seeded alongside it in `registry/remote-ref-seeds.json` as the lighter-weight multi-engine gateway option.
 
 Promotion trigger: none expected. Default work is curation, safety notes, and registry references.
 
