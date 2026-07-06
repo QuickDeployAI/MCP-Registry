@@ -43,7 +43,7 @@ function makeServer(): McpServer {
         description: tool.description,
         inputSchema: tool.parameters,
       },
-      async (args) => ({
+      async (args: unknown) => ({
         content: [{ type: "text", text: await tool.execute(args) }],
       }),
     );
