@@ -1,6 +1,6 @@
 # openapi-2-mcp
 
-Build an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server from an OpenAPI spec using [FastMCP for TypeScript](https://github.com/punkpeye/fastmcp).
+Build an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server from an OpenAPI spec using the official [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk).
 
 Each operation in the OpenAPI spec is exposed as an MCP tool, allowing AI agents to interact with any REST API through the MCP protocol.
 
@@ -33,53 +33,51 @@ Arguments:
 Options:
   --port <number>   Port for the HTTP server (default: "3000")
   --mcp <path>      HTTP streaming endpoint path (default: "/mcp")
-  --sse <path>      SSE endpoint path (used when serving via HTTP) (default: "/sse")
-  --stdio           Use stdio transport instead of HTTP (default: false)
   --base-url <url>  Override the base URL from the spec's servers field
   -h, --help        display help for command
 ```
 
 ## Examples
 
-### Start an HTTP server (HTTP Streaming + SSE)
+### Start an HTTP server (Streamable HTTP + stdio)
 
 ```bash
 openapi-2-mcp ./openapi.yaml
 ```
 
 Starts an HTTP server on port 3000 with:
-- HTTP streaming endpoint at `http://localhost:3000/mcp`
-- SSE endpoint at `http://localhost:3000/sse`
+- Streamable HTTP endpoint at `http://localhost:3000/mcp`
+- Stdio transport on the same process for stdio MCP clients
 
 ### Custom endpoint paths
 
 ```bash
-openapi-2-mcp ./openapi.yaml --mcp /api/mcp --sse /api/sse --port 8080
+openapi-2-mcp ./openapi.yaml --mcp /api/mcp --port 8080
 ```
 
 ### Stdio transport (for use with Claude Desktop, etc.)
 
 ```bash
-openapi-2-mcp ./openapi.yaml --stdio
+openapi-2-mcp ./openapi.yaml
 ```
 
 ### Override base URL
 
 ```bash
-openapi-2-mcp ./openapi.yaml --base-url https://api.example.com --stdio
+openapi-2-mcp ./openapi.yaml --base-url https://api.example.com
 ```
 
 ## Transport Modes
 
 ### HTTP Streaming (default)
 
-When started without `--stdio`, the server uses FastMCP's HTTP streaming transport which supports both:
-- **HTTP Streaming** (`--mcp` path, default `/mcp`): Modern MCP transport using HTTP streaming
-- **SSE** (`--sse` path, default `/sse`): Legacy Server-Sent Events transport for backwards compatibility
+The server uses the official SDK's Streamable HTTP transport:
+- **Streamable HTTP** (`--mcp` path, default `/mcp`): Modern MCP transport using HTTP streaming
+- **No legacy SSE endpoint**: SSE was removed with the FastMCP dependency.
 
 ### Stdio
 
-Use `--stdio` for integrations with MCP clients that communicate over stdin/stdout, such as Claude Desktop.
+The process also starts the official SDK stdio transport for integrations with MCP clients that communicate over stdin/stdout, such as Claude Desktop.
 
 Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
@@ -88,7 +86,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
   "mcpServers": {
     "my-api": {
       "command": "npx",
-      "args": ["openapi-2-mcp", "/path/to/openapi.yaml", "--stdio"]
+      "args": ["openapi-2-mcp", "/path/to/openapi.yaml"]
     }
   }
 }
