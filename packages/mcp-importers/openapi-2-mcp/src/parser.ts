@@ -1,5 +1,8 @@
 import type { OpenAPIV3 } from "openapi-types";
+import { jsonText } from "@quickdeployai/importer-core";
 import { z } from "zod";
+
+export { parseVersion } from "@quickdeployai/importer-core";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -105,7 +108,7 @@ async function fetchOperation(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   const text = await res.text();
-  try { return JSON.stringify(JSON.parse(text), null, 2); }
+  try { return jsonText(JSON.parse(text)); }
   catch { return text; }
 }
 
@@ -165,9 +168,4 @@ export function openApiToMcpTools(doc: OpenAPIV3.Document, baseUrl: string): Mcp
         : [];
     });
   });
-}
-
-export function parseVersion(version = "1.0.0"): `${number}.${number}.${number}` {
-  const [M = 1, m = 0, p = 0] = (version.match(/\d+/g) ?? []).map(Number);
-  return `${M}.${m}.${p}`;
 }

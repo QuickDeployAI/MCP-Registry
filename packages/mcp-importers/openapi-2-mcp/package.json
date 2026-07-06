@@ -38,6 +38,7 @@
     "LICENSE"
   ],
   "dependencies": {
+    "@quickdeployai/importer-core": "workspace:*",
     "@readme/openapi-parser": "^6.0.0",
     "commander": "^14.0.3",
     "fastmcp": "^3.34.0",

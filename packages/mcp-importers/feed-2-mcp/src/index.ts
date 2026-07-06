@@ -6,6 +6,7 @@
  * and connects the MCP server to stdio transport.
  */
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { startServer } from "@quickdeployai/importer-core";
 import { loadConfig } from "./config.js";
 import { createStore } from "./store/factory.js";
 import type { StoreAdapter } from "./store/adapter.js";
@@ -68,7 +69,7 @@ async function main(): Promise<void> {
   });
 
   const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
+  await startServer(mcpServer, transport);
 
   process.on("SIGINT", async () => {
     coordinator.shutdown();

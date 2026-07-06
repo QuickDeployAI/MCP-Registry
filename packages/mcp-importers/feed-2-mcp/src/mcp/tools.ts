@@ -1,6 +1,7 @@
 /**
  * MCP tool registrations.
  */
+import { ok, toolError } from "@quickdeployai/importer-core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { NativeItem } from "../types.js";
 import type { StoreAdapter } from "../store/adapter.js";
@@ -35,17 +36,12 @@ export interface ToolDeps<TItem extends NativeItem = NativeItem> {
   maxFieldSize: number;
 }
 
-function ok(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
-}
-
 function resolveFeed(feedUrl: string | undefined, defaultFeed: string | null): string | null {
   return feedUrl ?? defaultFeed;
 }
 
 function missingFeedError() {
-  return ok({
-    error: "No feed specified",
+  return toolError("No feed specified", {
     reason: "feedUrl was not provided and no defaultFeed is configured.",
     suggestion: "Pass feedUrl in the tool call or start the server with --feed=<url>.",
   });
