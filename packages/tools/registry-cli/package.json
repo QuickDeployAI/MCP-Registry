@@ -1,0 +1,22 @@
+{
+  "name": "@quickdeployai/mcp-registry-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Validation tools for MCP Registry release and catalog invariants",
+  "type": "module",
+  "bin": {
+    "registry-cli": "bin/registry-cli.mjs"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@quickdeployai/mcp-registry-workspace-config": "workspace:*"
+  }
+}
