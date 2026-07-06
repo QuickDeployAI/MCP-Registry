@@ -63,6 +63,31 @@ importers:
         specifier: 'catalog:'
         version: 8.62.1(eslint@9.39.4)(typescript@5.9.3)
 
+  packages/core/corpus-core:
+    dependencies:
+      '@lancedb/lancedb':
+        specifier: ^0.26.2
+        version: 0.26.2(apache-arrow@18.1.0)
+      node-html-parser:
+        specifier: ^7.1.0
+        version: 7.1.0
+      openai:
+        specifier: ^6.27.0
+        version: 6.45.0(zod@4.4.3)
+    devDependencies:
+      '@quickdeployai/mcp-registry-workspace-config':
+        specifier: workspace:*
+        version: link:../workspace-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.8
+        version: 3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(tsx@4.23.0)
+
   packages/core/importer-core:
     devDependencies:
       '@quickdeployai/mcp-registry-workspace-config':
@@ -104,24 +129,18 @@ importers:
 
   packages/mcp-importers/feed-2-mcp:
     dependencies:
-      '@lancedb/lancedb':
-        specifier: ^0.26.2
-        version: 0.26.2(apache-arrow@18.1.0)
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.29.0(zod@4.4.3)
+      '@quickdeployai/corpus-core':
+        specifier: workspace:*
+        version: link:../../core/corpus-core
       '@quickdeployai/importer-core':
         specifier: workspace:*
         version: link:../../core/importer-core
       feedsmith:
         specifier: ^2.9.0
         version: 2.9.5
-      node-html-parser:
-        specifier: ^7.1.0
-        version: 7.1.0
-      openai:
-        specifier: ^6.27.0
-        version: 6.45.0(zod@4.4.3)
       zod:
         specifier: 'catalog:'
         version: 4.4.3

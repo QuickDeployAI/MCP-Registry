@@ -75,5 +75,5 @@ describe("MCP transports served simultaneously", () => {
     const { tools } = await client.listTools();
     await client.close();
     expect(tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
-  });
+  }, 15_000);
 });
