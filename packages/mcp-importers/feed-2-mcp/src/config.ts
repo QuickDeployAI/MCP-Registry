@@ -27,6 +27,10 @@ export interface ServerConfig {
   embeddingProvider: "none" | "openai";
   /** OpenAI API key (for embedding) */
   openaiApiKey: string | null;
+  /** Streamable HTTP server port */
+  port: number;
+  /** Streamable HTTP endpoint path */
+  mcpPath: `/${string}`;
 }
 
 const DEFAULT_POLL_INTERVAL_MS = 0;
@@ -36,6 +40,12 @@ const DEFAULT_MAX_FIELD_SIZE = 500;
 const DEFAULT_STORAGE_BACKEND = "memory" as const;
 const DEFAULT_STORAGE_PATH = "./rss2mcp-data";
 const DEFAULT_EMBEDDING_PROVIDER = "none" as const;
+const DEFAULT_PORT = 3000;
+const DEFAULT_MCP_PATH = "/mcp" as const;
+
+function normalizePath(value: string): `/${string}` {
+  return value.startsWith("/") ? (value as `/${string}`) : `/${value}`;
+}
 
 const serverConfig = defineConfig({
   defaultFeed: {
@@ -57,7 +67,6 @@ const serverConfig = defineConfig({
   },
   noPoll: {
     type: "boolean",
-    cli: "no-poll",
     env: ["NO_POLL"],
     default: false as boolean,
   },
@@ -105,6 +114,18 @@ const serverConfig = defineConfig({
     env: ["OPENAI_API_KEY"],
     default: null as string | null,
   },
+  port: {
+    type: "number",
+    cli: "port",
+    env: ["PORT"],
+    default: DEFAULT_PORT as number,
+  },
+  mcpPath: {
+    type: "string",
+    cli: "mcp",
+    env: ["MCP_PATH"],
+    default: DEFAULT_MCP_PATH as string,
+  },
 });
 
 export function loadConfig(argv?: string[]): ServerConfig {
@@ -124,5 +145,7 @@ export function loadConfig(argv?: string[]): ServerConfig {
     storagePath: parsed.storagePath,
     embeddingProvider,
     openaiApiKey: parsed.openaiApiKey,
+    port: parsed.port,
+    mcpPath: normalizePath(parsed.mcpPath),
   };
 }
