@@ -16,7 +16,9 @@ server or importer release must update the package version, `server.json`, and
 4. Update `registry/index.json` so the entry summary version matches the
    referenced `server.json`.
 5. Run `pnpm check` before opening the PR.
-6. Publish from the validated release commit with `pnpm publish:packages`.
+6. Merge only after the PR `Workspace check` job passes.
+7. Main branch CI publishes the validated release commit with
+   `pnpm publish:packages` and the GitHub Packages `GITHUB_TOKEN`.
 
 Legacy servers under `servers/*` are not workspace packages yet, but they are
 still validated. Their local `package.json`, `server.json`, and
