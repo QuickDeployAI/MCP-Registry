@@ -1,0 +1,59 @@
+{
+  "name": "@quickdeployai/openapi-2-mcp",
+  "version": "0.1.0",
+  "description": "Build an MCP (Model Context Protocol) server from an OpenAPI spec. Exposes every API operation as an MCP tool so AI agents can interact with any REST API.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuickDeployAI/MCP-Registry.git",
+    "directory": "packages/mcp-importers/openapi-2-mcp"
+  },
+  "keywords": [
+    "mcp",
+    "openapi",
+    "model-context-protocol",
+    "ai",
+    "tools",
+    "fastmcp",
+    "api"
+  ],
+  "author": "QuickDeployAI",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/QuickDeployAI/MCP-Registry/issues"
+  },
+  "homepage": "https://github.com/QuickDeployAI/MCP-Registry/tree/main/packages/mcp-importers/openapi-2-mcp#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@readme/openapi-parser": "^6.0.0",
+    "commander": "^14.0.3",
+    "fastmcp": "^3.34.0",
+    "openapi-types": "^12.1.3",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "catalog:",
+    "js-yaml": "^4.1.0",
+    "tsx": "^4.21.0",
+    "typescript": "catalog:",
+    "vitest": "^4.0.18"
+  },
+  "bin": {
+    "openapi-2-mcp": "./dist/index.js"
+  }
+}
