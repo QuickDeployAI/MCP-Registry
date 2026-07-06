@@ -56,6 +56,11 @@ describe("MCP transports served simultaneously", () => {
     expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
   });
 
+  it("does not serve the deprecated SSE endpoint", async () => {
+    const response = await fetch(`${BASE}/sse`);
+    expect(response.status).toBe(404);
+  });
+
   it("stdio returns the expected tools", async () => {
     // StdioClientTransport spawns its own child process, so it runs alongside
     // the HTTP server process above.
