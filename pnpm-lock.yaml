@@ -63,6 +63,25 @@ importers:
         specifier: 'catalog:'
         version: 8.62.1(eslint@9.39.4)(typescript@5.9.3)
 
+  packages/core/proxy-core:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@quickdeployai/mcp-registry-workspace-config':
+        specifier: workspace:*
+        version: link:../workspace-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.18
+        version: 4.1.9(@types/node@24.13.2)(vite@8.1.3(@types/node@24.13.2)(esbuild@0.28.1)(tsx@4.23.0))
+
   packages/core/workspace-config: {}
 
   packages/core/workspace-smoke:
@@ -116,6 +135,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.29.0(zod@4.4.3)
+      '@quickdeployai/proxy-core':
+        specifier: workspace:*
+        version: link:../../core/proxy-core
       '@readme/openapi-parser':
         specifier: ^6.0.0
         version: 6.2.0(openapi-types@12.1.3)
