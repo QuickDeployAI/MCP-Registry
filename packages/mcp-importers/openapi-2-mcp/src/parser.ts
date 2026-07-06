@@ -16,6 +16,7 @@ import type { OpenAPIV3 } from "openapi-types";
 
 export type McpTool = ProxyTool;
 
+export { parseVersion } from "@quickdeployai/importer-core";
 export { buildBody, buildUrl, schemaToZod };
 
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options"] as const;
@@ -77,9 +78,4 @@ export function openApiToMcpTools(doc: OpenAPIV3.Document, baseUrl: string): Mcp
         : [];
     });
   });
-}
-
-export function parseVersion(version = "1.0.0"): `${number}.${number}.${number}` {
-  const [M = 1, m = 0, p = 0] = (version.match(/\d+/g) ?? []).map(Number);
-  return `${M}.${m}.${p}`;
 }

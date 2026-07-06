@@ -37,8 +37,9 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@quickdeployai/proxy-core": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
+    "@quickdeployai/importer-core": "workspace:*",
+    "@quickdeployai/proxy-core": "workspace:*",
     "@readme/openapi-parser": "^6.0.0",
     "commander": "^14.0.3",
     "openapi-types": "^12.1.3",

@@ -9,6 +9,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { startServer } from "@quickdeployai/importer-core";
 import { loadConfig } from "./config.js";
 import { createStore } from "./store/factory.js";
 import type { StoreAdapter } from "./store/adapter.js";
@@ -131,8 +132,7 @@ async function main(): Promise<void> {
     httpServer.listen(config.port, resolve);
   });
 
-  const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
+  await startServer(mcpServer, new StdioServerTransport());
 
   console.error(
     `[feed-2-mcp] streamable-http=:${config.port}${config.mcpPath} stdio:on`,

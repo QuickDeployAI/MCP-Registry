@@ -17,6 +17,8 @@ describe("loadConfig", () => {
     delete process.env.STORAGE_PATH;
     delete process.env.EMBEDDING_PROVIDER;
     delete process.env.OPENAI_API_KEY;
+    delete process.env.PORT;
+    delete process.env.MCP_PATH;
   });
 
   afterEach(() => {
@@ -35,6 +37,8 @@ describe("loadConfig", () => {
     expect(config.storagePath).toBe("./rss2mcp-data");
     expect(config.embeddingProvider).toBe("none");
     expect(config.openaiApiKey).toBeNull();
+    expect(config.port).toBe(3000);
+    expect(config.mcpPath).toBe("/mcp");
   });
 
   it("reads defaultFeed from --feed arg", () => {
@@ -84,5 +88,11 @@ describe("loadConfig", () => {
     process.env.OPENAI_API_KEY = "sk-from-env";
     const config = loadConfig([]);
     expect(config.openaiApiKey).toBe("sk-from-env");
+  });
+
+  it("reads streamable HTTP options from CLI args", () => {
+    const config = loadConfig(["--port", "3200", "--mcp", "custom-mcp"]);
+    expect(config.port).toBe(3200);
+    expect(config.mcpPath).toBe("/custom-mcp");
   });
 });
