@@ -20,11 +20,11 @@ server or importer release must update the package version, `server.json`, and
 7. Main branch CI publishes the validated release commit with
    `pnpm publish:packages` and the GitHub Packages `GITHUB_TOKEN`.
 
-`@quickdeployai/openapi-2-mcp` is excluded from automated Changesets publish
-until its existing GitHub Package access is transferred from the standalone
-repository to this registry repository. Keep version and registry validation in
-place, but do not let that legacy package permission block publishing new
-workspace-owned packages.
+`@quickdeployai/openapi-2-mcp` is marked private and excluded from automated
+Changesets publish until its existing GitHub Package access is transferred from
+the standalone repository to this registry repository. Keep version and registry
+validation in place, but do not let that legacy package permission block
+publishing new workspace-owned packages.
 
 Legacy servers under `servers/*` are not workspace packages yet, but they are
 still validated. Their local `package.json`, `server.json`, and

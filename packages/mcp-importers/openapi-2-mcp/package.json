@@ -1,6 +1,7 @@
 {
   "name": "@quickdeployai/openapi-2-mcp",
   "version": "0.1.0",
+  "private": true,
   "description": "Build an MCP (Model Context Protocol) server from an OpenAPI spec. Exposes every API operation as an MCP tool so AI agents can interact with any REST API.",
   "main": "dist/index.js",
   "scripts": {
