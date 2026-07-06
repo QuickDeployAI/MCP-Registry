@@ -1,0 +1,31 @@
+# Example manifest for serving an OpenWiki-generated markdown tree via
+# knowledge-2-mcp.
+#
+# STATUS: illustrative. The MCP Manifest v1 format and its `mcp-host` runtime
+# ("MCP Manifest Spec & Runtime Host" project) are not yet buildable code in
+# this monorepo. This file documents the intended shape for when that lands;
+# until then, run this importer directly — see
+# docs/recipes/openwiki-to-mcp.md step 2 — with:
+#
+#   npx @quickdeployai/knowledge-2-mcp \
+#     --source ./openwiki --source-type openwiki \
+#     --corpus-id my-repo-wiki --watch
+#
+apiVersion: quickdeploy.ai/v1
+kind: McpManifest
+metadata:
+  name: ai.quickdeploy/my-repo-wiki
+  version: 0.1.0
+  description: Searchable, citable MCP over an OpenWiki-generated documentation tree.
+spec:
+  importer: "@quickdeployai/knowledge-2-mcp@^0.1.0"
+  source:
+    kind: openwiki
+    uri: "git+https://github.com/<org>/<repo>@main#path=openwiki"
+  config:
+    corpusId: my-repo-wiki
+    watch: true
+    storageBackend: file
+    storagePath: /data/knowledge-2-mcp
+  deployment:
+    transport: [stdio, streamable-http]
