@@ -128,6 +128,47 @@ test("rejects malformed remote ref seed catalog entries", async () => {
   assert.ok(result.errors.some((error) => error.includes("remote-ref seeds must include endpoint.url")));
 });
 
+test("accepts the knowledge-docs remote ref category", async () => {
+  const root = await fixtureRoot({
+    packageVersion: "1.2.3",
+    serverVersion: "1.2.3",
+    registryVersion: "1.2.3",
+    manifestPackageVersion: "1.2.3",
+  });
+
+  await writeJson(join(root, "registry/remote-ref-seeds.json"), {
+    schema_version: "2026-07-06",
+    kind: "quickdeploy.mcp-remote-ref-seeds",
+    seeds: [
+      {
+        id: "nlweb",
+        name: "NLWeb",
+        category: "knowledge-docs",
+        disposition: "deploy-recipe",
+        source_issue: "QUI-228",
+        deploy_recipe: {
+          summary: "Deploy a QuickDeploy-hosted NLWeb instance.",
+          runtime: "python",
+        },
+        curation: {
+          provenance: "vendor-official",
+        },
+        references: [
+          {
+            title: "nlweb-ai/NLWeb",
+            url: "https://github.com/nlweb-ai/NLWeb",
+          },
+        ],
+      },
+    ],
+  });
+
+  const result = await validateRepository(root);
+
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.checkedRemoteRefs, 1);
+});
+
 async function fixtureRoot(options) {
   const root = await mkdtemp(join(tmpdir(), "registry-cli-"));
   const serverDir = join(root, "servers/example");

@@ -55,7 +55,13 @@ const EXACT_SEMVER =
 const OCI_DIGEST = /^sha256:[a-f0-9]{64}$/i;
 const REMOTE_REF_SEED_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LINEAR_ISSUE_ID = /^QUI-\d+$/;
-const REMOTE_REF_CATEGORIES = new Set(["data-stack", "eventing-streaming", "iot-home", "dev-platform"]);
+const REMOTE_REF_CATEGORIES = new Set([
+  "data-stack",
+  "eventing-streaming",
+  "iot-home",
+  "dev-platform",
+  "knowledge-docs",
+]);
 const REMOTE_REF_DISPOSITIONS = new Set(["remote-ref", "deploy-recipe", "watch"]);
 
 export async function validateRepository(root: string): Promise<ValidationResult> {

@@ -2,7 +2,7 @@
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that ingests a self-hosted document corpus — a markdown tree, or the output of [langchain-ai/openwiki](https://github.com/langchain-ai/openwiki) — and exposes it as searchable, citable tools.
 
-See [`docs/recipes/openwiki-to-mcp.md`](../../../docs/recipes/openwiki-to-mcp.md) for the end-to-end OpenWiki walkthrough.
+See [`docs/recipes/openwiki-to-mcp.md`](../../../docs/recipes/openwiki-to-mcp.md) for the end-to-end OpenWiki walkthrough, and [`docs/recipes/knowledge-2-mcp-comparisons.md`](../../../docs/recipes/knowledge-2-mcp-comparisons.md) for when to reach for this importer versus GitMCP, mcpdoc, Context7, NLWeb, LlamaCloud, or a hosted docs-chat SaaS.
 
 ## Features
 
