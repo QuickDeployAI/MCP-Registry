@@ -8,6 +8,7 @@ The package owns:
 - operation naming, shared/local parameter merge, and body flattening
 - request helpers for URL and body construction
 - a pluggable `ProxyExecutor` interface, with an HTTP fetch executor for REST importers
+- request augmentation hooks for auth headers, auth query parameters, and other per-operation metadata
 
 Importers keep their source-format parsing locally, then map operations into `ProxyOperation`
 objects. OpenAPI uses the HTTP executor today; future gRPC, SOAP, WSDL, AsyncAPI, and other

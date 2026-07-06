@@ -7,6 +7,7 @@ import {
   buildBody,
   parseVersion,
   openApiToMcpTools,
+  authForOperation,
 } from "../src/parser.js";
 
 // ── schemaToZod ───────────────────────────────────────────────────────────────
@@ -372,6 +373,109 @@ describe("openApiToMcpTools", () => {
   it("each tool has an execute function", () => {
     for (const tool of tools) {
       expect(typeof tool.execute).toBe("function");
+    }
+  });
+
+  it("maps OpenAPI security schemes to shared auth configs", () => {
+    const doc: OpenAPIV3.Document = {
+      openapi: "3.0.0",
+      info: { title: "Auth API", version: "1.0.0" },
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: "http", scheme: "bearer" },
+          apiKeyHeader: { type: "apiKey", in: "header", name: "x-api-key" },
+          apiKeyQuery: { type: "apiKey", in: "query", name: "api_key" },
+          basicAuth: { type: "http", scheme: "basic" },
+          oauthClient: {
+            type: "oauth2",
+            flows: { clientCredentials: { tokenUrl: "https://auth.example.com/token", scopes: {} } },
+          },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+      paths: {
+        "/header": { get: { security: [{ apiKeyHeader: [] }] } },
+        "/query": { get: { security: [{ apiKeyQuery: [] }] } },
+        "/basic": { get: { security: [{ basicAuth: [] }] } },
+        "/oauth": { get: { security: [{ oauthClient: [] }] } },
+      },
+    };
+
+    expect(authForOperation(doc, doc.paths["/header"]!.get!)).toEqual([{
+      type: "apiKey",
+      in: "header",
+      name: "x-api-key",
+      value: { env: "OPENAPI_AUTH_APIKEYHEADER" },
+    }]);
+    expect(authForOperation(doc, doc.paths["/query"]!.get!)).toEqual([{
+      type: "apiKey",
+      in: "query",
+      name: "api_key",
+      value: { env: "OPENAPI_AUTH_APIKEYQUERY" },
+    }]);
+    expect(authForOperation(doc, doc.paths["/basic"]!.get!)).toEqual([{
+      type: "basic",
+      username: { env: "OPENAPI_AUTH_BASICAUTH_USERNAME" },
+      password: { env: "OPENAPI_AUTH_BASICAUTH_PASSWORD" },
+    }]);
+    expect(authForOperation(doc, doc.paths["/oauth"]!.get!)).toEqual([{
+      type: "oauth2ClientCredentials",
+      accessToken: { env: "OPENAPI_AUTH_OAUTHCLIENT_ACCESS_TOKEN" },
+    }]);
+    expect(authForOperation(doc, { responses: {} })).toEqual([{
+      type: "bearer",
+      token: { env: "OPENAPI_AUTH_BEARERAUTH_TOKEN" },
+    }]);
+  });
+
+  it("executes tools with auth headers and query params from env", async () => {
+    const doc: OpenAPIV3.Document = {
+      openapi: "3.0.0",
+      info: { title: "Auth API", version: "1.0.0" },
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: "http", scheme: "bearer" },
+          apiKeyQuery: { type: "apiKey", in: "query", name: "api_key" },
+        },
+      },
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "listPets",
+            security: [{ bearerAuth: [], apiKeyQuery: [] }],
+            parameters: [
+              { name: "x-tenant", in: "header", schema: { type: "string" } },
+              { name: "status", in: "query", schema: { type: "string" } },
+            ],
+          },
+        },
+      },
+    };
+    const originalFetch = globalThis.fetch;
+    let actualUrl = "";
+    let actualHeaders: unknown;
+    globalThis.fetch = (async (input, init) => {
+      actualUrl = String(input);
+      actualHeaders = init?.headers;
+      return new Response("{\"ok\":true}");
+    }) as typeof fetch;
+    try {
+      const [tool] = openApiToMcpTools(doc, "https://api.example.com", {
+        env: {
+          OPENAPI_AUTH_BEARERAUTH_TOKEN: "bearer-secret",
+          OPENAPI_AUTH_APIKEYQUERY: "query-secret",
+        },
+      });
+      await expect(tool!.execute({ "x-tenant": "tenant-1", status: "available" }))
+        .resolves.toBe("{\n  \"ok\": true\n}");
+
+      const url = new URL(actualUrl);
+      expect(url.searchParams.get("status")).toBe("available");
+      expect(url.searchParams.get("api_key")).toBe("query-secret");
+      expect(url.searchParams.has("x-tenant")).toBe(false);
+      expect(actualHeaders).toMatchObject({ Authorization: "Bearer bearer-secret" });
+    } finally {
+      globalThis.fetch = originalFetch;
     }
   });
 });

@@ -4,6 +4,7 @@ export function buildUrl(
   args: Record<string, unknown>,
   pathParams: readonly string[],
   bodyKeys: readonly string[],
+  headerKeys: readonly string[] = [],
 ): URL {
   const resolved = path.replace(
     /\{([^}]+)\}/g,
@@ -11,7 +12,7 @@ export function buildUrl(
   );
   const url = new URL(baseUrl + resolved);
   for (const [k, v] of Object.entries(args)) {
-    if (!pathParams.includes(k) && !bodyKeys.includes(k) && v != null) {
+    if (!pathParams.includes(k) && !bodyKeys.includes(k) && !headerKeys.includes(k) && v != null) {
       url.searchParams.set(k, String(v));
     }
   }

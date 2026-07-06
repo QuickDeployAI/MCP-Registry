@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -9,8 +10,9 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SPEC    = resolve(__dirname, "fixtures/petstore.yaml");
 const SERVER  = resolve(__dirname, "../dist/index.js");
-const PORT    = 13100;
-const BASE    = `http://localhost:${PORT}`;
+let port: number;
+let stdioPort: number;
+let base: string;
 
 const EXPECTED_TOOLS = ["getPetById", "findPetsByStatus", "addPet"];
 
@@ -25,6 +27,21 @@ async function waitForServer(url: string, timeoutMs = 15_000): Promise<void> {
   throw new Error(`Server not ready at ${url} after ${timeoutMs}ms`);
 }
 
+async function getFreePort(): Promise<number> {
+  return new Promise((resolvePort, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (typeof address !== "object" || address === null) {
+        server.close(() => reject(new Error("Could not allocate test port")));
+        return;
+      }
+      server.close(() => resolvePort(address.port));
+    });
+  });
+}
+
 function mkClient() {
   return new Client({ name: "test", version: "1.0.0" }, { capabilities: {} });
 }
@@ -34,12 +51,15 @@ function mkClient() {
 let httpProc: ReturnType<typeof spawn>;
 
 beforeAll(async () => {
-  httpProc = spawn("node", [SERVER, SPEC, "--port", String(PORT)], {
+  port = await getFreePort();
+  stdioPort = await getFreePort();
+  base = `http://127.0.0.1:${port}`;
+  httpProc = spawn("node", [SERVER, SPEC, "--port", String(port)], {
     stdio: ["pipe", "pipe", "pipe"],
   });
   // Surface server stderr in test output for debugging
   httpProc.stderr?.on("data", (d: Buffer) => process.stderr.write(d));
-  await waitForServer(`${BASE}/ping`);
+  await waitForServer(`${base}/ping`);
 }, 30_000);
 
 afterAll(() => { httpProc?.kill(); });
@@ -50,14 +70,14 @@ describe("MCP transports served simultaneously", () => {
 
   it("HTTP streaming (/mcp) returns the expected tools", async () => {
     const client = mkClient();
-    await client.connect(new StreamableHTTPClientTransport(new URL(`${BASE}/mcp`)));
+    await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
     const { tools } = await client.listTools();
     await client.close();
     expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
   });
 
   it("does not serve the deprecated SSE endpoint", async () => {
-    const response = await fetch(`${BASE}/sse`);
+    const response = await fetch(`${base}/sse`);
     expect(response.status).toBe(404);
   });
 
@@ -67,7 +87,7 @@ describe("MCP transports served simultaneously", () => {
     const client = mkClient();
     const transport = new StdioClientTransport({
       command: "node",
-      args: [SERVER, SPEC, "--port", String(PORT + 1)],
+      args: [SERVER, SPEC, "--port", String(stdioPort)],
       stderr: "pipe",
     });
     await client.connect(transport);

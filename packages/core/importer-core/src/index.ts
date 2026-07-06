@@ -10,6 +10,22 @@ export {
   fetchTextSource,
 } from "./source-fetcher.js";
 export {
+  type AppliedCredentialAuth,
+  type ApiKeyAuthConfig,
+  type AuthEnvironmentVariable,
+  type BasicAuthConfig,
+  type BearerAuthConfig,
+  type CredentialAuthConfig,
+  type CredentialSource,
+  type OAuth2ClientCredentialsAuthConfig,
+  applyCredentialAuth,
+  authEnvironmentVariables,
+  envCredential,
+  manifestEnvCredential,
+  redactCredentialValues,
+  resolveCredential,
+} from "./auth.js";
+export {
   type JsonValue,
   jsonText,
   ok,
