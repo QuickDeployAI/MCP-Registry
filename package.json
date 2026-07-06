@@ -1,0 +1,32 @@
+{
+  "name": "@quickdeployai/mcp-registry-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "QuickDeployAI MCP Registry workspace",
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "check": "turbo run build typecheck lint test"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "supportedArchitectures": {
+      "os": ["win32", "linux", "darwin"],
+      "cpu": ["x64", "arm64"]
+    }
+  }
+}

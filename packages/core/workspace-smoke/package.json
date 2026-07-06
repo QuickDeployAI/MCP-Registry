@@ -1,0 +1,19 @@
+{
+  "name": "@quickdeployai/mcp-registry-workspace-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Placeholder package proving the MCP Registry workspace build path",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@quickdeployai/mcp-registry-workspace-config": "workspace:*"
+  }
+}

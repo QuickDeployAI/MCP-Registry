@@ -6,7 +6,37 @@ This is a trusted public source for the QuickDeploy marketplace: the platform
 reads it to populate official default MCP server entries in the capability
 registry.
 
-## Layout
+## Workspace Layout
+
+This repository is bootstrapped as a pnpm + Turborepo workspace for registry
+tools, shared MCP importer/runtime libraries, first-party MCP packages, and
+registry utilities.
+
+Workspace package lanes:
+
+- `packages/core/*` — shared libraries and workspace config used by importers
+  and registry tools.
+- `packages/mcp-importers/*` — converters that turn external API or content
+  shapes into MCP packages.
+- `packages/mcps/*` — first-party MCP server packages after they migrate out of
+  the legacy `servers/` tree.
+- `packages/tools/*` — repo-local CLIs and validation tools.
+
+Common workspace commands:
+
+```bash
+pnpm install
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm check
+```
+
+The placeholder package at `packages/core/workspace-smoke` keeps the initial
+Turbo pipeline executable while the importer and MCP package migrations land.
+
+## Legacy Server Layout
 
 Each server lives at `servers/<server-name>/` on `main`:
 
