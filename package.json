@@ -9,10 +9,16 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "check": "turbo run build typecheck lint test"
+    "check": "turbo run build typecheck lint test && pnpm registry:validate",
+    "changeset": "changeset",
+    "version:packages": "changeset version && pnpm registry:validate",
+    "publish:packages": "pnpm registry:validate && changeset publish",
+    "registry:validate": "pnpm --filter @quickdeployai/mcp-registry-cli build && node packages/tools/registry-cli/bin/registry-cli.mjs validate"
   },
   "devDependencies": {
+    "@changesets/cli": "catalog:",
     "@eslint/js": "catalog:",
+    "@quickdeployai/mcp-registry-cli": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "turbo": "catalog:",
