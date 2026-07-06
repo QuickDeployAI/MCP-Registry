@@ -31,10 +31,14 @@ Arguments:
   spec              Path to the OpenAPI spec file (JSON or YAML)
 
 Options:
-  --port <number>   Port for the HTTP server (default: "3000")
-  --mcp <path>      HTTP streaming endpoint path (default: "/mcp")
-  --base-url <url>  Override the base URL from the spec's servers field
-  -h, --help        display help for command
+  --port <number>                       Port for the HTTP server (default: "3000")
+  --mcp <path>                          HTTP streaming endpoint path (default: "/mcp")
+  --base-url <url>                      Override the base URL from the spec's servers field
+  --allow-tools <list>                  Comma-separated original operationIds to expose
+  --deny-tools <list>                   Comma-separated original operationIds to hide
+  --rename-tool <mapping...>            Rename operationId with old=new mappings
+  --max-inline-response-bytes <number>  Return ContentRef resources for larger responses
+  -h, --help                            display help for command
 ```
 
 ## Examples
@@ -67,6 +71,25 @@ openapi-2-mcp ./openapi.yaml
 openapi-2-mcp ./openapi.yaml --base-url https://api.example.com
 ```
 
+### Curate exposed tools
+
+```bash
+openapi-2-mcp ./openapi.yaml \
+  --allow-tools getPetById,findPetsByStatus \
+  --deny-tools deletePet \
+  --rename-tool getPetById=fetch_pet
+```
+
+Allow and deny lists use the original OpenAPI `operationId` or generated method/path slug. Renamed tools include the original operationId in the tool description so downstream clients can trace the source operation.
+
+### Return large responses as ContentRefs
+
+```bash
+openapi-2-mcp ./openapi.yaml --max-inline-response-bytes 16384
+```
+
+Responses larger than the threshold are stored behind an MCP resource and the tool returns a JSON ContentRef like `openapi2mcp://content/getPetById/123/response`. Clients can read that resource to fetch the full upstream response without inlining it into the tool result.
+
 ## Transport Modes
 
 ### HTTP Streaming (default)
@@ -96,12 +119,13 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 
 1. Loads the OpenAPI spec (JSON or YAML)
 2. Extracts all non-deprecated operations from the spec
-3. Creates an MCP tool for each operation with:
+3. Applies optional allow/deny/rename curation
+4. Creates an MCP tool for each operation with:
    - **Name**: the `operationId` (or auto-generated from method + path)
    - **Description**: the operation's `description` or `summary`
    - **Parameters**: derived from the operation's path/query parameters and request body schema
-4. Starts the MCP server with the chosen transport
-5. When a tool is called, makes the corresponding HTTP request to the API
+5. Starts the MCP server with the chosen transport and ContentRef resource reader
+6. When a tool is called, makes the corresponding HTTP request to the API
 
 ## Building from Source
 

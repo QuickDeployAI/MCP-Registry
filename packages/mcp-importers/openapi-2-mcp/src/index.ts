@@ -2,12 +2,16 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Command } from "commander";
 import { dereference } from "@readme/openapi-parser";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import type { OpenAPIV3 } from "openapi-types";
-import { openApiToMcpTools, parseVersion } from "./parser.js";
+import {
+  normalizeOpenApiDocument,
+  OpenApiContentStore,
+  openApiToMcpTools,
+  parseVersion,
+} from "./parser.js";
 
 const program = new Command()
   .name("openapi-2-mcp")
@@ -16,15 +20,71 @@ const program = new Command()
   .option("--port <number>", "HTTP server port", "3000")
   .option("--mcp <path>",    "HTTP streaming endpoint path", "/mcp")
   .option("--base-url <url>","Override base URL from spec servers")
+  .option("--allow-tools <list>", "Comma-separated original operationIds to expose")
+  .option("--deny-tools <list>", "Comma-separated original operationIds to hide")
+  .option("--rename-tool <mapping...>", "Rename operationId with old=new; repeat or pass space-separated mappings")
+  .option("--max-inline-response-bytes <number>", "Return ContentRef resources for larger responses")
   .parse();
 
 const [specPath] = program.args as [string];
-const { port: portStr, mcp: mcpPath, baseUrl: baseUrlOverride } =
-  program.opts<{ port: string; mcp: string; baseUrl?: string }>();
+const {
+  port: portStr,
+  mcp: mcpPath,
+  baseUrl: baseUrlOverride,
+  allowTools,
+  denyTools,
+  renameTool,
+  maxInlineResponseBytes: maxInlineResponseBytesStr,
+} = program.opts<{
+  port: string;
+  mcp: string;
+  baseUrl?: string;
+  allowTools?: string;
+  denyTools?: string;
+  renameTool?: string[];
+  maxInlineResponseBytes?: string;
+}>();
 
-const doc    = await dereference<OpenAPIV3.Document>(specPath);
+function parseList(value: string | undefined): string[] | undefined {
+  const items = value?.split(",").map((item) => item.trim()).filter((item) => item.length > 0);
+  return items && items.length > 0 ? items : undefined;
+}
+
+function parseRenameMappings(values: string[] | undefined): Record<string, string> | undefined {
+  if (!values || values.length === 0) return undefined;
+
+  const mappings = Object.fromEntries(
+    values.map((value) => {
+      const [from, to] = value.split("=");
+      if (!from || !to) {
+        throw new Error(`Invalid --rename-tool mapping "${value}". Expected old=new.`);
+      }
+      return [from.trim(), to.trim()];
+    }),
+  );
+  return Object.keys(mappings).length > 0 ? mappings : undefined;
+}
+
+const allow = parseList(allowTools);
+const deny = parseList(denyTools);
+const rename = parseRenameMappings(renameTool);
+const expose = {
+  ...(allow ? { allow } : {}),
+  ...(deny ? { deny } : {}),
+  ...(rename ? { rename } : {}),
+};
+
+const rawDoc = await dereference(specPath);
+const { document: doc, warnings } = await normalizeOpenApiDocument(rawDoc);
 const baseUrl = baseUrlOverride ?? doc.servers?.[0]?.url ?? "";
-const tools  = openApiToMcpTools(doc, baseUrl);
+const contentStore = new OpenApiContentStore();
+const tools = openApiToMcpTools(doc, baseUrl, {
+  ...(Object.keys(expose).length > 0 ? { expose } : {}),
+  ...(maxInlineResponseBytesStr !== undefined
+    ? { maxInlineResponseBytes: Number(maxInlineResponseBytesStr) }
+    : {}),
+  contentStore,
+});
 const version = parseVersion(doc.info.version);
 const port   = Number(portStr);
 
@@ -32,9 +92,15 @@ const port   = Number(portStr);
 const log = (...a: unknown[]) => process.stderr.write(a.join(" ") + "\n");
 
 log(`[openapi-2-mcp] ${tools.length} tools | :${port} stream:${mcpPath} stdio:on`);
+for (const warning of warnings) {
+  log(`[openapi-2-mcp] warning: ${warning}`);
+}
 
 function makeServer(): McpServer {
-  const server = new McpServer({ name: doc.info.title, version });
+  const server = new McpServer(
+    { name: doc.info.title, version },
+    { capabilities: { resources: {}, tools: {} } },
+  );
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -48,6 +114,22 @@ function makeServer(): McpServer {
       }),
     );
   }
+  server.resource(
+    "openapi2mcp-content",
+    new ResourceTemplate("openapi2mcp://content/{operationId}/{callId}/response", {
+      list: undefined,
+    }),
+    { description: "Full upstream OpenAPI response body for an oversized tool result." },
+    async (uri) => ({
+      contents: [
+        {
+          uri: uri.href,
+          mimeType: "application/json",
+          text: contentStore.retrieve(uri.href) ?? "",
+        },
+      ],
+    }),
+  );
   return server;
 }
 

@@ -22,12 +22,10 @@
     "directory": "packages/mcp-importers/feed-2-mcp"
   },
   "dependencies": {
-    "@lancedb/lancedb": "^0.26.2",
+    "@quickdeployai/corpus-core": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
     "@quickdeployai/importer-core": "workspace:*",
     "feedsmith": "^2.9.0",
-    "node-html-parser": "^7.1.0",
-    "openai": "^6.27.0",
     "zod": "catalog:"
   },
   "devDependencies": {
