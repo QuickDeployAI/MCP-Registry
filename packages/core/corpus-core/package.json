@@ -1,0 +1,35 @@
+{
+  "name": "@quickdeployai/corpus-core",
+  "version": "0.1.0",
+  "description": "Shared corpus store, query, schema inference, content reference, and embedding primitives for MCP importers",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@lancedb/lancedb": "^0.26.2",
+    "node-html-parser": "^7.1.0",
+    "openai": "^6.27.0"
+  },
+  "devDependencies": {
+    "@quickdeployai/mcp-registry-workspace-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "^3.0.8"
+  }
+}
