@@ -6,6 +6,7 @@
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { MemoryStore } from "@quickdeployai/corpus-core";
 import type { StoreAdapter } from "@quickdeployai/corpus-core";
@@ -15,7 +16,7 @@ import { GetDocUseCase } from "../../application/get-doc.use-case.js";
 import { ListSourcesUseCase } from "../../application/list-sources.use-case.js";
 import type { DocChunk } from "../../types.js";
 
-const FIXTURE_ROOT = new URL("../../../examples/fixtures/openwiki-sample", import.meta.url).pathname;
+const FIXTURE_ROOT = fileURLToPath(new URL("../../../examples/fixtures/openwiki-sample", import.meta.url));
 const CORPUS_ID = "sample-openwiki";
 
 function isError(value: unknown): value is { error: string } {

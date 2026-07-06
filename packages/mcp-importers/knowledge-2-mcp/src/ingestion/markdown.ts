@@ -7,7 +7,7 @@
  * doc sites) builds on.
  */
 import { readFile } from "node:fs/promises";
-import { extname, relative, sep } from "node:path";
+import { extname, relative } from "node:path";
 import fg from "fast-glob";
 import matter from "gray-matter";
 import type { DocChunk } from "../types.js";
@@ -35,7 +35,7 @@ export function humanizeSegment(segment: string): string {
 /** Split a relative file path into extension-less segments, POSIX-normalized. */
 export function pathSegments(relativePath: string): string[] {
   const withoutExt = relativePath.slice(0, relativePath.length - extname(relativePath).length);
-  return withoutExt.split(sep).filter(Boolean);
+  return withoutExt.split(/[\\/]+/).filter(Boolean);
 }
 
 interface RawSection {

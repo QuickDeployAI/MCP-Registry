@@ -60,6 +60,7 @@ export function operationToTool(
 ): ProxyTool {
   const params = mergeParams(shared, operation.parameters ?? []);
   const pathParams = params.filter((p) => p.in === "path").map((p) => p.name);
+  const headerKeys = params.filter((p) => p.in === "header").map((p) => p.name);
 
   const shape: Record<string, z.ZodTypeAny> = Object.fromEntries(
     params.map((p) => [
@@ -98,6 +99,7 @@ export function operationToTool(
         method: operation.method,
         path: operation.path,
         pathParams,
+        headerKeys,
         bodyKeys,
         args: args as Record<string, unknown>,
       }),

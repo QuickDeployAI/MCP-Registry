@@ -1,7 +1,8 @@
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { humanizeSegment, ingestMarkdownTree, pathSegments, splitIntoSections } from "../../ingestion/markdown.js";
 
-const FIXTURE_ROOT = new URL("../../../examples/fixtures/openwiki-sample", import.meta.url).pathname;
+const FIXTURE_ROOT = fileURLToPath(new URL("../../../examples/fixtures/openwiki-sample", import.meta.url));
 
 describe("humanizeSegment", () => {
   it("title-cases kebab and snake case segments", () => {

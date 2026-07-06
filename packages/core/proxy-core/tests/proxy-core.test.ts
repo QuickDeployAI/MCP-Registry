@@ -108,6 +108,7 @@ describe("operationToTool", () => {
       method: "post",
       path: "/pets/{id}",
       pathParams: ["id"],
+      headerKeys: ["x-tenant"],
       bodyKeys: ["name", "status"],
       args: { id: 1, name: "Fido" },
     }]);
@@ -132,9 +133,43 @@ describe("createHttpExecutor", () => {
         method: "get",
         path: "/status",
         pathParams: [],
+        headerKeys: [],
         bodyKeys: [],
         args: {},
       })).resolves.toBe("{\n  \"ok\": true\n}");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("adds request augmentation headers and query without leaking header args into query", async () => {
+    const originalFetch = globalThis.fetch;
+    let actualUrl = "";
+    let actualHeaders: unknown;
+    globalThis.fetch = (async (input, init) => {
+      actualUrl = String(input);
+      actualHeaders = init?.headers;
+      return new Response("ok");
+    }) as typeof fetch;
+    try {
+      await createHttpExecutor("https://api.example.com", {
+        augmentRequest: () => ({
+          headers: { Authorization: "Bearer token" },
+          query: { api_key: "query-token" },
+        }),
+      })({
+        method: "get",
+        path: "/status",
+        pathParams: [],
+        headerKeys: ["x-tenant"],
+        bodyKeys: [],
+        args: { "x-tenant": "tenant-1", filter: "active" },
+      });
+      const url = new URL(actualUrl);
+      expect(url.searchParams.get("filter")).toBe("active");
+      expect(url.searchParams.get("api_key")).toBe("query-token");
+      expect(url.searchParams.has("x-tenant")).toBe(false);
+      expect(actualHeaders).toMatchObject({ Authorization: "Bearer token" });
     } finally {
       globalThis.fetch = originalFetch;
     }

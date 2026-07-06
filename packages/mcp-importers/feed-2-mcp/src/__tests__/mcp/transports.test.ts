@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -8,8 +9,9 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SERVER = resolve(__dirname, "../../../dist/index.js");
-const PORT = 13200;
-const BASE = `http://localhost:${PORT}`;
+let port: number;
+let stdioPort: number;
+let base: string;
 
 const EXPECTED_TOOLS = [
   "get_schema",
@@ -23,7 +25,7 @@ const EXPECTED_TOOLS = [
   "get_new_items_since",
 ];
 
-async function waitForServer(url: string, timeoutMs = 15_000): Promise<void> {
+async function waitForServer(url: string, timeoutMs = 60_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
@@ -37,6 +39,21 @@ async function waitForServer(url: string, timeoutMs = 15_000): Promise<void> {
   throw new Error(`Server not ready at ${url} after ${timeoutMs}ms`);
 }
 
+async function getFreePort(): Promise<number> {
+  return new Promise((resolvePort, reject) => {
+    const server = createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (typeof address !== "object" || address === null) {
+        server.close(() => reject(new Error("Could not allocate test port")));
+        return;
+      }
+      server.close(() => resolvePort(address.port));
+    });
+  });
+}
+
 function mkClient() {
   return new Client({ name: "feed-2-mcp-test", version: "1.0.0" }, { capabilities: {} });
 }
@@ -44,12 +61,21 @@ function mkClient() {
 let httpProc: ReturnType<typeof spawn>;
 
 beforeAll(async () => {
-  httpProc = spawn("node", [SERVER, "--port", String(PORT)], {
+  port = await getFreePort();
+  stdioPort = await getFreePort();
+  base = `http://127.0.0.1:${port}`;
+  httpProc = spawn("node", [SERVER, "--port", String(port)], {
+    env: {
+      ...process.env,
+      FEED: "",
+      RSS_FEED: "",
+      NO_POLL: "1",
+    },
     stdio: ["pipe", "pipe", "pipe"],
   });
   httpProc.stderr?.on("data", (data: Buffer) => process.stderr.write(data));
-  await waitForServer(`${BASE}/ping`);
-}, 30_000);
+  await waitForServer(`${base}/ping`);
+}, 75_000);
 
 afterAll(() => {
   httpProc?.kill();
@@ -58,7 +84,7 @@ afterAll(() => {
 describe("MCP transports served simultaneously", () => {
   it("Streamable HTTP returns all feed tools", async () => {
     const client = mkClient();
-    await client.connect(new StreamableHTTPClientTransport(new URL(`${BASE}/mcp`)));
+    await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
     const { tools } = await client.listTools();
     await client.close();
     expect(tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
@@ -68,12 +94,18 @@ describe("MCP transports served simultaneously", () => {
     const client = mkClient();
     const transport = new StdioClientTransport({
       command: "node",
-      args: [SERVER, "--port", String(PORT + 1)],
+      args: [SERVER, "--port", String(stdioPort)],
+      env: {
+        ...process.env,
+        FEED: "",
+        RSS_FEED: "",
+        NO_POLL: "1",
+      },
       stderr: "pipe",
     });
     await client.connect(transport);
     const { tools } = await client.listTools();
     await client.close();
     expect(tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
-  }, 15_000);
+  }, 30_000);
 });

@@ -14,6 +14,11 @@ import {
   operationToTool,
   schemaToZod,
 } from "@quickdeployai/proxy-core";
+import {
+  applyCredentialAuth,
+  envCredential,
+  type CredentialAuthConfig,
+} from "@quickdeployai/importer-core";
 import type { OpenAPIV2, OpenAPIV3 } from "openapi-types";
 import { convertObj } from "swagger2openapi";
 
@@ -64,6 +69,8 @@ export interface OpenApiToolOptions {
   expose?: OpenApiExposeOptions;
   maxInlineResponseBytes?: number;
   contentStore?: OpenApiContentStore;
+  env?: NodeJS.ProcessEnv;
+  envPrefix?: string;
 }
 
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options"] as const;
@@ -208,7 +215,8 @@ export function openApiToMcpTools(
   baseUrl: string,
   options: OpenApiToolOptions = {},
 ): McpTool[] {
-  const executor = createHttpExecutor(baseUrl);
+  const env = options.env ?? process.env;
+  const envPrefix = options.envPrefix ?? "OPENAPI_AUTH";
 
   return Object.entries(doc.paths ?? {}).flatMap(([path, item]) => {
     const pi = item as OpenAPIV3.PathItemObject;
@@ -221,10 +229,77 @@ export function openApiToMcpTools(
       const operation = curateOperation(toProxyOperation(method, path, op), options.expose);
       if (!operation) return [];
 
+      const authConfigs = authForOperation(doc, op, envPrefix);
+      const executor = createHttpExecutor(baseUrl, {
+        augmentRequest: () => applyCredentialAuth(authConfigs, env),
+      });
       const params = mergeParams(shared, operation.parameters ?? []);
       const pathParams = params.filter((p) => p.in === "path").map((p) => p.name);
       const originalName = op.operationId ?? fallbackToolName(method, path);
       return [withContentRefs(operationToTool(operation, shared, executor), originalName, pathParams, options)];
     });
   });
+}
+
+export function authForOperation(
+  doc: OpenAPIV3.Document,
+  operation: OpenAPIV3.OperationObject,
+  envPrefix = "OPENAPI_AUTH",
+): CredentialAuthConfig[] {
+  const requirements = operation.security ?? doc.security ?? [];
+  const schemes = doc.components?.securitySchemes ?? {};
+
+  for (const requirement of requirements) {
+    const configs = Object.keys(requirement).map((schemeName) =>
+      authForScheme(schemeName, schemes[schemeName], envPrefix),
+    );
+    if (configs.every((config): config is CredentialAuthConfig => config !== undefined)) {
+      return configs;
+    }
+  }
+
+  return [];
+}
+
+function authForScheme(
+  schemeName: string,
+  scheme: OpenAPIV3.SecuritySchemeObject | OpenAPIV3.ReferenceObject | undefined,
+  envPrefix: string,
+): CredentialAuthConfig | undefined {
+  if (!scheme || "$ref" in scheme) return undefined;
+  const envBase = `${envPrefix}_${envName(schemeName)}`;
+
+  if (scheme.type === "apiKey" && (scheme.in === "header" || scheme.in === "query")) {
+    return {
+      type: "apiKey",
+      in: scheme.in,
+      name: scheme.name,
+      value: envCredential(envBase),
+    };
+  }
+
+  if (scheme.type === "http" && scheme.scheme.toLowerCase() === "bearer") {
+    return { type: "bearer", token: envCredential(`${envBase}_TOKEN`) };
+  }
+
+  if (scheme.type === "http" && scheme.scheme.toLowerCase() === "basic") {
+    return {
+      type: "basic",
+      username: envCredential(`${envBase}_USERNAME`),
+      password: envCredential(`${envBase}_PASSWORD`),
+    };
+  }
+
+  if (scheme.type === "oauth2" && scheme.flows.clientCredentials) {
+    return {
+      type: "oauth2ClientCredentials",
+      accessToken: envCredential(`${envBase}_ACCESS_TOKEN`),
+    };
+  }
+
+  return undefined;
+}
+
+function envName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").toUpperCase();
 }

@@ -1,7 +1,8 @@
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { ingestOpenWikiTree, wikiPathFor } from "../../ingestion/openwiki.js";
 
-const FIXTURE_ROOT = new URL("../../../examples/fixtures/openwiki-sample", import.meta.url).pathname;
+const FIXTURE_ROOT = fileURLToPath(new URL("../../../examples/fixtures/openwiki-sample", import.meta.url));
 
 describe("wikiPathFor", () => {
   it("collapses index/README landing pages into their folder", () => {
