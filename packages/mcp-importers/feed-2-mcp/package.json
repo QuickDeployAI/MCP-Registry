@@ -23,16 +23,15 @@
   },
   "dependencies": {
     "@lancedb/lancedb": "^0.26.2",
-    "@modelcontextprotocol/sdk": "^1.8.0",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "commander": "^14.0.3",
     "feedsmith": "^2.9.0",
     "node-html-parser": "^7.1.0",
     "openai": "^6.27.0",
-    "yargs": "^17.7.2",
-    "zod": "^3.24.2"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@types/yargs": "^17.0.33",
     "tsx": "^4.19.3",
     "typescript": "catalog:",
     "vitest": "^3.0.8"

@@ -39,6 +39,8 @@ node dist/index.js --feed https://feeds.example.com/rss.xml
 | `--storage-path <dir>` | `./rss2mcp-data` | Directory for file/vector storage |
 | `--embedding <provider>` | `none` | Embedding provider: `none` or `openai` |
 | `--openai-api-key <key>` | env | OpenAI API key (or `OPENAI_API_KEY` env var) |
+| `--port <number>` | `3000` | Streamable HTTP server port |
+| `--mcp <path>` | `/mcp` | Streamable HTTP endpoint path |
 
 ### Environment Variables
 
@@ -56,6 +58,16 @@ All CLI flags have environment variable equivalents:
 | `STORAGE_PATH` | `--storage-path` |
 | `EMBEDDING_PROVIDER` | `--embedding` |
 | `OPENAI_API_KEY` | `--openai-api-key` |
+| `PORT` | `--port` |
+| `MCP_PATH` | `--mcp` |
+
+## Transports
+
+The server runs the official MCP SDK stdio transport and a Streamable HTTP endpoint in the same process.
+
+- Stdio is available on stdin/stdout for local MCP clients.
+- Streamable HTTP is available at `http://localhost:3000/mcp` by default.
+- Health probes can use `GET /ping`, which returns `204` once the process is listening.
 
 ## MCP Tools
 
