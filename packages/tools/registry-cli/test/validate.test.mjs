@@ -50,6 +50,84 @@ test("requires OCI package digests and exact version tags", async () => {
   assert.ok(result.errors.some((error) => error.includes("must be tagged with version 1.2.3")));
 });
 
+test("accepts remote ref seed catalog entries", async () => {
+  const root = await fixtureRoot({
+    packageVersion: "1.2.3",
+    serverVersion: "1.2.3",
+    registryVersion: "1.2.3",
+    manifestPackageVersion: "1.2.3",
+  });
+
+  await writeJson(join(root, "registry/remote-ref-seeds.json"), {
+    schema_version: "2026-07-06",
+    kind: "quickdeploy.mcp-remote-ref-seeds",
+    seeds: [
+      {
+        id: "confluent-mcp",
+        name: "Confluent MCP",
+        category: "eventing-streaming",
+        disposition: "remote-ref",
+        source_issue: "QUI-260",
+        endpoint: {
+          url: "https://mcp.confluent.cloud/mcp",
+          transport: "streamable-http",
+        },
+        auth: {
+          type: "oauth2",
+          notes: "OAuth PKCE for Confluent Cloud accounts.",
+        },
+        curation: {
+          provenance: "vendor-official",
+        },
+        references: [
+          {
+            title: "Confluent MCP",
+            url: "https://github.com/confluentinc/mcp-confluent",
+          },
+        ],
+      },
+    ],
+  });
+
+  const result = await validateRepository(root);
+
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.checkedRemoteRefs, 1);
+});
+
+test("rejects malformed remote ref seed catalog entries", async () => {
+  const root = await fixtureRoot({
+    packageVersion: "1.2.3",
+    serverVersion: "1.2.3",
+    registryVersion: "1.2.3",
+    manifestPackageVersion: "1.2.3",
+  });
+
+  await writeJson(join(root, "registry/remote-ref-seeds.json"), {
+    schema_version: "2026-07-06",
+    kind: "quickdeploy.mcp-remote-ref-seeds",
+    seeds: [
+      {
+        id: "Bad Id",
+        category: "unknown",
+        disposition: "remote-ref",
+        source_issue: "not-linear",
+        curation: {},
+        references: [],
+      },
+    ],
+  });
+
+  const result = await validateRepository(root);
+
+  assert.ok(result.errors.some((error) => error.includes("id must be kebab-case")));
+  assert.ok(result.errors.some((error) => error.includes("category must be one of")));
+  assert.ok(result.errors.some((error) => error.includes("source_issue must be a Linear issue id")));
+  assert.ok(result.errors.some((error) => error.includes("references must include at least one source")));
+  assert.ok(result.errors.some((error) => error.includes("curation.provenance must be set")));
+  assert.ok(result.errors.some((error) => error.includes("remote-ref seeds must include endpoint.url")));
+});
+
 async function fixtureRoot(options) {
   const root = await mkdtemp(join(tmpdir(), "registry-cli-"));
   const serverDir = join(root, "servers/example");

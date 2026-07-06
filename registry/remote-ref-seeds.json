@@ -1,0 +1,253 @@
+{
+  "schema_version": "2026-07-06",
+  "kind": "quickdeploy.mcp-remote-ref-seeds",
+  "description": "Seed catalog for vendor and ecosystem MCP references that extend the first hosted remote catalog. Entries are sourced from the MCP Everywhere discovery backlog and are intentionally curated before promotion into the public registry index.",
+  "generated_from": {
+    "linear_issue": "QUI-243",
+    "tranche_issue": "QUI-260"
+  },
+  "seeds": [
+    {
+      "id": "dbt-mcp",
+      "name": "dbt MCP",
+      "category": "data-stack",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Package a dbt project-aware MCP server with semantic layer, lineage, dbt CLI, and docs-search capabilities.",
+        "runtime": "python",
+        "auth_notes": "Requires scoped dbt platform or warehouse credentials depending on enabled tools."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Data platform operations, not generic SQL generation."
+      },
+      "references": [
+        {
+          "title": "dbt-labs/dbt-mcp",
+          "url": "https://github.com/dbt-labs/dbt-mcp"
+        }
+      ]
+    },
+    {
+      "id": "motherduck-mcp",
+      "name": "MotherDuck MCP",
+      "category": "data-stack",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Expose MotherDuck query workflows through a packaged MCP server.",
+        "runtime": "node",
+        "auth_notes": "Requires MotherDuck token or DuckDB-compatible credential injection."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Data warehouse access; default to read-only query permissions."
+      },
+      "references": [
+        {
+          "title": "motherduckdb/mcp-server-motherduck",
+          "url": "https://github.com/motherduckdb/mcp-server-motherduck"
+        }
+      ]
+    },
+    {
+      "id": "supabase-mcp",
+      "name": "Supabase MCP",
+      "category": "data-stack",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Deploy Supabase platform and database tooling with explicit prompt-injection and credential-scope warnings.",
+        "runtime": "node",
+        "auth_notes": "Requires scoped Supabase access token; service-role usage must be called out before publication."
+      },
+      "curation": {
+        "provenance": "community-official",
+        "boundary": "Platform API and database operations; cite row-content prompt-injection risk in marketplace copy."
+      },
+      "references": [
+        {
+          "title": "supabase-community/supabase-mcp",
+          "url": "https://github.com/supabase-community/supabase-mcp"
+        }
+      ]
+    },
+    {
+      "id": "genai-toolbox",
+      "name": "MCP Toolbox for Databases",
+      "category": "data-stack",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Reference the tools.yaml pattern for curated parameterized database tools across supported engines.",
+        "runtime": "go",
+        "auth_notes": "Use least-privilege database roles; avoid single broad service credentials."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Curated database tools, not schema-wide generated per-table tools."
+      },
+      "references": [
+        {
+          "title": "googleapis/genai-toolbox",
+          "url": "https://github.com/googleapis/genai-toolbox"
+        }
+      ]
+    },
+    {
+      "id": "mindsdb-mcp",
+      "name": "MindsDB MCP",
+      "category": "data-stack",
+      "disposition": "watch",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Track as a federated data and model engine with built-in MCP support before adding a publishable recipe.",
+        "runtime": "mixed",
+        "auth_notes": "Credential model depends on connected data sources."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Federated engine; requires extra review before default registry placement."
+      },
+      "references": [
+        {
+          "title": "mindsdb/mindsdb",
+          "url": "https://github.com/mindsdb/mindsdb"
+        }
+      ]
+    },
+    {
+      "id": "confluent-mcp",
+      "name": "Confluent MCP",
+      "category": "eventing-streaming",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Package Confluent Cloud operations for topics, Flink SQL, Schema Registry, and connectors.",
+        "runtime": "python",
+        "auth_notes": "Use OAuth PKCE or scoped Confluent Cloud credentials."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Platform operations; asyncapi-2-mcp remains the app-level publish/consume importer."
+      },
+      "references": [
+        {
+          "title": "confluentinc/mcp-confluent",
+          "url": "https://github.com/confluentinc/mcp-confluent"
+        }
+      ]
+    },
+    {
+      "id": "home-assistant-core-mcp",
+      "name": "Home Assistant Core MCP",
+      "category": "iot-home",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Reference the official Home Assistant core integration for Assist API backed device-control tooling.",
+        "runtime": "python",
+        "auth_notes": "Requires Home Assistant long-lived access token or equivalent integration-scoped credential."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Prefer official device-control surface for conservative default placement."
+      },
+      "references": [
+        {
+          "title": "Home Assistant MCP server integration",
+          "url": "https://www.home-assistant.io/integrations/mcp_server/"
+        }
+      ]
+    },
+    {
+      "id": "ha-mcp",
+      "name": "Home Assistant AI MCP",
+      "category": "iot-home",
+      "disposition": "watch",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Track as the broad community Home Assistant option with automations, dashboards, and traces.",
+        "runtime": "python",
+        "auth_notes": "Requires careful tool curation because the broad tool set can mutate home state."
+      },
+      "curation": {
+        "provenance": "community",
+        "boundary": "Larger capability surface than the official integration; review before promotion."
+      },
+      "references": [
+        {
+          "title": "homeassistant-ai/ha-mcp",
+          "url": "https://github.com/homeassistant-ai/ha-mcp"
+        }
+      ]
+    },
+    {
+      "id": "terraform-mcp-server",
+      "name": "Terraform MCP Server",
+      "category": "dev-platform",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Reference HashiCorp's Terraform docs, module, policy, and workspace operations server.",
+        "runtime": "go",
+        "auth_notes": "Requires HCP/Terraform Cloud credentials when workspace operations are enabled."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Terraform platform and registry operations, not provider-resource code generation."
+      },
+      "references": [
+        {
+          "title": "hashicorp/terraform-mcp-server",
+          "url": "https://github.com/hashicorp/terraform-mcp-server"
+        }
+      ]
+    },
+    {
+      "id": "postman-mcp-server",
+      "name": "Postman MCP Server",
+      "category": "dev-platform",
+      "disposition": "deploy-recipe",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Reference the Postman platform API MCP server and document that it is not a collection-to-MCP converter.",
+        "runtime": "node",
+        "auth_notes": "Requires a scoped Postman API key."
+      },
+      "curation": {
+        "provenance": "vendor-official",
+        "boundary": "Postman platform operations; collection conversion remains a separate importer question."
+      },
+      "references": [
+        {
+          "title": "postmanlabs/postman-mcp-server",
+          "url": "https://github.com/postmanlabs/postman-mcp-server"
+        }
+      ]
+    },
+    {
+      "id": "opc-foundation-sample",
+      "name": "OPC Foundation MCP Sample",
+      "category": "dev-platform",
+      "disposition": "watch",
+      "source_issue": "QUI-260",
+      "deploy_recipe": {
+        "summary": "Track the standards-body sample before publishing industrial protocol references.",
+        "runtime": "dotnet",
+        "auth_notes": "Writes require dry-run, safety interlocks, and explicit operator approval before any registry promotion."
+      },
+      "curation": {
+        "provenance": "standards-body",
+        "boundary": "Industrial operations require a higher safety bar than ordinary developer tools."
+      },
+      "references": [
+        {
+          "title": "OPCFoundation/UA-.NETStandard",
+          "url": "https://github.com/OPCFoundation/UA-.NETStandard"
+        }
+      ]
+    }
+  ]
+}
