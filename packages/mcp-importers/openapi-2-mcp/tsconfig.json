@@ -1,22 +1,9 @@
 {
+  "extends": "../../core/workspace-config/tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "target": "esnext",
-    "lib": ["esnext"],
     "types": ["node"],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "noUncheckedIndexedAccess": true,
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "moduleDetection": "force"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

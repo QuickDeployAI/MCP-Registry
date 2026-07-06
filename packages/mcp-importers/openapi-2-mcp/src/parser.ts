@@ -80,7 +80,11 @@ function mergeParams(
 ): OpenAPIV3.ParameterObject[] {
   return [...shared, ...local].reduce<OpenAPIV3.ParameterObject[]>((acc, p) => {
     const i = acc.findIndex((x) => x.name === p.name && x.in === p.in);
-    i >= 0 ? (acc[i] = p) : acc.push(p);
+    if (i >= 0) {
+      acc[i] = p;
+    } else {
+      acc.push(p);
+    }
     return acc;
   }, []);
 }

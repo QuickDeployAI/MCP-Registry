@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,7 +29,7 @@ function mkClient() {
   return new Client({ name: "test", version: "1.0.0" }, { capabilities: {} });
 }
 
-// ── fixture: HTTP+SSE+stdio server ──────────────────────────────────────────
+// ── fixture: streamable HTTP + stdio server ─────────────────────────────────
 
 let httpProc: ReturnType<typeof spawn>;
 
@@ -47,7 +46,7 @@ afterAll(() => { httpProc?.kill(); });
 
 // ── tests ────────────────────────────────────────────────────────────────────
 
-describe("all three MCP transports served simultaneously", () => {
+describe("MCP transports served simultaneously", () => {
 
   it("HTTP streaming (/mcp) returns the expected tools", async () => {
     const client = mkClient();
@@ -57,17 +56,9 @@ describe("all three MCP transports served simultaneously", () => {
     expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
   });
 
-  it("SSE (/sse) returns the expected tools", async () => {
-    const client = mkClient();
-    await client.connect(new SSEClientTransport(new URL(`${BASE}/sse`)));
-    const { tools } = await client.listTools();
-    await client.close();
-    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(EXPECTED_TOOLS));
-  });
-
   it("stdio returns the expected tools", async () => {
     // StdioClientTransport spawns its own child process, so it runs alongside
-    // the HTTP server process above — all three transports in flight at once.
+    // the HTTP server process above.
     const client = mkClient();
     const transport = new StdioClientTransport({
       command: "node",

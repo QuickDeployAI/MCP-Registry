@@ -4,6 +4,10 @@ Build an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server 
 
 Each operation in the OpenAPI spec is exposed as an MCP tool, allowing AI agents to interact with any REST API through the MCP protocol.
 
+## Workspace status
+
+This package now lives in the MCP-Registry workspace at `packages/mcp-importers/openapi-2-mcp`. The former standalone repository should point here after the first workspace release ships.
+
 ## Installation
 
 ```bash
@@ -104,7 +108,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 ## Building from Source
 
 ```bash
-npm install
-npm run build
+pnpm install
+pnpm --filter @quickdeployai/openapi-2-mcp build
 ```
 
