@@ -8,7 +8,6 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@quickdeployai/mcp-registry-workspace",
     "@quickdeployai/mcp-registry-workspace-config",
     "@quickdeployai/mcp-registry-workspace-smoke",
     "@quickdeployai/mcp-registry-cli"
