@@ -8,6 +8,7 @@ export type ValidationResult = {
   errors: string[];
   checkedServers: number;
   checkedRemoteRefs: number;
+  checkedWorkspacePackages: number;
 };
 
 type JsonObject = Record<string, unknown>;
@@ -50,6 +51,13 @@ type RemoteRefSeed = JsonObject & {
   curation?: unknown;
 };
 
+type WorkspacePackage = {
+  name: string;
+  path: string;
+  private: boolean;
+  dependencies: Record<string, unknown>;
+};
+
 const EXACT_SEMVER =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const OCI_DIGEST = /^sha256:[a-f0-9]{64}$/i;
@@ -83,12 +91,41 @@ export async function validateRepository(root: string): Promise<ValidationResult
   }
 
   const checkedRemoteRefs = await validateRemoteRefSeeds(absoluteRoot, errors);
+  const checkedWorkspacePackages = await validateWorkspacePackages(absoluteRoot, errors);
 
   return {
     errors,
     checkedServers: serverPaths.length,
     checkedRemoteRefs,
+    checkedWorkspacePackages,
   };
+}
+
+async function validateWorkspacePackages(root: string, errors: string[]): Promise<number> {
+  const packages = await discoverWorkspacePackages(root);
+  const packagesByName = new Map(packages.map((workspacePackage) => [workspacePackage.name, workspacePackage]));
+
+  for (const workspacePackage of packages) {
+    if (workspacePackage.private) {
+      continue;
+    }
+
+    for (const [dependencyName, spec] of Object.entries(workspacePackage.dependencies)) {
+      if (spec !== "workspace:*") {
+        continue;
+      }
+
+      const dependencyPackage = packagesByName.get(dependencyName);
+
+      if (dependencyPackage?.private) {
+        errors.push(
+          `${workspacePackage.path}: dependency ${dependencyName} uses workspace:* but target ${dependencyPackage.path} is private`,
+        );
+      }
+    }
+  }
+
+  return packages.length;
 }
 
 async function validateRemoteRefSeeds(root: string, errors: string[]): Promise<number> {
@@ -282,10 +319,66 @@ async function discoverServerManifests(root: string): Promise<string[]> {
   return manifests.sort();
 }
 
+async function discoverWorkspacePackages(root: string): Promise<WorkspacePackage[]> {
+  const packageRoots = [join(root, "packages")];
+  const packages: WorkspacePackage[] = [];
+
+  for (const packageRoot of packageRoots) {
+    for (const packageJsonPath of await discoverPackageJsonFiles(packageRoot)) {
+      const packageJson = await readJson<JsonObject>(packageJsonPath);
+      const name = stringValue(packageJson.name);
+
+      if (!name) {
+        continue;
+      }
+
+      packages.push({
+        name,
+        path: normalizePath(relative(root, packageJsonPath)),
+        private: packageJson.private === true,
+        dependencies: isObject(packageJson.dependencies) ? packageJson.dependencies : {},
+      });
+    }
+  }
+
+  return packages.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+async function discoverPackageJsonFiles(root: string): Promise<string[]> {
+  const files: string[] = [];
+
+  for (const entry of await readDirectoryEntries(root)) {
+    const entryPath = join(root, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...(await discoverPackageJsonFiles(entryPath)));
+      continue;
+    }
+
+    if (entry.isFile() && entry.name === "package.json") {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
 async function readDirectories(path: string): Promise<string[]> {
   try {
-    const entries = await readdir(path, { withFileTypes: true });
+    const entries = await readDirectoryEntries(path);
     return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  } catch (error) {
+    if (isNodeError(error) && error.code === "ENOENT") {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function readDirectoryEntries(path: string) {
+  try {
+    return await readdir(path, { withFileTypes: true });
   } catch (error) {
     if (isNodeError(error) && error.code === "ENOENT") {
       return [];
@@ -349,7 +442,7 @@ export async function main(): Promise<void> {
   }
 
   console.log(
-    `registry-cli validate passed (${result.checkedServers} server manifest(s), ${result.checkedRemoteRefs} remote ref seed(s))`,
+    `registry-cli validate passed (${result.checkedServers} server manifest(s), ${result.checkedRemoteRefs} remote ref seed(s), ${result.checkedWorkspacePackages} workspace package(s))`,
   );
 }
 

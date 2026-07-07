@@ -169,6 +169,36 @@ test("accepts the knowledge-docs remote ref category", async () => {
   assert.equal(result.checkedRemoteRefs, 1);
 });
 
+test("rejects public packages with runtime workspace deps on private packages", async () => {
+  const root = await fixtureRoot({
+    packageVersion: "1.2.3",
+    serverVersion: "1.2.3",
+    registryVersion: "1.2.3",
+    manifestPackageVersion: "1.2.3",
+  });
+
+  await writeJson(join(root, "packages/core/private-core/package.json"), {
+    name: "@quickdeployai/private-core",
+    version: "1.0.0",
+    private: true,
+  });
+  await writeJson(join(root, "packages/mcp-importers/public-importer/package.json"), {
+    name: "@quickdeployai/public-importer",
+    version: "1.0.0",
+    dependencies: {
+      "@quickdeployai/private-core": "workspace:*",
+    },
+  });
+
+  const result = await validateRepository(root);
+
+  assert.ok(
+    result.errors.some((error) =>
+      error.includes("dependency @quickdeployai/private-core uses workspace:* but target"),
+    ),
+  );
+});
+
 async function fixtureRoot(options) {
   const root = await mkdtemp(join(tmpdir(), "registry-cli-"));
   const serverDir = join(root, "servers/example");
@@ -220,5 +250,6 @@ async function fixtureRoot(options) {
 }
 
 async function writeJson(path, value) {
+  await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 }

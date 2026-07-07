@@ -7,8 +7,8 @@ server or importer release must update the package version, `server.json`, and
 
 ## Release Flow
 
-1. Add a changeset for each public package under `packages/mcp-importers/*` or
-   `packages/mcps/*`.
+1. Add a changeset for each public package under `packages/mcp-importers/*`,
+   `packages/mcps/*`, or `packages/core/*`.
 2. Run `pnpm version:packages` to apply changesets and then validate registry
    version sync.
 3. Update the matching `server.json` in the same PR when a package version
@@ -25,6 +25,12 @@ Changesets publish until its existing GitHub Package access is transferred from
 the standalone repository to this registry repository. Keep version and registry
 validation in place, but do not let that legacy package permission block
 publishing new workspace-owned packages.
+
+Public packages must not depend at runtime on private workspace packages through
+`workspace:*`. Shared core packages used by public importers are release-managed
+packages and must stay publishable until their importers migrate away from them.
+The registry validation gate checks this so a private local helper cannot leak
+into a published importer dependency graph.
 
 Legacy servers under `servers/*` are not workspace packages yet, but they are
 still validated. Their local `package.json`, `server.json`, and
