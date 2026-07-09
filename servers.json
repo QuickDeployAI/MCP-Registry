@@ -4876,6 +4876,173 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/sec-edgar",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for SEC EDGAR filings feed.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/sec-edgar/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "filings",
+            "generated",
+            "manifest-backed",
+            "read-only",
+            "sec-edgar"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/sec-edgar",
+            "version": "0.1.0",
+            "title": "SEC EDGAR",
+            "description": "Generated feed-2-mcp MCP manifest for SEC EDGAR filings feed.",
+            "labels": [
+              "feed",
+              "filings",
+              "generated",
+              "read-only",
+              "sec-edgar"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+              "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+              "ref": "sec-edgar-current-filings-atom@2026-07-09"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/filings/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Refresh interval for feed polling and cache updates."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Maximum feed items retained in the MCP corpus."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether full feed content is exposed in resources."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 30,
+                "maxItems": 40,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+                "type": "http",
+                "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+                "ref": "sec-edgar-current-filings-atom@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "sec-edgar-current-filings-atom@2026-07-09",
+                "notes": [
+                  "Official SEC.gov RSS/Atom feeds documentation page (https://www.sec.gov/about/rss-feeds) links this canonical EDGAR current-filings Atom feed endpoint.",
+                  "This manifest selects the public, unauthenticated EDGAR current 10-K filings Atom feed; no API key or account is required.",
+                  "Canonical documentation URL: https://www.sec.gov/about/rss-feeds",
+                  "Verified documentation page SHA-256: aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290"
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_sec_edgar_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "sec_edgar_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+              "type": "http",
+              "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+              "ref": "sec-edgar-current-filings-atom@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "sec-edgar-current-filings-atom@2026-07-09",
+              "notes": [
+                "Official SEC.gov RSS/Atom feeds documentation page (https://www.sec.gov/about/rss-feeds) links this canonical EDGAR current-filings Atom feed endpoint.",
+                "This manifest selects the public, unauthenticated EDGAR current 10-K filings Atom feed; no API key or account is required.",
+                "Canonical documentation URL: https://www.sec.gov/about/rss-feeds",
+                "Verified documentation page SHA-256: aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290"
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/sentry",
       "version": "0.1.0",
       "description": "Generated asyncapi-2-mcp MCP manifest for Sentry issue alert webhook events.",
@@ -8116,6 +8283,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 61
+    "ai.quickdeploy.registry/sourceCount": 63
   }
 }
