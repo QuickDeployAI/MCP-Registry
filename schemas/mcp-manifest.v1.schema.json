@@ -21,6 +21,10 @@
     },
     "deployment": {
       "$ref": "#/$defs/deployment"
+    },
+    "_meta": {
+      "type": "object",
+      "additionalProperties": true
     }
   },
   "$defs": {

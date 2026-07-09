@@ -92,6 +92,26 @@ describe("McpManifestSchema", () => {
     });
   });
 
+  it("accepts top-level generation metadata", () => {
+    const manifest = {
+      ...(example("openapi-select") as Record<string, unknown>),
+      _meta: {
+        "ai.quickdeploy.registry/generatedMcp": {
+          retrievedAt: "2026-07-09",
+          source: "https://petstore.example/openapi.json",
+        },
+      },
+    };
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
+
+    expect(validate(manifest), JSON.stringify(validate.errors)).toBe(true);
+    expect(McpManifestSchema.parse(manifest)._meta).toMatchObject({
+      "ai.quickdeploy.registry/generatedMcp": {
+        retrievedAt: "2026-07-09",
+      },
+    });
+  });
+
   it("validates placed upstream credential schemes without literal secrets", () => {
     const raw = example("openapi-select") as Record<string, any>;
     const manifest = {

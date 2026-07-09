@@ -756,6 +756,7 @@ export const McpManifestSchema = z
     metadata: McpManifestMetadataSchema,
     spec: McpManifestSpecSchema,
     deployment: McpManifestDeploymentSchema,
+    _meta: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 export type McpManifest = z.infer<typeof McpManifestSchema>;
