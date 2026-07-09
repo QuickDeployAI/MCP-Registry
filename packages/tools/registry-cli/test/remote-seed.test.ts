@@ -9,12 +9,13 @@ import {
 } from "@quickdeployai/registry-schemas";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
-const remoteDir = join(repoRoot, "manifests", "remotes");
+const registryDir = join(repoRoot, "registry");
+const remoteTemplatePath = join(repoRoot, "docs", "registry", "templates", "remote.server.json");
 
 describe("remote catalog seed", () => {
   it("keeps the remote authoring template schema-valid but unpublished", async () => {
     const template = OfficialServerJsonDocumentSchema.parse(
-      JSON.parse(await readFile(join(remoteDir, "_template.server.json"), "utf8")),
+      JSON.parse(await readFile(remoteTemplatePath, "utf8")),
     );
 
     expect(template.name).toBe("com.example/hosted-mcp");
@@ -32,13 +33,11 @@ describe("remote catalog seed", () => {
   });
 
   it("keeps official hosted remote entries validated and curated", async () => {
-    const files = (await readdir(remoteDir)).filter(
-      (name) => !name.startsWith("_") && name.endsWith(".server.json"),
-    );
+    const files = await findServerJsonFiles(registryDir);
     const entries = await Promise.all(
       files.map(async (file) =>
         OfficialServerJsonDocumentSchema.parse(
-          JSON.parse(await readFile(join(remoteDir, file), "utf8")),
+          JSON.parse(await readFile(file, "utf8")),
         ),
       ),
     );
@@ -82,3 +81,16 @@ describe("remote catalog seed", () => {
     }
   });
 });
+
+async function findServerJsonFiles(dir: string): Promise<string[]> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const nested = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return findServerJsonFiles(path);
+      if (entry.isFile() && entry.name.endsWith(".server.json")) return [path];
+      return [];
+    }),
+  );
+  return nested.flat().sort();
+}

@@ -13,6 +13,9 @@ coverage/
 test-results/
 .vitest/
 
+# Generated registry outputs
+registry/index.json
+
 # Logs
 *.log
 npm-debug.log*

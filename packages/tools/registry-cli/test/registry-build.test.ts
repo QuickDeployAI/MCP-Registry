@@ -23,35 +23,12 @@ describe("registry build artifacts", () => {
     "generates canonical servers.json entries",
     async () => {
       const rootDir = await fixtureRoot();
-      await seedPackageServer(
-        rootDir,
-        "quickdeploy-admin",
-        "ai.quickdeploy/admin",
-        "QuickDeploy Admin MCP.",
-        "https://www.npmjs.com/package/@quickdeployai/mcp-admin",
-      );
-      await seedPackageServer(
-        rootDir,
-        "quickdeploy-control-plane",
-        "ai.quickdeploy/control-plane",
-        "QuickDeploy Control Plane MCP.",
-        "https://www.npmjs.com/package/@quickdeployai/mcp-control-plane",
-      );
-      await seedPackageServer(
-        rootDir,
-        "quickdeploy-docs",
-        "ai.quickdeploy/docs",
-        "QuickDeploy Docs MCP.",
-        "https://www.npmjs.com/package/@quickdeployai/mcp-docs",
-      );
+      await seedIgnoredPackageServer(rootDir);
       await seedRemote(rootDir);
       await seedManifest(rootDir);
 
       const artifacts = await buildRegistryArtifacts({ rootDir });
       expect(artifacts.serversJson.servers.map((server) => server.name)).toEqual([
-        "ai.quickdeploy/admin",
-        "ai.quickdeploy/control-plane",
-        "ai.quickdeploy/docs",
         "ai.quickdeploy/petstore",
         "com.linear/mcp",
       ]);
@@ -59,12 +36,33 @@ describe("registry build artifacts", () => {
       expect(artifacts.files).toEqual({
         "servers.json": expect.any(String),
       });
-      expect(artifacts.serversJson.servers).toContainEqual(
-        expect.objectContaining({
-          name: "ai.quickdeploy/admin",
-          description: "QuickDeploy Admin MCP.",
-        }),
-      );
+      expect(artifacts.generatedFiles).toEqual({
+        "registry/index.json": expect.any(String),
+      });
+      expect(artifacts.indexJson.providers).toEqual([
+        {
+          id: "linear",
+          entries: [
+            {
+              kind: "server-json",
+              name: "com.linear/mcp",
+              path: "registry/linear/mcp.server.json",
+              version: "1.0.0",
+            },
+          ],
+        },
+        {
+          id: "quickdeploy",
+          entries: [
+            {
+              kind: "mcp-manifest",
+              name: "ai.quickdeploy/petstore",
+              path: "registry/quickdeploy/petstore.mcp.yaml",
+              version: "1.0.0",
+            },
+          ],
+        },
+      ]);
       expect(artifacts.serversJson.servers).toContainEqual(
         expect.objectContaining({
           name: "com.linear/mcp",
@@ -79,7 +77,7 @@ describe("registry build artifacts", () => {
               identifier: "ghcr.io/quickdeployai/mcp-host",
               runtimeArguments: [
                 "run",
-                "manifests/petstore.mcp.yaml",
+                "registry/quickdeploy/petstore.mcp.yaml",
                 "--transport",
                 "streamable-http",
               ],
@@ -105,27 +103,24 @@ describe("registry build artifacts", () => {
     expect(await readFile(join(rootDir, "servers.json"), "utf8")).toBe(
       artifacts.files["servers.json"],
     );
+    expect(await readFile(join(rootDir, "registry", "index.json"), "utf8")).toBe(
+      artifacts.generatedFiles["registry/index.json"],
+    );
     expect(await checkGeneratedRegistryArtifacts({ rootDir })).toEqual({ ok: true, changed: [] });
   }, 30_000);
 
   it("pins OCI package identifiers when image digests are available", async () => {
     const rootDir = await fixtureRoot();
-    await seedOciPackageServer(
-      rootDir,
-      "asyncapi-2-mcp",
-      "ai.quickdeploy/importers/asyncapi-2-mcp",
-      "AsyncAPI importer image.",
-      "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
-    );
+    await seedOciServer(rootDir);
 
     const unpinned = await buildRegistryArtifacts({ rootDir });
     expect(unpinned.serversJson.servers[0]?.packages?.[0]?.identifier).toBe(
       "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
     );
 
-    await mkdir(join(rootDir, "registry"), { recursive: true });
+    await mkdir(join(rootDir, "generated"), { recursive: true });
     await writeFile(
-      join(rootDir, "registry", "oci-image-digests.json"),
+      join(rootDir, "generated", "oci-image-digests.json"),
       JSON.stringify(
         {
           images: {
@@ -223,7 +218,7 @@ describe("registry build artifacts", () => {
       },
     });
 
-    const serverJson = compileManifestToServerJson(manifest, "manifests/petstore.mcp.yaml");
+    const serverJson = compileManifestToServerJson(manifest, "registry/quickdeploy/petstore.mcp.yaml");
 
     expect(serverJson.$schema).toBe(
       "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
@@ -231,7 +226,7 @@ describe("registry build artifacts", () => {
     expect(serverJson.packages?.[0]).toMatchObject({
       registryType: "oci",
       identifier: "ghcr.io/quickdeployai/mcp-host",
-      runtimeArguments: ["run", "manifests/petstore.mcp.yaml", "--transport", "streamable-http"],
+      runtimeArguments: ["run", "registry/quickdeploy/petstore.mcp.yaml", "--transport", "streamable-http"],
       environmentVariables: [
         "OAUTH_CLIENT_ID",
         "OAUTH_CLIENT_SECRET",
@@ -314,7 +309,7 @@ describe("registry build artifacts", () => {
     });
 
     const serverJson = compileBakedManifestToServerJson(manifest, {
-      sourceManifestPath: "manifests/petstore.mcp.yaml",
+      sourceManifestPath: "registry/quickdeploy/petstore.mcp.yaml",
       image: "ghcr.io/quickdeployai/mcp-petstore",
       digest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
     });
@@ -338,7 +333,7 @@ describe("registry build artifacts", () => {
       }),
     ]);
     expect(serverJson._meta?.["ai.quickdeploy.registry/bake"]).toEqual({
-      sourceManifestPath: "manifests/petstore.mcp.yaml",
+      sourceManifestPath: "registry/quickdeploy/petstore.mcp.yaml",
       bakedManifestPath: "/app/manifest.mcp.yaml",
       image: "ghcr.io/quickdeployai/mcp-petstore",
       digest: "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
@@ -356,7 +351,7 @@ describe("registry build artifacts", () => {
       "--root",
       rootDir,
       "--manifest",
-      "manifests/petstore.mcp.yaml",
+      "registry/quickdeploy/petstore.mcp.yaml",
       "--image",
       "ghcr.io/quickdeployai/mcp-petstore",
       "--digest",
@@ -395,10 +390,10 @@ describe("registry build artifacts", () => {
             },
           },
         }),
-        "manifests/petstore.mcp.yaml",
+        "registry/quickdeploy/petstore.mcp.yaml",
       ),
     ).toThrow(
-      /Invalid importer config in manifests\/petstore\.mcp\.yaml: openapi-2-mcp config field "unsupported"/,
+      /Invalid importer config in registry\/quickdeploy\/petstore\.mcp\.yaml: openapi-2-mcp config field "unsupported"/,
     );
   });
 });
@@ -475,38 +470,24 @@ async function runRegistryCli(args: string[]): Promise<{ stdout: string; stderr:
   );
 }
 
-async function seedPackageServer(
-  rootDir: string,
-  dirName: string,
-  name: string,
-  description: string,
-  packageUrl: string,
-): Promise<void> {
-  const targetDir = join(rootDir, "packages", "importers", dirName);
+async function seedIgnoredPackageServer(rootDir: string): Promise<void> {
+  const targetDir = join(rootDir, "packages", "importers", "quickdeploy-admin");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
     join(targetDir, "server.json"),
     JSON.stringify(
       {
         $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-        name,
+        name: "ai.quickdeploy/admin",
         version: "0.1.0",
-        description,
+        description: "Ignored package descriptor.",
         packages: [
           {
             registryType: "npm",
-            identifier: packageUrl.replace("https://www.npmjs.com/package/", ""),
+            identifier: "@quickdeployai/mcp-admin",
             version: "0.1.0",
           },
         ],
-        _meta: {
-          "ai.quickdeploy.registry/curation": {
-            verifiedStatus: "verified",
-            category: "quickdeploy",
-            isOfficial: true,
-            tags: [dirName.replace("quickdeploy-", "")],
-          },
-        },
       },
       null,
       2,
@@ -514,36 +495,30 @@ async function seedPackageServer(
   );
 }
 
-async function seedOciPackageServer(
-  rootDir: string,
-  dirName: string,
-  name: string,
-  description: string,
-  image: string,
-): Promise<void> {
-  const targetDir = join(rootDir, "packages", "importers", dirName);
+async function seedOciServer(rootDir: string): Promise<void> {
+  const targetDir = join(rootDir, "registry", "example");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
-    join(targetDir, "server.json"),
+    join(targetDir, "oci.server.json"),
     JSON.stringify(
       {
         $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-        name,
+        name: "com.example/oci-mcp",
         version: "0.1.0",
-        description,
+        description: "OCI packaged MCP server.",
         packages: [
           {
             registryType: "oci",
-            identifier: image,
+            identifier: "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
             version: "0.1.0",
           },
         ],
         _meta: {
           "ai.quickdeploy.registry/curation": {
             verifiedStatus: "review",
-            category: "importer",
+            category: "example",
             isOfficial: true,
-            tags: ["importer", dirName],
+            tags: ["oci"],
           },
         },
       },
@@ -554,10 +529,10 @@ async function seedOciPackageServer(
 }
 
 async function seedRemote(rootDir: string): Promise<void> {
-  const targetDir = join(rootDir, "manifests", "remotes");
+  const targetDir = join(rootDir, "registry", "linear");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
-    join(targetDir, "linear.server.json"),
+    join(targetDir, "mcp.server.json"),
     JSON.stringify(
       {
         $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
@@ -581,7 +556,7 @@ async function seedRemote(rootDir: string): Promise<void> {
 }
 
 async function seedManifest(rootDir: string): Promise<void> {
-  const targetDir = join(rootDir, "manifests");
+  const targetDir = join(rootDir, "registry", "quickdeploy");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
     join(targetDir, "petstore.mcp.yaml"),

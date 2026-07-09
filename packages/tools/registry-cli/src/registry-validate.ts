@@ -51,7 +51,7 @@ export interface RegistryValidateOptions {
   rootDir: string;
 }
 
-type EntryOrigin = "package" | "manifest" | "remote";
+type EntryOrigin = "manifest" | "remote";
 
 interface DiscoveredEntry {
   path: string;
@@ -60,8 +60,8 @@ interface DiscoveredEntry {
 }
 
 /**
- * Validate every registry source (`servers/*`, `packages/importers/*`,
- * direct `manifests/*.mcp.*`, and `manifests/remotes/*.server.json`)
+ * Validate every registry source (`registry/<provider>/*.mcp.*` and
+ * `registry/<provider>/*.server.json`)
  * against the rules the servers.json build doesn't already enforce by
  * construction: name format + namespace ownership, exact (non-range) versions,
  * cross-entry name duplicates, `fileSha256` on `mcpb` packages, and
@@ -75,11 +75,7 @@ export async function validateRegistryEntries(
   options: RegistryValidateOptions,
 ): Promise<RegistryValidationResult> {
   const violations: RegistryValidationViolation[] = [];
-  const entries: DiscoveredEntry[] = [
-    ...(await discoverPackageEntries(options.rootDir, violations)),
-    ...(await discoverManifestEntries(options.rootDir, violations)),
-    ...(await discoverRemoteEntries(options.rootDir, violations)),
-  ];
+  const entries = await discoverRegistryEntries(options.rootDir, violations);
 
   for (const entry of entries) {
     validateEntry(entry, violations);
@@ -116,7 +112,7 @@ function validateEntry(entry: DiscoveredEntry, violations: RegistryValidationVio
         'Server name must match "<namespace>/<name>" (e.g. "ai.quickdeploy/petstore" or "com.example/mcp").',
     });
   } else {
-    const isQuickDeployOwned = origin === "package" || origin === "manifest";
+    const isQuickDeployOwned = origin === "manifest";
     const hasQuickDeployPrefix = document.name.startsWith(QUICKDEPLOY_NAME_PREFIX);
     if (isQuickDeployOwned && !hasQuickDeployPrefix) {
       violations.push({
@@ -232,38 +228,34 @@ function validateNoDuplicateNames(
   }
 }
 
-async function discoverPackageEntries(
+async function discoverRegistryEntries(
   rootDir: string,
   violations: RegistryValidationViolation[],
 ): Promise<DiscoveredEntry[]> {
-  const roots = [join(rootDir, "servers"), join(rootDir, "packages", "importers")];
-  const files = (
-    await Promise.all(roots.map((root) => findFiles(root, (name) => name === "server.json")))
-  ).flat();
-  return safeParseServerJsonFiles(rootDir, files, "package", violations);
-}
+  const registryDir = join(rootDir, "registry");
+  const files = await findFiles(registryDir, (name, path) => {
+    const relativePath = normalizePath(relative(rootDir, path));
+    if (relativePath === "registry/index.json") return false;
+    return isMcpManifestFileName(name) || isServerManifestFileName(name);
+  });
 
-async function discoverRemoteEntries(
-  rootDir: string,
-  violations: RegistryValidationViolation[],
-): Promise<DiscoveredEntry[]> {
-  const remoteDir = join(rootDir, "manifests", "remotes");
-  const files = await findFiles(
-    remoteDir,
-    (name) => !name.startsWith("_") && name.endsWith(".server.json"),
-  );
-  return safeParseServerJsonFiles(rootDir, files, "remote", violations);
-}
-
-async function safeParseServerJsonFiles(
-  rootDir: string,
-  files: string[],
-  origin: EntryOrigin,
-  violations: RegistryValidationViolation[],
-): Promise<DiscoveredEntry[]> {
   const entries: DiscoveredEntry[] = [];
   for (const file of files) {
     const relativePath = normalizePath(relative(rootDir, file));
+    if (!isProviderRegistryPath(relativePath)) {
+      violations.push({
+        code: "invalid-manifest",
+        path: relativePath,
+        message: "Registry sources must live under registry/<provider>/.",
+      });
+      continue;
+    }
+    if (isMcpManifestFileName(relativePath)) {
+      const entry = await parseManifestEntry(file, relativePath, violations);
+      if (entry) entries.push(entry);
+      continue;
+    }
+
     let raw: unknown;
     try {
       raw = JSON.parse(await readFile(file, "utf8"));
@@ -286,48 +278,39 @@ async function safeParseServerJsonFiles(
       });
       continue;
     }
-    entries.push({ path: relativePath, origin, document: parsed.data });
+    entries.push({ path: relativePath, origin: "remote", document: parsed.data });
   }
   return entries;
 }
 
-async function discoverManifestEntries(
-  rootDir: string,
+async function parseManifestEntry(
+  file: string,
+  relativePath: string,
   violations: RegistryValidationViolation[],
-): Promise<DiscoveredEntry[]> {
-  const manifestDir = join(rootDir, "manifests");
-  const files = await findFiles(manifestDir, (name, path) => {
-    if (path.split(sep).includes("remotes")) return false;
-    return isMcpManifestFileName(name);
-  });
-
-  const entries: DiscoveredEntry[] = [];
-  for (const file of files) {
-    const relativePath = normalizePath(relative(rootDir, file));
-    let manifest: unknown;
-    try {
-      const raw = await readFile(file, "utf8");
-      manifest = extname(file) === ".json" ? JSON.parse(raw) : parseYaml(raw);
-    } catch (error) {
-      violations.push({
-        code: "invalid-manifest",
-        path: relativePath,
-        message: `Failed to parse MCP manifest: ${error instanceof Error ? error.message : String(error)}`,
-      });
-      continue;
-    }
-    try {
-      const document = compileManifestToServerJson(manifest, relativePath);
-      entries.push({ path: relativePath, origin: "manifest", document });
-    } catch (error) {
-      violations.push({
-        code: "invalid-manifest",
-        path: relativePath,
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
+): Promise<DiscoveredEntry | undefined> {
+  let manifest: unknown;
+  try {
+    const raw = await readFile(file, "utf8");
+    manifest = extname(file) === ".json" ? JSON.parse(raw) : parseYaml(raw);
+  } catch (error) {
+    violations.push({
+      code: "invalid-manifest",
+      path: relativePath,
+      message: `Failed to parse MCP manifest: ${error instanceof Error ? error.message : String(error)}`,
+    });
+    return undefined;
   }
-  return entries;
+  try {
+    const document = compileManifestToServerJson(manifest, relativePath);
+    return { path: relativePath, origin: "manifest", document };
+  } catch (error) {
+    violations.push({
+      code: "invalid-manifest",
+      path: relativePath,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return undefined;
+  }
 }
 
 async function findFiles(
@@ -359,4 +342,13 @@ function normalizePath(path: string): string {
 
 function isMcpManifestFileName(name: string): boolean {
   return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
+}
+
+function isServerManifestFileName(name: string): boolean {
+  return name.endsWith(".server.json");
+}
+
+function isProviderRegistryPath(path: string): boolean {
+  const parts = path.split("/");
+  return parts[0] === "registry" && Boolean(parts[1]) && parts.length >= 3;
 }

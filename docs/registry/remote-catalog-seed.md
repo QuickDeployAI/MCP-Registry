@@ -1,14 +1,14 @@
 # Remote MCP Catalog Seed
 
 This seed keeps hosted MCP endpoints as remotes-only `server.json` documents under
-`manifests/remotes/`. Entries are intentionally conservative:
+`registry/<provider>/`. Entries are intentionally conservative:
 
 - use official provider-hosted endpoints only;
 - record runtime OAuth separately from static header requirements;
 - mark each curation record with a category, `isOfficial`, and searchable tags;
 - keep watch items and non-hosted local servers out of `servers.json`.
 
-Author new entries from `manifests/remotes/_template.server.json`; the full
+Author new entries from `docs/registry/templates/remote.server.json`; the full
 authoring and review checklist lives in
 `docs/registry/remote-ref-authoring.md`.
 

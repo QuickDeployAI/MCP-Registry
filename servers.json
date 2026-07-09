@@ -27,45 +27,6 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/admin",
-      "version": "1.0.0",
-      "description": "Org and enterprise governance for QuickDeploy AI: list and evaluate policies, review and decide approval requests, manage cost budgets and caps, and page signed audit events.",
-      "packages": [
-        {
-          "registryType": "npm",
-          "identifier": "@quickdeployai/mcp-admin",
-          "version": "1.0.0",
-          "runtimeHint": "npx",
-          "transport": {
-            "type": "stdio"
-          },
-          "environmentVariables": [
-            {
-              "name": "QDAI_API_TOKEN",
-              "description": "QuickDeploy service-account bearer token with policies/approvals/costs/events scopes (see https://api.quickdeploy.ai/auth.md).",
-              "isRequired": true,
-              "isSecret": true
-            },
-            {
-              "name": "QDAI_API_BASE",
-              "description": "Control-Plane API origin override. Defaults to https://api.quickdeploy.ai.",
-              "isRequired": false,
-              "isSecret": false
-            }
-          ],
-          "registryBaseUrl": "https://registry.npmjs.org"
-        }
-      ],
-      "title": "QuickDeploy Admin",
-      "websiteUrl": "https://quickdeploy.ai",
-      "repository": {
-        "url": "https://github.com/QuickDeployAI/MCP-Registry",
-        "source": "github",
-        "subfolder": "servers/quickdeploy-admin"
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/agent-skills",
       "version": "0.1.0",
       "description": "Curated agent skills exposed as MCP tools and prompts.",
@@ -77,7 +38,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/agent-skills.mcp.json",
+            "registry/quickdeploy/agent-skills.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -175,146 +136,6 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/agent-skills-2-mcp",
-      "version": "0.1.0",
-      "description": "QuickDeploy Agent Skills importer for exposing SKILL.md prompts, resources, and allowlisted script tools over MCP.",
-      "packages": [
-        {
-          "registryType": "npm",
-          "identifier": "@quickdeployai/agent-skills-2-mcp",
-          "version": "0.1.0",
-          "runtimeHint": "node",
-          "transport": "stdio"
-        },
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/agent-skills-2-mcp@sha256:b9d83df5a250128413dad70fedd907d4a4ab526aad198f2e394e7d6c496dc04c",
-          "version": "0.1.0",
-          "runtimeHint": "container",
-          "transport": "stdio"
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "agent-skills-2-mcp",
-          "isOfficial": true,
-          "tags": ["agent-skills", "importer", "mcp"]
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/asyncapi-2-mcp-importer",
-      "version": "0.1.0",
-      "description": "AsyncAPI v3 publish-side importer image for Kafka-backed send operations.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
-          "version": "0.1.0",
-          "runtimeHint": "node22-importer",
-          "runtimeArguments": ["--help"]
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "asyncapi-2-mcp",
-          "isOfficial": true,
-          "tags": ["asyncapi", "importer", "kafka", "oci"]
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/control-plane",
-      "version": "1.0.0",
-      "description": "Manage QuickDeploy AI tenant deployments through the Control-Plane API: create deployments, read lifecycle and health state, run pause/resume/promote/rollback/quarantine/delete actions, read logs, and list target environments.",
-      "packages": [
-        {
-          "registryType": "npm",
-          "identifier": "@quickdeployai/mcp-control-plane",
-          "version": "1.0.0",
-          "runtimeHint": "npx",
-          "transport": {
-            "type": "stdio"
-          },
-          "environmentVariables": [
-            {
-              "name": "QDAI_API_TOKEN",
-              "description": "QuickDeploy service-account bearer token with deployments/environments/observability scopes (see https://api.quickdeploy.ai/auth.md).",
-              "isRequired": true,
-              "isSecret": true
-            },
-            {
-              "name": "QDAI_API_BASE",
-              "description": "Control-Plane API origin override. Defaults to https://api.quickdeploy.ai.",
-              "isRequired": false,
-              "isSecret": false
-            }
-          ],
-          "registryBaseUrl": "https://registry.npmjs.org"
-        }
-      ],
-      "title": "QuickDeploy Control Plane",
-      "websiteUrl": "https://quickdeploy.ai",
-      "repository": {
-        "url": "https://github.com/QuickDeployAI/MCP-Registry",
-        "source": "github",
-        "subfolder": "servers/quickdeploy-control-plane"
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/docs",
-      "version": "1.0.0",
-      "description": "Queryable access to official QuickDeploy AI documentation: search the llms.txt index and read markdown page variants from the public docs surfaces. Read-only; no authentication required.",
-      "packages": [
-        {
-          "registryType": "npm",
-          "identifier": "@quickdeployai/mcp-docs",
-          "version": "1.0.0",
-          "runtimeHint": "npx",
-          "transport": {
-            "type": "stdio"
-          },
-          "registryBaseUrl": "https://registry.npmjs.org"
-        }
-      ],
-      "title": "QuickDeploy Docs",
-      "websiteUrl": "https://docs.quickdeploy.ai",
-      "repository": {
-        "url": "https://github.com/QuickDeployAI/MCP-Registry",
-        "source": "github",
-        "subfolder": "servers/quickdeploy-docs"
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/grpc-2-mcp-importer",
-      "version": "0.1.0",
-      "description": "gRPC unary runtime proxy importer image for descriptor-backed services.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/importers/grpc-2-mcp:0.1.0",
-          "version": "0.1.0",
-          "runtimeHint": "node22-importer",
-          "runtimeArguments": ["catalog"]
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "grpc-2-mcp",
-          "isOfficial": true,
-          "tags": ["grpc", "importer", "oci"]
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/grpc-greeter",
       "version": "0.1.0",
       "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
@@ -326,7 +147,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/grpc-greeter.mcp.json",
+            "registry/quickdeploy/grpc-greeter.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -458,7 +279,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/har-petstore.mcp.json",
+            "registry/quickdeploy/har-petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -601,7 +422,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/knowledge-okf-example.mcp.json",
+            "registry/quickdeploy/knowledge-okf-example.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -749,7 +570,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/petstore.mcp.json",
+            "registry/quickdeploy/petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -881,7 +702,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/postman-petstore.mcp.json",
+            "registry/quickdeploy/postman-petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -1040,7 +861,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/product-feed.mcp.json",
+            "registry/quickdeploy/product-feed.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -1158,7 +979,12 @@
           "identifier": "ghcr.io/quickdeployai/mcp-host",
           "runtimeHint": "mcp-host",
           "transport": "stdio",
-          "runtimeArguments": ["run", "manifests/qdai-git-fixture.mcp.json", "--transport", "stdio"]
+          "runtimeArguments": [
+            "run",
+            "registry/quickdeploy/qdai-git-fixture.mcp.json",
+            "--transport",
+            "stdio"
+          ]
         }
       ],
       "_meta": {
@@ -1273,7 +1099,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/quickdeploy-skills.mcp.json",
+            "registry/quickdeploy/quickdeploy-skills.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -1382,7 +1208,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/wsdl-calculator.mcp.json",
+            "registry/quickdeploy/wsdl-calculator.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -2070,6 +1896,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 39
+    "ai.quickdeploy.registry/sourceCount": 33
   }
 }

@@ -131,7 +131,7 @@ describe("writeScaffoldManifest", () => {
       configDefaults: { baseUrl: "https://widgets.example" },
     });
 
-    expect(result.path).toBe(join(rootDir, "manifests", "widgets.mcp.yaml"));
+    expect(result.path).toBe(join(rootDir, "registry", "quickdeploy", "widgets.mcp.yaml"));
     const onDisk = await readFile(result.path, "utf8");
     expect(onDisk).toContain("ai.quickdeploy/widgets");
 

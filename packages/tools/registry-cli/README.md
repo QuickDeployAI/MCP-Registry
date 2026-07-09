@@ -8,15 +8,18 @@ vp run @quickdeployai/registry-cli#check:generated
 vp run @quickdeployai/registry-cli#registry:validate
 vp run @quickdeployai/registry-cli#validate:remotes
 vp exec -F @quickdeployai/registry-cli registry-cli config-schema --importer openapi-2-mcp
-vp exec -F @quickdeployai/registry-cli registry-cli bake --manifest manifests/petstore.mcp.yaml --image ghcr.io/quickdeployai/mcp-petstore --digest sha256:<64-hex>
+vp exec -F @quickdeployai/registry-cli registry-cli bake --manifest registry/quickdeploy/petstore.mcp.yaml --image ghcr.io/quickdeployai/mcp-petstore --digest sha256:<64-hex>
 ```
 
 Sources:
 
-- `servers/**/server.json`
-- `packages/importers/**/server.json`
-- `manifests/*.mcp.json`, `manifests/*.mcp.yaml`, and `manifests/*.mcp.yml`
-- `manifests/remotes/*.server.json` except underscore-prefixed authoring templates
+- `registry/<provider>/*.mcp.json`, `registry/<provider>/*.mcp.yaml`, and
+  `registry/<provider>/*.mcp.yml`
+- `registry/<provider>/*.server.json`
+
+Package descriptors under `packages/**` and throwaway implementations are not
+catalog sources. `registry/index.json` is generated as a local source index and
+ignored by Git; `servers.json` is the committed generated MCP catalog.
 
 Manifest-backed entries are compiled by applying the `McpManifest` selection,
 auth, config, expose, and deployment settings to the shared `mcp-host` runtime.
@@ -45,7 +48,7 @@ dead endpoints, malformed MCP responses, and unexpected HTTP failures fail the
 run.
 
 Remote-only hosted MCP entries are authored from
-`manifests/remotes/_template.server.json` and documented in
+`docs/registry/templates/remote.server.json` and documented in
 `docs/registry/remote-ref-authoring.md`. Template files are schema-validated but
 excluded from generated `servers.json`.
 
@@ -66,6 +69,6 @@ Dockerfile, and a README with next steps. `tsc --noEmit` and `vitest run` pass
 immediately on the generated package.
 
 `scaffold manifest <importer>` writes a schema-valid `McpManifest` suitable for
-committed entries under `manifests/`. Both subcommands prompt interactively for
-missing required values when stdin is a TTY, and otherwise fail fast with the
-missing flag name.
+committed entries under `registry/<provider>/`. Both subcommands prompt
+interactively for missing required values when stdin is a TTY, and otherwise
+fail fast with the missing flag name.

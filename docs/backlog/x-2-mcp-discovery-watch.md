@@ -8,7 +8,7 @@ This file records the current build/watch verdicts for importer categories and r
 
 Verdict: wrap/watch. Do not build a GraphQL converter from scratch while Apollo MCP Server, mcp-graphql, WunderGraph Cosmo, and other maintained options cover the category.
 
-Current action: seed registry references and deploy recipes for the best vendor/community options, especially Apollo MCP Server. Monorepo importer-suite docs should list the category as `GraphQL via Apollo`, not a generic `graphql-2-mcp` importer. If QuickDeploy wraps the category later, prefer curated persisted operations or operation files as per-tool units. Avoid whole-schema generated tool sets except as bounded progressive discovery. Apollo MCP Server is now seeded in `registry/remote-ref-seeds.json`; see [`docs/recipes/apollo-mcp-deploy.md`](../recipes/apollo-mcp-deploy.md) for the deploy walkthrough.
+Current action: seed registry references and deploy recipes for the best vendor/community options, especially Apollo MCP Server. Monorepo importer-suite docs should list the category as `GraphQL via Apollo`, not a generic `graphql-2-mcp` importer. If QuickDeploy wraps the category later, prefer curated persisted operations or operation files as per-tool units. Avoid whole-schema generated tool sets except as bounded progressive discovery. Apollo MCP Server is now seeded in `../registry/seeds/remote-ref-seeds.json`; see [`docs/recipes/apollo-mcp-deploy.md`](../recipes/apollo-mcp-deploy.md) for the deploy walkthrough.
 
 Promotion trigger: a customer needs a manifest-uniform GraphQL surface that existing server configuration cannot express.
 
@@ -16,7 +16,7 @@ Promotion trigger: a customer needs a manifest-uniform GraphQL surface that exis
 
 Verdict: skip build. Database MCP is already heavily covered by vendor and community servers.
 
-Current action: reference mature servers and borrow design patterns. The strongest pattern is curated parameterized tools, such as tools.yaml in MCP Toolbox for Databases, instead of raw SQL or schema-wide per-table tool generation. DBHub is seeded alongside it in `registry/remote-ref-seeds.json` as the lighter-weight multi-engine gateway option.
+Current action: reference mature servers and borrow design patterns. The strongest pattern is curated parameterized tools, such as tools.yaml in MCP Toolbox for Databases, instead of raw SQL or schema-wide per-table tool generation. DBHub is seeded alongside it in `../registry/seeds/remote-ref-seeds.json` as the lighter-weight multi-engine gateway option.
 
 Promotion trigger: none expected. Default work is curation, safety notes, and registry references.
 
@@ -104,7 +104,7 @@ Promotion trigger: marketplace breadth targets that justify a new sync-handler i
 
 Verdict: catalog work. Extend the remote reference catalog beyond the first hosted seed set.
 
-Current action: maintain the seed list in `registry/remote-ref-seeds.json`. The current tranches cover data stack, eventing/streaming, IoT/home, and dev-platform entries. Items without a stable hosted endpoint are represented as deploy recipes or watch entries instead of invented remote URLs.
+Current action: maintain the seed list in `../registry/seeds/remote-ref-seeds.json`. The current tranches cover data stack, eventing/streaming, IoT/home, and dev-platform entries. Items without a stable hosted endpoint are represented as deploy recipes or watch entries instead of invented remote URLs.
 
 Promotion trigger: a curated entry is ready to move from seed metadata into the public registry index or a deploy recipe.
 

@@ -36,47 +36,27 @@ pnpm check
 The placeholder package at `packages/core/workspace-smoke` keeps the Turbo
 pipeline checking the expected workspace layout.
 
-## Legacy Server Layout
+## Registry Layout
 
-Each server lives at `servers/<server-name>/` on `main`:
+Authored registry entries live under `registry/<provider>/`:
 
-- `server.json` — MCP server metadata per the
-  [official MCP registry schema](https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json).
-- `index.mjs` — the runnable stdio server implementation.
-- `package.json` — npm package with a `bin` entry for `npx` execution.
+- `*.mcp.json`, `*.mcp.yaml`, or `*.mcp.yml` — QuickDeploy `McpManifest`
+  sources compiled into hosted `mcp-host` entries.
+- `*.server.json` — externally hosted MCP server manifests that already match
+  the official MCP registry schema.
 
-`servers.json` is the machine-readable MCP catalog
+`registry/index.json` is generated locally by `registry-cli build` as a source
+index and is intentionally ignored by Git. `servers.json` is the generated
+machine-readable MCP catalog
 (`https://raw.githubusercontent.com/QuickDeployAI/MCP-Registry/main/servers.json`).
-
-## Servers
-
-| Server | Package | Purpose |
-| ------ | ------- | ------- |
-| [quickdeploy-docs](servers/quickdeploy-docs/) | `@quickdeployai/mcp-docs` | Queryable official docs (llms.txt index + markdown pages). No auth. |
-| [quickdeploy-control-plane](servers/quickdeploy-control-plane/) | `@quickdeployai/mcp-control-plane` | Tenant deployment lifecycle via the Control-Plane API. Requires `QDAI_API_TOKEN`. |
-| [quickdeploy-admin](servers/quickdeploy-admin/) | `@quickdeployai/mcp-admin` | Org/enterprise governance: policies, approvals, budgets, audit events. Requires `QDAI_API_TOKEN`. |
-
-## Running a server
-
-```bash
-cd servers/quickdeploy-docs
-npm install
-node index.mjs   # speaks MCP over stdio
-```
-
-Or once published: `npx @quickdeployai/mcp-docs`.
-
-Servers that call the Control-Plane API read `QDAI_API_TOKEN` (service-account
-bearer token; see https://api.quickdeploy.ai/auth.md) and optional
-`QDAI_API_BASE` from the environment. Tokens are never accepted as tool
-arguments.
 
 ## Adding a server
 
-1. Create `servers/<name>/` with `server.json`, `package.json`, and the
-   implementation. Keep `name` in `server.json` under the `ai.quickdeploy/`
-   namespace.
-2. Run `pnpm --filter @quickdeployai/registry-cli build:registry` to regenerate
+1. Add a provider folder under `registry/` if one does not already exist.
+2. Add either a direct MCP server manifest (`*.server.json`) or a QuickDeploy
+   `McpManifest` (`*.mcp.json`/`*.mcp.yaml`) for the API or capability exposed
+   by that provider.
+3. Run `pnpm --filter @quickdeployai/registry-cli build:registry` to regenerate
    `servers.json`.
-3. Verify the server responds to `initialize`, `tools/list`, and a
-   representative `tools/call` over stdio before merging.
+4. Run `pnpm --filter @quickdeployai/registry-cli registry:validate` before
+   merging.

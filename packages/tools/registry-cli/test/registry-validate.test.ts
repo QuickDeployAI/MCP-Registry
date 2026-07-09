@@ -49,17 +49,17 @@ describe("registry-cli validate", () => {
     );
   });
 
-  it("flags a QuickDeploy-owned entry outside the ai.quickdeploy namespace", async () => {
+  it("flags a QuickDeploy manifest outside the ai.quickdeploy namespace", async () => {
     const rootDir = await fixtureRoot();
-    await seedPackageServer(rootDir, {
-      name: "com.example/not-ours",
-      version: "1.0.0",
-    });
+    await seedMcpManifest(rootDir, "com.example/not-ours");
 
     const result = await validateRegistryEntries({ rootDir });
     expect(result.ok).toBe(false);
     expect(result.violations).toContainEqual(
-      expect.objectContaining({ code: "name-namespace-mismatch", name: "com.example/not-ours" }),
+      expect.objectContaining({
+        code: "invalid-manifest",
+        path: "registry/quickdeploy/fixture.mcp.json",
+      }),
     );
   });
 
@@ -84,47 +84,47 @@ describe("registry-cli validate", () => {
   it("flags a non-exact version range", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/ranged",
+      name: "com.example/ranged",
       version: "^1.0.0",
     });
 
     const result = await validateRegistryEntries({ rootDir });
     expect(result.ok).toBe(false);
     expect(result.violations).toContainEqual(
-      expect.objectContaining({ code: "version-not-exact", name: "ai.quickdeploy/ranged" }),
+      expect.objectContaining({ code: "version-not-exact", name: "com.example/ranged" }),
     );
   });
 
   it("flags the literal version 'latest'", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/latest-version",
+      name: "com.example/latest-version",
       version: "latest",
     });
 
     const result = await validateRegistryEntries({ rootDir });
     expect(result.ok).toBe(false);
     expect(result.violations).toContainEqual(
-      expect.objectContaining({ code: "version-not-exact", name: "ai.quickdeploy/latest-version" }),
+      expect.objectContaining({ code: "version-not-exact", name: "com.example/latest-version" }),
     );
   });
 
   it("flags duplicate server names across sources", async () => {
     const rootDir = await fixtureRoot();
-    await seedPackageServer(rootDir, { name: "ai.quickdeploy/dup", version: "1.0.0" }, "first");
-    await seedPackageServer(rootDir, { name: "ai.quickdeploy/dup", version: "2.0.0" }, "second");
+    await seedPackageServer(rootDir, { name: "com.example/dup", version: "1.0.0" }, "first");
+    await seedPackageServer(rootDir, { name: "com.example/dup", version: "2.0.0" }, "second");
 
     const result = await validateRegistryEntries({ rootDir });
     expect(result.ok).toBe(false);
     expect(result.violations).toContainEqual(
-      expect.objectContaining({ code: "duplicate-name", name: "ai.quickdeploy/dup" }),
+      expect.objectContaining({ code: "duplicate-name", name: "com.example/dup" }),
     );
   });
 
   it("flags an mcpb package missing fileSha256", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/mcpb-example",
+      name: "com.example/mcpb-example",
       version: "1.0.0",
       packages: [{ registryType: "mcpb", identifier: "mcpb-example.mcpb" }],
     });
@@ -134,7 +134,7 @@ describe("registry-cli validate", () => {
     expect(result.violations).toContainEqual(
       expect.objectContaining({
         code: "mcpb-missing-file-sha256",
-        name: "ai.quickdeploy/mcpb-example",
+        name: "com.example/mcpb-example",
       }),
     );
   });
@@ -142,7 +142,7 @@ describe("registry-cli validate", () => {
   it("passes an mcpb package with a valid fileSha256", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/mcpb-example",
+      name: "com.example/mcpb-example",
       version: "1.0.0",
       packages: [
         {
@@ -160,7 +160,7 @@ describe("registry-cli validate", () => {
   it("flags an oci package that is not digest-pinned", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/oci-example",
+      name: "com.example/oci-example",
       version: "1.0.0",
       packages: [{ registryType: "oci", identifier: "ghcr.io/quickdeployai/mcp-oci-example" }],
     });
@@ -170,7 +170,7 @@ describe("registry-cli validate", () => {
     expect(result.violations).toContainEqual(
       expect.objectContaining({
         code: "oci-missing-digest-pin",
-        name: "ai.quickdeploy/oci-example",
+        name: "com.example/oci-example",
       }),
     );
   });
@@ -178,7 +178,7 @@ describe("registry-cli validate", () => {
   it("exempts the shared unpinned mcp-host runtime image from the digest-pin rule", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/runtime-example",
+      name: "com.example/runtime-example",
       version: "1.0.0",
       packages: [{ registryType: "oci", identifier: "ghcr.io/quickdeployai/mcp-host" }],
     });
@@ -190,7 +190,7 @@ describe("registry-cli validate", () => {
   it("exempts shared importer images that the publish workflow digest-pins", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/asyncapi-2-mcp-importer",
+      name: "com.example/asyncapi-2-mcp-importer",
       version: "0.1.0",
       packages: [
         {
@@ -208,7 +208,7 @@ describe("registry-cli validate", () => {
   it("passes a digest-pinned oci package", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
-      name: "ai.quickdeploy/oci-pinned",
+      name: "com.example/oci-pinned",
       version: "1.0.0",
       packages: [
         {
@@ -232,10 +232,10 @@ async function seedPackageServer(
   overrides: Record<string, unknown>,
   dirName = "fixture-server",
 ): Promise<void> {
-  const targetDir = join(rootDir, "packages", "importers", dirName);
+  const targetDir = join(rootDir, "registry", "example");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
-    join(targetDir, "server.json"),
+    join(targetDir, `${dirName}.server.json`),
     JSON.stringify(
       {
         $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
@@ -253,7 +253,7 @@ async function seedRemoteServer(
   overrides: Record<string, unknown>,
   fileName = "fixture.server.json",
 ): Promise<void> {
-  const targetDir = join(rootDir, "manifests", "remotes");
+  const targetDir = join(rootDir, "registry", "remote");
   await mkdir(targetDir, { recursive: true });
   await writeFile(
     join(targetDir, fileName),
@@ -262,6 +262,37 @@ async function seedRemoteServer(
         $schema: "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
         description: "Fixture remote for registry validation tests.",
         ...overrides,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+async function seedMcpManifest(rootDir: string, name: string): Promise<void> {
+  const targetDir = join(rootDir, "registry", "quickdeploy");
+  await mkdir(targetDir, { recursive: true });
+  await writeFile(
+    join(targetDir, "fixture.mcp.json"),
+    JSON.stringify(
+      {
+        apiVersion: "quickdeploy.ai/v1",
+        kind: "McpManifest",
+        metadata: {
+          name,
+          version: "1.0.0",
+          title: "Fixture",
+          description: "Fixture MCP manifest.",
+          labels: ["fixture"],
+        },
+        spec: {
+          importer: { engine: "openapi-2-mcp", versionRange: "^0.1.0" },
+          source: { type: "http", uri: "https://example.com/openapi.json" },
+          select: { requests: [{ method: "GET", uriTemplate: "/items" }] },
+          auth: [],
+          expose: { tools: [{ from: "GET /items", name: "list_items" }] },
+        },
+        deployment: { transport: "streamable-http", auth: { type: "none" } },
       },
       null,
       2,

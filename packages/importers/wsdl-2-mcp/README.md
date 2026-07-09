@@ -39,7 +39,7 @@ SOAP faults throw `SoapFaultError` with `faultCode`, `faultString`, and parsed `
 
 ## Registry manifest
 
-`manifests/wsdl-calculator.mcp.json` publishes the calculator fixture as
+`registry/quickdeploy/wsdl-calculator.mcp.json` publishes the calculator fixture as
 `ai.quickdeploy/wsdl-calculator` through `mcp-host`. The manifest selects
 `POST /soap/CalculatorService/Add`, exposes `calculator_add`, and keeps the
 SOAP endpoint as runtime configuration.
