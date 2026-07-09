@@ -1,0 +1,232 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "openapi",
+  provider: "square",
+  manifestPath: "registry/square/api.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/square",
+      "version": "0.1.0",
+      "title": "Square",
+      "description": "Generated Square Connect read-only OpenAPI MCP catalog manifest.",
+      "labels": [
+        "generated",
+        "openapi",
+        "read-only",
+        "square",
+        "square-connect"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "openapi-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://raw.githubusercontent.com/square/connect-api-specification/164cc7466509d231e60cb335934c812e57dea4ec/api.json",
+        "digest": "sha256:81f697fb0e2eb03239e0e7f224eab87e59e8914603370b1dcfdfdb6c62cdf8de",
+        "ref": "164cc7466509d231e60cb335934c812e57dea4ec"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "GET",
+            "uriTemplate": "/v2/locations"
+          },
+          {
+            "method": "GET",
+            "uriTemplate": "/v2/locations/{location_id}"
+          },
+          {
+            "method": "GET",
+            "uriTemplate": "/v2/merchants"
+          },
+          {
+            "method": "GET",
+            "uriTemplate": "/v2/merchants/{merchant_id}"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "bearer",
+          "valueFrom": {
+            "env": "SQUARE_ACCESS_TOKEN"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Square Connect API base URL."
+            },
+            "requestTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-request upstream timeout in milliseconds."
+            },
+            "mode": {
+              "type": "string",
+              "description": "Importer execution profile."
+            }
+          }
+        },
+        "defaults": {
+          "baseUrl": "https://connect.squareup.com",
+          "requestTimeoutMs": 30000,
+          "mode": "read-only"
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://raw.githubusercontent.com/square/connect-api-specification/164cc7466509d231e60cb335934c812e57dea4ec/api.json",
+          "type": "http",
+          "digest": "sha256:81f697fb0e2eb03239e0e7f224eab87e59e8914603370b1dcfdfdb6c62cdf8de",
+          "ref": "164cc7466509d231e60cb335934c812e57dea4ec",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "square/connect-api-specification@164cc7466509d231e60cb335934c812e57dea4ec",
+          "notes": [
+            "Official Square Connect OpenAPI specification repository: https://github.com/square/connect-api-specification",
+            "Pinned source path: api.json (Square Connect API, OpenAPI 3.0.0)",
+            "Pinned commit date: 2026-05-19 (Release 2026-05-20)",
+            "Verified source SHA-256: 81f697fb0e2eb03239e0e7f224eab87e59e8914603370b1dcfdfdb6c62cdf8de",
+            "The committed manifest selects read-only Square locations and merchants operations only."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://raw.githubusercontent.com/square/connect-api-specification/164cc7466509d231e60cb335934c812e57dea4ec/api.json for source retrieval",
+            "GET https://connect.squareup.com/v2/locations for selected upstream operation",
+            "GET https://connect.squareup.com/v2/locations/{location_id} for selected upstream operation",
+            "GET https://connect.squareup.com/v2/merchants for selected upstream operation",
+            "GET https://connect.squareup.com/v2/merchants/{merchant_id} for selected upstream operation"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/square/api.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/openapi/square.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/openapi/square/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "GET /v2/locations",
+            "name": "list_square_locations",
+            "deny": false
+          },
+          {
+            "from": "GET /v2/locations/{location_id}",
+            "name": "get_square_location",
+            "deny": false
+          },
+          {
+            "from": "GET /v2/merchants",
+            "name": "list_square_merchants",
+            "deny": false
+          },
+          {
+            "from": "GET /v2/merchants/{merchant_id}",
+            "name": "get_square_merchant",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/square/connect-api-specification/164cc7466509d231e60cb335934c812e57dea4ec/api.json",
+        "type": "http",
+        "digest": "sha256:81f697fb0e2eb03239e0e7f224eab87e59e8914603370b1dcfdfdb6c62cdf8de",
+        "ref": "164cc7466509d231e60cb335934c812e57dea4ec",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "square/connect-api-specification@164cc7466509d231e60cb335934c812e57dea4ec",
+        "notes": [
+          "Official Square Connect OpenAPI specification repository: https://github.com/square/connect-api-specification",
+          "Pinned source path: api.json (Square Connect API, OpenAPI 3.0.0)",
+          "Pinned commit date: 2026-05-19 (Release 2026-05-20)",
+          "Verified source SHA-256: 81f697fb0e2eb03239e0e7f224eab87e59e8914603370b1dcfdfdb6c62cdf8de",
+          "The committed manifest selects read-only Square locations and merchants operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/square/connect-api-specification/164cc7466509d231e60cb335934c812e57dea4ec/api.json for source retrieval",
+          "GET https://connect.squareup.com/v2/locations for selected upstream operation",
+          "GET https://connect.squareup.com/v2/locations/{location_id} for selected upstream operation",
+          "GET https://connect.squareup.com/v2/merchants for selected upstream operation",
+          "GET https://connect.squareup.com/v2/merchants/{merchant_id} for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/square/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/square.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/square/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "GET /v2/locations",
+        "name": "list_square_locations",
+        "deny": false
+      },
+      {
+        "from": "GET /v2/locations/{location_id}",
+        "name": "get_square_location",
+        "deny": false
+      },
+      {
+        "from": "GET /v2/merchants",
+        "name": "list_square_merchants",
+        "deny": false
+      },
+      {
+        "from": "GET /v2/merchants/{merchant_id}",
+        "name": "get_square_merchant",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "SQUARE_ACCESS_TOKEN"
+    ],
+    "serverEnvVars": [
+      "SQUARE_ACCESS_TOKEN"
+    ]
+  },
+});
