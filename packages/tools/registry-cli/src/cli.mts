@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { getImporterConfigSchema } from "@quickdeployai/registry-schemas";
+import { runGeneratedMcpRedGreenCodegen } from "./codegen/red-green-orchestrator";
+import type { GeneratedMcpManifestIntent } from "./codegen/manifest-generator";
+import type { OpenShellMxcNetworkAllowRule } from "./codegen/openshell-mxc";
 import {
   buildRegistryArtifacts,
   checkGeneratedRegistryArtifacts,
@@ -30,6 +34,9 @@ function usage(): string {
     "       registry-cli validate-remotes [--root <dir>] [--timeout-ms <ms>] [--server-json <path>]",
     "       registry-cli bake --manifest <path> --image <oci-image> --digest <sha256:digest> [--root <dir>]",
     "       registry-cli config-schema --importer <engine>",
+    "       registry-cli codegen red-green --intent <path> [--root <dir>] [--clean]",
+    "                 [--source-input <path>] [--credential-env <ENV_VAR>]",
+    "                 [--allow-network <host>:<reason>]",
     "       registry-cli scaffold importer <name> [--description <text>] [--force]",
     "       registry-cli scaffold manifest <importer> --name <name> --source-type <http|file|git|oci>",
     "                 --source-uri <uri> [--request <METHOD>:<uriTemplate>] [--skill <name>[:<glob,...>]]",
@@ -256,6 +263,17 @@ function parseDenyFlag(raw: string): { from: string; reason: string } {
   return { from: raw.slice(0, separatorIndex), reason: raw.slice(separatorIndex + 1) };
 }
 
+function parseCodegenNetworkAllowFlag(raw: string): OpenShellMxcNetworkAllowRule {
+  const separatorIndex = raw.indexOf(":");
+  if (separatorIndex === -1) {
+    throw new Error(`--allow-network expects <host>:<reason>, got "${raw}".`);
+  }
+  const host = raw.slice(0, separatorIndex).trim();
+  const reason = raw.slice(separatorIndex + 1).trim();
+  if (!host || !reason) throw new Error(`--allow-network expects <host>:<reason>, got "${raw}".`);
+  return { host, reason };
+}
+
 async function runScaffoldImporter(argv: string[], rootDir: string): Promise<void> {
   const args = parseFlagArgs(argv, new Set(["force"]));
   let name = args.positionals[0] ?? firstValue(args, "name");
@@ -355,10 +373,51 @@ async function runScaffold(argv: string[], rootDir: string): Promise<void> {
   );
 }
 
+async function runCodegen(argv: string[], defaultRootDir: string): Promise<void> {
+  const [subcommand, ...rest] = argv;
+  if (subcommand !== "red-green") {
+    throw new Error(
+      `Unknown codegen subcommand: ${subcommand ?? "<none>"}. Use "red-green".`,
+    );
+  }
+
+  const args = parseFlagArgs(rest, new Set(["clean"]));
+  const rootDir = firstValue(args, "root") ?? defaultRootDir;
+  const intentPath = firstValue(args, "intent");
+  if (!intentPath) throw new Error("codegen red-green requires --intent <path>.");
+  if (args.positionals.length > 0) {
+    throw new Error(`Unexpected codegen red-green argument: ${args.positionals[0]}`);
+  }
+
+  const intent = JSON.parse(
+    await readFile(resolve(rootDir, intentPath), "utf8"),
+  ) as GeneratedMcpManifestIntent;
+  const result = await runGeneratedMcpRedGreenCodegen({
+    rootDir,
+    intent,
+    cleanGeneratedProject: args.flags.has("clean"),
+    sourceInputPaths: (args.values.get("source-input") ?? []).map((path) =>
+      resolve(rootDir, path),
+    ),
+    credentialEnvRefs: args.values.get("credential-env") ?? [],
+    networkAllowlist: (args.values.get("allow-network") ?? []).map(parseCodegenNetworkAllowFlag),
+  });
+
+  process.stdout.write(`Generated manifest: ${result.manifest.manifestPath}\n`);
+  process.stdout.write(`Generated test: ${result.generatedTest.path}\n`);
+  process.stdout.write(`Generated project: ${result.codegenProject.projectPath}\n`);
+  process.stdout.write(`OpenShell policy: ${result.openshellPolicy.path}\n`);
+  process.stdout.write("Generated MCP build/test passed in OpenShell/MXC.\n");
+}
+
 async function main(): Promise<void> {
   const rawArgv = process.argv.slice(2);
   if (rawArgv[0] === "scaffold") {
     await runScaffold(rawArgv.slice(1), findWorkspaceRoot(process.cwd()));
+    return;
+  }
+  if (rawArgv[0] === "codegen") {
+    await runCodegen(rawArgv.slice(1), findWorkspaceRoot(process.cwd()));
     return;
   }
 
