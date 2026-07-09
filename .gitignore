@@ -15,6 +15,7 @@ test-results/
 
 # Generated registry outputs
 registry/index.json
+.generated/
 
 # Logs
 *.log
