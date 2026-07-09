@@ -771,401 +771,6 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/chargebee",
-      "version": "0.1.0",
-      "description": "Generated Chargebee subscription billing events/webhooks MCP catalog manifest.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/chargebee/events.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": ["CHARGEBEE_API_KEY", "CHARGEBEE_API_PASSWORD"]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "CHARGEBEE_API_KEY",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "CHARGEBEE_API_PASSWORD",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "asyncapi-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "asyncapi",
-            "billing",
-            "chargebee",
-            "events",
-            "generated",
-            "manifest-backed",
-            "read-only",
-            "subscriptions",
-            "webhooks"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/chargebee",
-            "version": "0.1.0",
-            "title": "Chargebee",
-            "description": "Generated Chargebee subscription billing events/webhooks MCP catalog manifest.",
-            "labels": [
-              "asyncapi",
-              "billing",
-              "chargebee",
-              "events",
-              "generated",
-              "read-only",
-              "subscriptions",
-              "webhooks"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "asyncapi-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://apidocs.chargebee.com/docs/api/events"
-            },
-            "select": {
-              "requests": [
-                {
-                  "method": "PUBLISH",
-                  "uriTemplate": "channel://subscription_created"
-                },
-                {
-                  "method": "PUBLISH",
-                  "uriTemplate": "channel://invoice_generated"
-                },
-                {
-                  "method": "PUBLISH",
-                  "uriTemplate": "channel://payment_succeeded"
-                }
-              ],
-              "grpcMethods": [],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "basic",
-                "usernameFrom": {
-                  "env": "CHARGEBEE_API_KEY"
-                },
-                "passwordFrom": {
-                  "env": "CHARGEBEE_API_PASSWORD"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "brokerProtocol": {
-                    "type": "string",
-                    "description": "AsyncAPI broker binding to use for generated tools, such as kafka or mqtt."
-                  },
-                  "publishTimeoutMs": {
-                    "type": "number",
-                    "minimum": 1,
-                    "description": "Per-publish timeout in milliseconds."
-                  }
-                }
-              },
-              "defaults": {
-                "brokerProtocol": "webhook",
-                "publishTimeoutMs": 30000
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://apidocs.chargebee.com/docs/api/events",
-                "type": "http",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "chargebee-api-v2-events",
-                "notes": [
-                  "Official Chargebee Events & Webhooks API reference: https://apidocs.chargebee.com/docs/api/events",
-                  "Webhook endpoint configuration reference: https://apidocs.chargebee.com/docs/api/webhook_endpoints",
-                  "Chargebee does not publish a formal AsyncAPI document; this manifest models the documented event_type catalog as PUBLISH channels.",
-                  "The committed manifest selects a read-only, representative subset of subscription/invoice/payment lifecycle event types.",
-                  "Chargebee REST/event API authenticates with HTTP Basic auth using the site API key as the username and an empty password."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": [
-                  "GET https://apidocs.chargebee.com/docs/api/events for source retrieval",
-                  "PUBLISH channel://subscription_created for selected upstream event",
-                  "PUBLISH channel://invoice_generated for selected upstream event",
-                  "PUBLISH channel://payment_succeeded for selected upstream event"
-                ],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "PUBLISH channel://subscription_created",
-                  "name": "publish_channel_subscription_created",
-                  "deny": false
-                },
-                {
-                  "from": "PUBLISH channel://invoice_generated",
-                  "name": "publish_channel_invoice_generated",
-                  "deny": false
-                },
-                {
-                  "from": "PUBLISH channel://payment_succeeded",
-                  "name": "publish_channel_payment_succeeded",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://apidocs.chargebee.com/docs/api/events",
-              "type": "http",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "chargebee-api-v2-events",
-              "notes": [
-                "Official Chargebee Events & Webhooks API reference: https://apidocs.chargebee.com/docs/api/events",
-                "Webhook endpoint configuration reference: https://apidocs.chargebee.com/docs/api/webhook_endpoints",
-                "Chargebee does not publish a formal AsyncAPI document; this manifest models the documented event_type catalog as PUBLISH channels.",
-                "The committed manifest selects a read-only, representative subset of subscription/invoice/payment lifecycle event types.",
-                "Chargebee REST/event API authenticates with HTTP Basic auth using the site API key as the username and an empty password."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": [
-                "GET https://apidocs.chargebee.com/docs/api/events for source retrieval",
-                "PUBLISH channel://subscription_created for selected upstream event",
-                "PUBLISH channel://invoice_generated for selected upstream event",
-                "PUBLISH channel://payment_succeeded for selected upstream event"
-              ],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/cloudevents",
-      "version": "0.1.0",
-      "description": "Generated asyncapi-2-mcp MCP manifest for publishing CloudEvents-formatted events.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/cloudevents/events.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": ["CLOUDEVENTS_SINK_ACCESS_TOKEN"]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "CLOUDEVENTS_SINK_ACCESS_TOKEN",
-          "description": "Secret used by bearer upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "asyncapi-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "asyncapi",
-            "cloudevents",
-            "cncf",
-            "events",
-            "generated",
-            "manifest-backed"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/cloudevents",
-            "version": "0.1.0",
-            "title": "CloudEvents",
-            "description": "Generated asyncapi-2-mcp MCP manifest for publishing CloudEvents-formatted events.",
-            "labels": [
-              "asyncapi",
-              "cloudevents",
-              "cncf",
-              "events",
-              "generated"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "asyncapi-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://raw.githubusercontent.com/cloudevents/spec/v1.0.2/cloudevents/formats/cloudevents.json",
-              "digest": "sha256:e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
-              "ref": "v1.0.2"
-            },
-            "select": {
-              "requests": [
-                {
-                  "method": "PUBLISH",
-                  "uriTemplate": "channel://cloudevents.publish-event"
-                }
-              ],
-              "grpcMethods": [],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "bearer",
-                "valueFrom": {
-                  "env": "CLOUDEVENTS_SINK_ACCESS_TOKEN"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "brokerProtocol": {
-                    "type": "string",
-                    "description": "Delivery protocol for generated publish tools. Defaults to the CloudEvents HTTP Protocol Binding."
-                  },
-                  "publishTimeoutMs": {
-                    "type": "number",
-                    "minimum": 1,
-                    "description": "Per-publish timeout in milliseconds."
-                  }
-                }
-              },
-              "defaults": {
-                "brokerProtocol": "http",
-                "publishTimeoutMs": 30000
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://raw.githubusercontent.com/cloudevents/spec/v1.0.2/cloudevents/formats/cloudevents.json",
-                "type": "http",
-                "digest": "sha256:e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
-                "ref": "v1.0.2",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "cloudevents/spec@v1.0.2:cloudevents/formats/cloudevents.json",
-                "notes": [
-                  "Official CloudEvents Specification repository: https://github.com/cloudevents/spec",
-                  "Pinned release tag: v1.0.2 (released 2024-02-06), the latest stable CloudEvents core specification.",
-                  "Pinned machine-readable JSON Schema path: cloudevents/formats/cloudevents.json",
-                  "Verified source SHA-256: e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
-                  "CloudEvents is a transport- and auth-agnostic event envelope format (id, source, specversion, type, data, datacontenttype, dataschema, subject, time). It does not mandate a broker or credential scheme.",
-                  "This manifest assumes the most common interoperable transport — an HTTP sink endpoint (CloudEvents HTTP Protocol Binding) — and models bearer-token auth for that sink accordingly; brokerProtocol defaults to \"http\" rather than Kafka/MQTT."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": ["source-uri", "configured-upstream"],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "PUBLISH channel://cloudevents.publish-event",
-                  "name": "publish_channel_cloudevents_publish_event",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://raw.githubusercontent.com/cloudevents/spec/v1.0.2/cloudevents/formats/cloudevents.json",
-              "type": "http",
-              "digest": "sha256:e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
-              "ref": "v1.0.2",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "cloudevents/spec@v1.0.2:cloudevents/formats/cloudevents.json",
-              "notes": [
-                "Official CloudEvents Specification repository: https://github.com/cloudevents/spec",
-                "Pinned release tag: v1.0.2 (released 2024-02-06), the latest stable CloudEvents core specification.",
-                "Pinned machine-readable JSON Schema path: cloudevents/formats/cloudevents.json",
-                "Verified source SHA-256: e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
-                "CloudEvents is a transport- and auth-agnostic event envelope format (id, source, specversion, type, data, datacontenttype, dataschema, subject, time). It does not mandate a broker or credential scheme.",
-                "This manifest assumes the most common interoperable transport — an HTTP sink endpoint (CloudEvents HTTP Protocol Binding) — and models bearer-token auth for that sink accordingly; brokerProtocol defaults to \"http\" rather than Kafka/MQTT."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": ["source-uri", "configured-upstream"],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/docusign",
       "version": "0.1.0",
       "description": "Generated DocuSign eSignature Envelopes read-only OpenAPI MCP catalog manifest.",
@@ -1587,443 +1192,6 @@
                 "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
                 "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
               ],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/fedex",
-      "version": "0.1.0",
-      "description": "Generated wsdl-2-mcp MCP manifest for the FedEx Web Services Rate Service.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/fedex/soap.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": [
-            "FEDEX_ACCOUNT_NUMBER",
-            "FEDEX_KEY",
-            "FEDEX_METER_NUMBER",
-            "FEDEX_PASSWORD",
-            "QD_MANIFEST_ENDPOINT"
-          ]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "FEDEX_ACCOUNT_NUMBER",
-          "description": "Secret used by api-key upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "FEDEX_KEY",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "FEDEX_METER_NUMBER",
-          "description": "Secret used by api-key upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "FEDEX_PASSWORD",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "QD_MANIFEST_ENDPOINT",
-          "description": "FedEx Web Services RateService SOAP endpoint.",
-          "isRequired": true,
-          "isSecret": false
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "wsdl-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "fedex",
-            "generated",
-            "logistics",
-            "manifest-backed",
-            "shipping",
-            "wsdl"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/fedex",
-            "version": "0.1.0",
-            "title": "FedEx",
-            "description": "Generated wsdl-2-mcp MCP manifest for the FedEx Web Services Rate Service.",
-            "labels": [
-              "fedex",
-              "generated",
-              "logistics",
-              "shipping",
-              "wsdl"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "wsdl-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
-              "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77"
-            },
-            "select": {
-              "requests": [
-                {
-                  "method": "SOAP",
-                  "uriTemplate": "RatePortType/getRates"
-                }
-              ],
-              "grpcMethods": [],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "basic",
-                "usernameFrom": {
-                  "env": "FEDEX_KEY"
-                },
-                "passwordFrom": {
-                  "env": "FEDEX_PASSWORD"
-                }
-              },
-              {
-                "type": "api-key",
-                "in": "header",
-                "name": "x-fedex-account-number",
-                "valueFrom": {
-                  "env": "FEDEX_ACCOUNT_NUMBER"
-                }
-              },
-              {
-                "type": "api-key",
-                "in": "header",
-                "name": "x-fedex-meter-number",
-                "valueFrom": {
-                  "env": "FEDEX_METER_NUMBER"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "endpoint": {
-                    "type": "string",
-                    "description": "FedEx Web Services RateService SOAP endpoint."
-                  }
-                },
-                "required": ["endpoint"]
-              },
-              "defaults": {
-                "endpoint": "https://ws.fedex.com:443/web-services/rate"
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
-                "type": "http",
-                "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "FedEx Web Services RateService v18",
-                "notes": [
-                  "Official FedEx Developer Resource Center: https://www.fedex.com/us/developer/ (raw .wsdl download is gated behind a Compatible Solutions Program developer account; FedEx instead publishes the WSDL structure via official guide PDFs such as the pinned Rate Service Guide).",
-                  "Structural fidelity (portType/operation/service/port/endpoint names below) was cross-verified against a long-standing, unmodified community mirror of the officially-versioned FedEx RateService_v18.wsdl to ensure the manifest matches FedEx's real, published Web Services contract rather than an invented shape.",
-                  "sha256 digest recorded above (source.digest) is of the cross-referenced RateService_v18.wsdl content, sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77.",
-                  "WSDL facts: portType RatePortType, operation getRates, service RateService, port RateServicePort, targetNamespace http://fedex.com/ws/rate/v18, production SOAP address https://ws.fedex.com:443/web-services/rate.",
-                  "FedEx Web Services authentication is conveyed as 4 fields inside the SOAP request body (WebAuthenticationDetail.Key, WebAuthenticationDetail.Password, ClientDetail.AccountNumber, ClientDetail.MeterNumber), not as HTTP headers. This manifest declares all 4 as env-ref auth entries for credential sourcing; exact SOAP body placement is a wsdl-2-mcp runtime concern, not an auth-scheme concern."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": ["source-uri", "configured-upstream"],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "SOAP RatePortType/getRates",
-                  "name": "soap_rateporttype_getrates",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
-              "type": "http",
-              "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "FedEx Web Services RateService v18",
-              "notes": [
-                "Official FedEx Developer Resource Center: https://www.fedex.com/us/developer/ (raw .wsdl download is gated behind a Compatible Solutions Program developer account; FedEx instead publishes the WSDL structure via official guide PDFs such as the pinned Rate Service Guide).",
-                "Structural fidelity (portType/operation/service/port/endpoint names below) was cross-verified against a long-standing, unmodified community mirror of the officially-versioned FedEx RateService_v18.wsdl to ensure the manifest matches FedEx's real, published Web Services contract rather than an invented shape.",
-                "sha256 digest recorded above (source.digest) is of the cross-referenced RateService_v18.wsdl content, sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77.",
-                "WSDL facts: portType RatePortType, operation getRates, service RateService, port RateServicePort, targetNamespace http://fedex.com/ws/rate/v18, production SOAP address https://ws.fedex.com:443/web-services/rate.",
-                "FedEx Web Services authentication is conveyed as 4 fields inside the SOAP request body (WebAuthenticationDetail.Key, WebAuthenticationDetail.Password, ClientDetail.AccountNumber, ClientDetail.MeterNumber), not as HTTP headers. This manifest declares all 4 as env-ref auth entries for credential sourcing; exact SOAP body placement is a wsdl-2-mcp runtime concern, not an auth-scheme concern."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": ["source-uri", "configured-upstream"],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/google-ads",
-      "version": "0.1.0",
-      "description": "Generated grpc-2-mcp MCP manifest for the Google Ads API GoogleAdsFieldService.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/google-ads/grpc.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": [
-            "GOOGLE_ADS_ACCESS_TOKEN",
-            "GOOGLE_ADS_DEVELOPER_TOKEN",
-            "QD_MANIFEST_ENDPOINT"
-          ]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "GOOGLE_ADS_ACCESS_TOKEN",
-          "description": "Secret used by oauth2 upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "GOOGLE_ADS_DEVELOPER_TOKEN",
-          "description": "Secret used by api-key upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "QD_MANIFEST_ENDPOINT",
-          "description": "Google Ads API gRPC endpoint.",
-          "isRequired": true,
-          "isSecret": false
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "grpc-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "ads",
-            "generated",
-            "google",
-            "google-ads",
-            "grpc",
-            "manifest-backed"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/google-ads",
-            "version": "0.1.0",
-            "title": "Google Ads",
-            "description": "Generated grpc-2-mcp MCP manifest for the Google Ads API GoogleAdsFieldService.",
-            "labels": [
-              "ads",
-              "generated",
-              "google",
-              "google-ads",
-              "grpc"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "grpc-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://raw.githubusercontent.com/googleapis/googleapis/master/google/ads/googleads/v22/services/google_ads_field_service.proto",
-              "digest": "sha256:fa1cfc42603ee80d88f144e519c371f16156be6248237ce4d81f2223701560af"
-            },
-            "select": {
-              "requests": [],
-              "grpcMethods": [
-                {
-                  "service": "google.ads.googleads.v22.services.GoogleAdsFieldService",
-                  "method": "GetGoogleAdsField"
-                },
-                {
-                  "service": "google.ads.googleads.v22.services.GoogleAdsFieldService",
-                  "method": "SearchGoogleAdsFields"
-                }
-              ],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "oauth2",
-                "valueFrom": {
-                  "env": "GOOGLE_ADS_ACCESS_TOKEN"
-                }
-              },
-              {
-                "type": "api-key",
-                "in": "header",
-                "name": "developer-token",
-                "valueFrom": {
-                  "env": "GOOGLE_ADS_DEVELOPER_TOKEN"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "endpoint": {
-                    "type": "string",
-                    "description": "Google Ads API gRPC endpoint."
-                  },
-                  "tls": {
-                    "type": "boolean",
-                    "description": "Whether the gRPC channel uses TLS."
-                  }
-                },
-                "required": ["endpoint"]
-              },
-              "defaults": {
-                "endpoint": "googleads.googleapis.com:443",
-                "tls": true
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://raw.githubusercontent.com/googleapis/googleapis/master/google/ads/googleads/v22/services/google_ads_field_service.proto",
-                "type": "http",
-                "digest": "sha256:fa1cfc42603ee80d88f144e519c371f16156be6248237ce4d81f2223701560af",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "googleapis/googleapis@master:google/ads/googleads/v22 (GoogleAdsFieldService)",
-                "notes": [
-                  "Official Google Ads API proto source repository: https://github.com/googleapis/googleapis/tree/master/google/ads/googleads (Google Ads has no separate protos-only repository; googleapis/googleapis is the canonical, Google-maintained source).",
-                  "Scoped to GoogleAdsFieldService (GetGoogleAdsField, SearchGoogleAdsFields) and its direct dependencies rather than the full Google Ads API, which has a very large interdependent proto graph across hundreds of files.",
-                  "Pinned files (all retrieved 2026-07-09 from the master branch, API version v22):",
-                  "- google/ads/googleads/v22/services/google_ads_field_service.proto sha256:fa1cfc42603ee80d88f144e519c371f16156be6248237ce4d81f2223701560af",
-                  "- google/ads/googleads/v22/resources/google_ads_field.proto sha256:523fd032c95f9437ff75a2f606fb9bf614a047e3f46cacc78d21ffc901cdfed7",
-                  "- google/ads/googleads/v22/enums/google_ads_field_category.proto sha256:141bce3d068eed3583993b700e732d213f9b4072a7e681a57c0a8c219889ba95",
-                  "- google/ads/googleads/v22/enums/google_ads_field_data_type.proto sha256:53295ba48374c53909f28ebe960d4a4f584040786c0d87d9c94ef62a81815197",
-                  "No protoc/buf CLI is available in this sandbox, so the FileDescriptorSet used for codegen was hand-encoded (via @bufbuild/protobuf create/toBinary, the same primitive this repo's grpc-2-mcp package uses for its own test fixtures) to exactly mirror the real field names, numbers, and types from the pinned official .proto sources above.",
-                  "The google.api.* REST-transcoding extension options (field_behavior, resource, resource_reference, http) present in the official source were intentionally omitted from the encoded descriptor: they are not read by grpc-2-mcp's descriptor parser (packages/importers/grpc-2-mcp/src/descriptor.ts and schema.ts only consume services/methods/messages/fields/enums), and including them would require additionally vendoring the google/api/*.proto extension definitions with no effect on the generated MCP surface.",
-                  "gRPC endpoint per the official proto: googleads.googleapis.com (default_host option in the source)."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": ["source-uri", "configured-upstream"],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "google.ads.googleads.v22.services.GoogleAdsFieldService/GetGoogleAdsField",
-                  "name": "google_ads_googleads_v22_services_googleadsfieldservice_getgoogleadsfield",
-                  "deny": false
-                },
-                {
-                  "from": "google.ads.googleads.v22.services.GoogleAdsFieldService/SearchGoogleAdsFields",
-                  "name": "google_ads_googleads_v22_services_googleadsfieldservice_searchgoogleadsfields",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://raw.githubusercontent.com/googleapis/googleapis/master/google/ads/googleads/v22/services/google_ads_field_service.proto",
-              "type": "http",
-              "digest": "sha256:fa1cfc42603ee80d88f144e519c371f16156be6248237ce4d81f2223701560af",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "googleapis/googleapis@master:google/ads/googleads/v22 (GoogleAdsFieldService)",
-              "notes": [
-                "Official Google Ads API proto source repository: https://github.com/googleapis/googleapis/tree/master/google/ads/googleads (Google Ads has no separate protos-only repository; googleapis/googleapis is the canonical, Google-maintained source).",
-                "Scoped to GoogleAdsFieldService (GetGoogleAdsField, SearchGoogleAdsFields) and its direct dependencies rather than the full Google Ads API, which has a very large interdependent proto graph across hundreds of files.",
-                "Pinned files (all retrieved 2026-07-09 from the master branch, API version v22):",
-                "- google/ads/googleads/v22/services/google_ads_field_service.proto sha256:fa1cfc42603ee80d88f144e519c371f16156be6248237ce4d81f2223701560af",
-                "- google/ads/googleads/v22/resources/google_ads_field.proto sha256:523fd032c95f9437ff75a2f606fb9bf614a047e3f46cacc78d21ffc901cdfed7",
-                "- google/ads/googleads/v22/enums/google_ads_field_category.proto sha256:141bce3d068eed3583993b700e732d213f9b4072a7e681a57c0a8c219889ba95",
-                "- google/ads/googleads/v22/enums/google_ads_field_data_type.proto sha256:53295ba48374c53909f28ebe960d4a4f584040786c0d87d9c94ef62a81815197",
-                "No protoc/buf CLI is available in this sandbox, so the FileDescriptorSet used for codegen was hand-encoded (via @bufbuild/protobuf create/toBinary, the same primitive this repo's grpc-2-mcp package uses for its own test fixtures) to exactly mirror the real field names, numbers, and types from the pinned official .proto sources above.",
-                "The google.api.* REST-transcoding extension options (field_behavior, resource, resource_reference, http) present in the official source were intentionally omitted from the encoded descriptor: they are not read by grpc-2-mcp's descriptor parser (packages/importers/grpc-2-mcp/src/descriptor.ts and schema.ts only consume services/methods/messages/fields/enums), and including them would require additionally vendoring the google/api/*.proto extension definitions with no effect on the generated MCP surface.",
-                "gRPC endpoint per the official proto: googleads.googleapis.com (default_host option in the source)."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": ["source-uri", "configured-upstream"],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
               "generatedExecution": "openshell-mxc-only",
               "unavailableRuntime": "fail-closed"
             }
@@ -3536,6 +2704,218 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/paychex",
+      "version": "0.1.0",
+      "description": "Generated Paychex Time Web Services (TWS) read-only SOAP MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/paychex/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PAYCHEX_TWS_PASSWORD", "PAYCHEX_TWS_USERNAME"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PAYCHEX_TWS_PASSWORD",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "PAYCHEX_TWS_USERNAME",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "hcm",
+            "manifest-backed",
+            "paychex",
+            "payroll",
+            "read-only",
+            "soap",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/paychex",
+            "version": "0.1.0",
+            "title": "Paychex",
+            "description": "Generated Paychex Time Web Services (TWS) read-only SOAP MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "hcm",
+              "paychex",
+              "payroll",
+              "read-only",
+              "soap",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+              "ref": "paychex-tws-docs@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "TimeWebServices/ExportEmployeeTime"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "PAYCHEX_TWS_USERNAME"
+                },
+                "passwordFrom": {
+                  "env": "PAYCHEX_TWS_PASSWORD"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the selected Time Web Services (TWS) port."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://centralservers.com/service/ws-soap/2.0",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://paychex.centralservers.com/service/home/about",
+                "type": "http",
+                "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                "ref": "paychex-tws-docs@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "paychex-tws-docs@2026-07-09",
+                "notes": [
+                  "Official Paychex Time Web Services (TWS) documentation: https://paychex.centralservers.com/service/home/about",
+                  "Paychex's modern developer.paychex.com portal is REST-only; the genuine SOAP surface is the legacy Time Web Services (TWS) API for the Stratustime time & attendance engine, exposed at https://centralservers.com/service/ws-soap/2.0 (and a ws-soap/1.0 fallback), alongside XML/JSON variants of the same interface.",
+                  "Verified source SHA-256: 8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                  "Per-operation request/response schemas are exposed through TWS's authenticated interactive library interface rather than a statically downloadable WSDL; the selected operation models Paychex's officially documented read-only employee time-export capability. This mirrors the per-tenant endpoint placeholder precedent set by the merged Workday manifest (registry/workday/soap.mcp.json).",
+                  "This is a read-only export operation only: no time punches, employee records, or payroll data are mutated."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                  "SOAP TimeWebServices/ExportEmployeeTime for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/paychex/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP TimeWebServices/ExportEmployeeTime",
+                  "name": "soap_paychex_export_employee_time",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "type": "http",
+              "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+              "ref": "paychex-tws-docs@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "paychex-tws-docs@2026-07-09",
+              "notes": [
+                "Official Paychex Time Web Services (TWS) documentation: https://paychex.centralservers.com/service/home/about",
+                "Paychex's modern developer.paychex.com portal is REST-only; the genuine SOAP surface is the legacy Time Web Services (TWS) API for the Stratustime time & attendance engine, exposed at https://centralservers.com/service/ws-soap/2.0 (and a ws-soap/1.0 fallback), alongside XML/JSON variants of the same interface.",
+                "Verified source SHA-256: 8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                "Per-operation request/response schemas are exposed through TWS's authenticated interactive library interface rather than a statically downloadable WSDL; the selected operation models Paychex's officially documented read-only employee time-export capability. This mirrors the per-tenant endpoint placeholder precedent set by the merged Workday manifest (registry/workday/soap.mcp.json).",
+                "This is a read-only export operation only: no time punches, employee records, or payroll data are mutated."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                "SOAP TimeWebServices/ExportEmployeeTime for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/paychex/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/paypal",
       "version": "0.1.0",
       "description": "Generated PayPal Invoicing read-only OpenAPI MCP catalog manifest.",
@@ -4527,202 +3907,6 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/sentry",
-      "version": "0.1.0",
-      "description": "Generated asyncapi-2-mcp MCP manifest for Sentry issue alert webhook events.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/sentry/events.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": ["SENTRY_CLIENT_SECRET"]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "SENTRY_CLIENT_SECRET",
-          "description": "Secret used by api-key upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "asyncapi-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "asyncapi",
-            "events",
-            "generated",
-            "manifest-backed",
-            "sentry",
-            "webhooks"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/sentry",
-            "version": "0.1.0",
-            "title": "Sentry",
-            "description": "Generated asyncapi-2-mcp MCP manifest for Sentry issue alert webhook events.",
-            "labels": [
-              "asyncapi",
-              "events",
-              "generated",
-              "sentry",
-              "webhooks"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "asyncapi-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
-              "digest": "sha256:ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
-              "ref": "sentry-webhooks-docs@2026-07-09"
-            },
-            "select": {
-              "requests": [
-                {
-                  "method": "SUBSCRIBE",
-                  "uriTemplate": "channel://sentry.issue_alert"
-                }
-              ],
-              "grpcMethods": [],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "api-key",
-                "in": "header",
-                "name": "sentry-hook-signature",
-                "valueFrom": {
-                  "env": "SENTRY_CLIENT_SECRET"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "brokerProtocol": {
-                    "type": "string",
-                    "description": "Transport used to deliver Sentry integration-platform events."
-                  }
-                }
-              },
-              "defaults": {
-                "brokerProtocol": "webhook"
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
-                "type": "http",
-                "digest": "sha256:ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
-                "ref": "sentry-webhooks-docs@2026-07-09",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "sentry-webhooks-docs@2026-07-09",
-                "notes": [
-                  "Official Sentry Integration Platform webhooks documentation: https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
-                  "Sentry does not publish a first-party AsyncAPI/JSON Schema document for integration-platform webhooks; this manifest pins the official documentation entry point used for the catalog entry, matching the precedent set by the Salesforce/Airtable OpenAPI manifests.",
-                  "Selected channel models Sentry's officially documented 'issue_alert' webhook resource, confirmed via the Sentry-Hook-Resource request header described in the docs.",
-                  "Verified source SHA-256: ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
-                  "Auth models the Sentry Client Secret used to compute the Sentry-Hook-Signature HMAC for inbound webhook payload verification, supplied via env ref only.",
-                  "This is a read-only, inbound event receiver: no outbound mutating calls are made to Sentry."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": [
-                  "GET https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/ for source retrieval",
-                  "Inbound HTTPS POST from Sentry to the configured webhook endpoint for the selected issue_alert resource; no outbound calls to Sentry are required"
-                ],
-                "filesystem": [
-                  "Read committed manifest registry/sentry/events.mcp.json",
-                  "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/sentry.test.ts",
-                  "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/sentry/"
-                ],
-                "process": [
-                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
-                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
-                ],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "SUBSCRIBE channel://sentry.issue_alert",
-                  "name": "receive_sentry_issue_alert_webhook",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
-              "type": "http",
-              "digest": "sha256:ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
-              "ref": "sentry-webhooks-docs@2026-07-09",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "sentry-webhooks-docs@2026-07-09",
-              "notes": [
-                "Official Sentry Integration Platform webhooks documentation: https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
-                "Sentry does not publish a first-party AsyncAPI/JSON Schema document for integration-platform webhooks; this manifest pins the official documentation entry point used for the catalog entry, matching the precedent set by the Salesforce/Airtable OpenAPI manifests.",
-                "Selected channel models Sentry's officially documented 'issue_alert' webhook resource, confirmed via the Sentry-Hook-Resource request header described in the docs.",
-                "Verified source SHA-256: ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
-                "Auth models the Sentry Client Secret used to compute the Sentry-Hook-Signature HMAC for inbound webhook payload verification, supplied via env ref only.",
-                "This is a read-only, inbound event receiver: no outbound mutating calls are made to Sentry."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": [
-                "GET https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/ for source retrieval",
-                "Inbound HTTPS POST from Sentry to the configured webhook endpoint for the selected issue_alert resource; no outbound calls to Sentry are required"
-              ],
-              "filesystem": [
-                "Read committed manifest registry/sentry/events.mcp.json",
-                "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/sentry.test.ts",
-                "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/sentry/"
-              ],
-              "process": [
-                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
-                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
-              ],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/shopify",
       "version": "0.1.0",
       "description": "Generated Shopify Admin REST Products read-only OpenAPI MCP catalog manifest.",
@@ -5287,189 +4471,6 @@
                 "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
                 "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
               ],
-              "generatedExecution": "openshell-mxc-only",
-              "unavailableRuntime": "fail-closed"
-            }
-          }
-        }
-      }
-    },
-    {
-      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-      "name": "ai.quickdeploy/solace-event-portal",
-      "version": "0.1.0",
-      "description": "Generated asyncapi-2-mcp MCP manifest for Solace Event Portal event API publish operations.",
-      "packages": [
-        {
-          "registryType": "oci",
-          "identifier": "ghcr.io/quickdeployai/mcp-host",
-          "runtimeHint": "mcp-host",
-          "transport": "streamable-http",
-          "runtimeArguments": [
-            "run",
-            "registry/solace-event-portal/events.mcp.json",
-            "--transport",
-            "streamable-http"
-          ],
-          "environmentVariables": ["SOLACE_EVENT_PORTAL_PASSWORD", "SOLACE_EVENT_PORTAL_USERNAME"]
-        }
-      ],
-      "environmentVariables": [
-        {
-          "name": "SOLACE_EVENT_PORTAL_PASSWORD",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        },
-        {
-          "name": "SOLACE_EVENT_PORTAL_USERNAME",
-          "description": "Secret used by basic upstream authentication.",
-          "isRequired": true,
-          "isSecret": true
-        }
-      ],
-      "_meta": {
-        "ai.quickdeploy.registry/curation": {
-          "verifiedStatus": "review",
-          "category": "asyncapi-2-mcp",
-          "isOfficial": true,
-          "tags": [
-            "asyncapi",
-            "event-portal",
-            "events",
-            "generated",
-            "manifest-backed",
-            "pubsub",
-            "solace",
-            "solace-event-portal"
-          ]
-        },
-        "ai.quickdeploy.registry/manifest": {
-          "apiVersion": "quickdeploy.ai/v1",
-          "kind": "McpManifest",
-          "metadata": {
-            "name": "ai.quickdeploy/solace-event-portal",
-            "version": "0.1.0",
-            "title": "Solace Event Portal",
-            "description": "Generated asyncapi-2-mcp MCP manifest for Solace Event Portal event API publish operations.",
-            "labels": [
-              "asyncapi",
-              "event-portal",
-              "events",
-              "generated",
-              "pubsub",
-              "solace",
-              "solace-event-portal"
-            ]
-          },
-          "spec": {
-            "importer": {
-              "engine": "asyncapi-2-mcp",
-              "versionRange": "^0.1.0"
-            },
-            "source": {
-              "type": "http",
-              "uri": "https://www.asyncapi.com/docs/reference/bindings/solace"
-            },
-            "select": {
-              "requests": [
-                {
-                  "method": "PUBLISH",
-                  "uriTemplate": "channel://event-portal.publish-event"
-                }
-              ],
-              "grpcMethods": [],
-              "pythonFunctions": [],
-              "skills": [],
-              "knowledgeSources": [],
-              "corpusGlobs": []
-            },
-            "auth": [
-              {
-                "type": "basic",
-                "usernameFrom": {
-                  "env": "SOLACE_EVENT_PORTAL_USERNAME"
-                },
-                "passwordFrom": {
-                  "env": "SOLACE_EVENT_PORTAL_PASSWORD"
-                }
-              }
-            ],
-            "config": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "brokerProtocol": {
-                    "type": "string",
-                    "description": "Delivery protocol for generated publish tools. Solace PubSub+ uses topic/queue destinations per the official Solace AsyncAPI binding, not Kafka/MQTT."
-                  },
-                  "publishTimeoutMs": {
-                    "type": "number",
-                    "minimum": 1,
-                    "description": "Per-publish timeout in milliseconds."
-                  }
-                }
-              },
-              "defaults": {
-                "brokerProtocol": "solace",
-                "publishTimeoutMs": 30000
-              },
-              "ai.quickdeploy.codegen/source": {
-                "uri": "https://www.asyncapi.com/docs/reference/bindings/solace",
-                "type": "http",
-                "retrievedAt": "2026-07-09",
-                "sourceVersion": "solace binding 0.4.0",
-                "notes": [
-                  "Solace Event Portal is a design-time event catalog; the AsyncAPI documents it exports are per-tenant/per-event-API, so there is no single downloadable official AsyncAPI document for the product itself.",
-                  "The authoritative, versioned, machine-readable source is the official AsyncAPI Initiative Solace protocol binding specification: https://www.asyncapi.com/docs/reference/bindings/solace (binding version 0.4.0), which defines exactly how Solace queue/topic destinations, delivery mode, and operation bindings are expressed in AsyncAPI — this is what Event Portal's own AsyncAPI exporter emits.",
-                  "Secondary reference: Solace Event Portal event API export documentation, https://docs.solace.com/Cloud/Event-Portal/event-portal-designer-event-apis.htm.",
-                  "This manifest models a topic/queue publish operation using the Solace Destination Object shape (destinationType queue|topic, deliveryMode direct|persistent, topic.topicSubscriptions)."
-                ]
-              },
-              "ai.quickdeploy.codegen/policy": {
-                "network": ["source-uri", "configured-upstream"],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
-                "generatedExecution": "openshell-mxc-only",
-                "unavailableRuntime": "fail-closed"
-              }
-            },
-            "expose": {
-              "tools": [
-                {
-                  "from": "PUBLISH channel://event-portal.publish-event",
-                  "name": "publish_channel_event_portal_publish_event",
-                  "deny": false
-                }
-              ],
-              "resources": [],
-              "prompts": []
-            }
-          },
-          "deployment": {
-            "transport": "streamable-http",
-            "auth": {
-              "type": "none"
-            },
-            "userConfig": {}
-          },
-          "_meta": {
-            "ai.quickdeploy.codegen/source": {
-              "uri": "https://www.asyncapi.com/docs/reference/bindings/solace",
-              "type": "http",
-              "retrievedAt": "2026-07-09",
-              "sourceVersion": "solace binding 0.4.0",
-              "notes": [
-                "Solace Event Portal is a design-time event catalog; the AsyncAPI documents it exports are per-tenant/per-event-API, so there is no single downloadable official AsyncAPI document for the product itself.",
-                "The authoritative, versioned, machine-readable source is the official AsyncAPI Initiative Solace protocol binding specification: https://www.asyncapi.com/docs/reference/bindings/solace (binding version 0.4.0), which defines exactly how Solace queue/topic destinations, delivery mode, and operation bindings are expressed in AsyncAPI — this is what Event Portal's own AsyncAPI exporter emits.",
-                "Secondary reference: Solace Event Portal event API export documentation, https://docs.solace.com/Cloud/Event-Portal/event-portal-designer-event-apis.htm.",
-                "This manifest models a topic/queue publish operation using the Solace Destination Object shape (destinationType queue|topic, deliveryMode direct|persistent, topic.topicSubscriptions)."
-              ]
-            },
-            "ai.quickdeploy.codegen/policy": {
-              "network": ["source-uri", "configured-upstream"],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
               "generatedExecution": "openshell-mxc-only",
               "unavailableRuntime": "fail-closed"
             }
@@ -7767,6 +6768,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 58
+    "ai.quickdeploy.registry/sourceCount": 55
   }
 }
