@@ -4283,6 +4283,231 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/zoom",
+      "version": "0.1.0",
+      "description": "Generated Zoom Meetings read-only OpenAPI MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/zoom/api.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["QD_MANIFEST_BASE_URL", "ZOOM_ACCESS_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "QD_MANIFEST_BASE_URL",
+          "description": "Zoom REST API base URL, e.g. https://api.zoom.us/v2.",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "ZOOM_ACCESS_TOKEN",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "openapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "manifest-backed",
+            "meetings",
+            "openapi",
+            "read-only",
+            "zoom"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/zoom",
+            "version": "0.1.0",
+            "title": "Zoom",
+            "description": "Generated Zoom Meetings read-only OpenAPI MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "openapi",
+              "read-only",
+              "meetings",
+              "zoom"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "openapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json",
+              "digest": "sha256:1b04394282bb3759744334835c5aa92fcafb57df71f27713f92e7f0532bd18b0",
+              "ref": "zoom-api-openapi-v2@2.0.0"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/users/{userId}/meetings"
+                },
+                {
+                  "method": "GET",
+                  "uriTemplate": "/meetings/{meetingId}"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "api-key",
+                "in": "query",
+                "name": "access_token",
+                "valueFrom": {
+                  "env": "ZOOM_ACCESS_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Zoom REST API base URL, e.g. https://api.zoom.us/v2."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request upstream timeout in milliseconds."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Importer execution profile."
+                  }
+                },
+                "required": ["baseUrl"]
+              },
+              "defaults": {
+                "requestTimeoutMs": 30000,
+                "mode": "read-only"
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json",
+                "type": "http",
+                "digest": "sha256:1b04394282bb3759744334835c5aa92fcafb57df71f27713f92e7f0532bd18b0",
+                "ref": "zoom-api-openapi-v2@2.0.0",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "zoom-api-openapi-v2@2.0.0",
+                "notes": [
+                  "Official Zoom API OpenAPI (Swagger 2.0) specification repository (zoom/api): https://github.com/zoom/api",
+                  "Canonical source URL: https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json",
+                  "OpenAPI document info: title \"Zoom API\", version 2.0.0.",
+                  "The document declares its `global` security scheme as an `access_token` API key query parameter; this manifest models auth accordingly (env ref only, no literal secrets).",
+                  "Verified source SHA-256: 1b04394282bb3759744334835c5aa92fcafb57df71f27713f92e7f0532bd18b0",
+                  "The committed manifest selects read-only Zoom Meetings list/get operations only."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json for source retrieval",
+                  "GET https://api.zoom.us/v2/users/{userId}/meetings for selected upstream operation",
+                  "GET https://api.zoom.us/v2/meetings/{meetingId} for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/zoom/api.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/openapi/zoom.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/openapi/zoom/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /users/{userId}/meetings",
+                  "name": "list_zoom_meetings",
+                  "deny": false
+                },
+                {
+                  "from": "GET /meetings/{meetingId}",
+                  "name": "get_zoom_meeting",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json",
+              "type": "http",
+              "digest": "sha256:1b04394282bb3759744334835c5aa92fcafb57df71f27713f92e7f0532bd18b0",
+              "ref": "zoom-api-openapi-v2@2.0.0",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "zoom-api-openapi-v2@2.0.0",
+              "notes": [
+                "Official Zoom API OpenAPI (Swagger 2.0) specification repository (zoom/api): https://github.com/zoom/api",
+                "Canonical source URL: https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json",
+                "OpenAPI document info: title \"Zoom API\", version 2.0.0.",
+                "The document declares its `global` security scheme as an `access_token` API key query parameter; this manifest models auth accordingly (env ref only, no literal secrets).",
+                "Verified source SHA-256: 1b04394282bb3759744334835c5aa92fcafb57df71f27713f92e7f0532bd18b0",
+                "The committed manifest selects read-only Zoom Meetings list/get operations only."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://raw.githubusercontent.com/zoom/api/master/openapi.v2.json for source retrieval",
+                "GET https://api.zoom.us/v2/users/{userId}/meetings for selected upstream operation",
+                "GET https://api.zoom.us/v2/meetings/{meetingId} for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/zoom/api.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/openapi/zoom.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/openapi/zoom/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "com.atlassian/rovo-mcp",
       "version": "1.0.0",
       "description": "Atlassian Rovo hosted MCP endpoint for Jira, Confluence, Jira Service Management, Bitbucket, and Compass context.",
@@ -4865,6 +5090,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 46
+    "ai.quickdeploy.registry/sourceCount": 47
   }
 }
