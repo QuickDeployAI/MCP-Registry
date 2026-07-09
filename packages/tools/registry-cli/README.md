@@ -58,6 +58,17 @@ Manifest config is validated against the referenced importer's registered
 importer-owned schemas; unknown fields and default type mismatches fail with
 errors naming the importer and config field.
 
+## Generated MCP Sandbox
+
+Generated MCP build and test execution must go through the
+OpenShell-backed MXC runtime boundary in `src/codegen/openshell-mxc.ts`.
+Generated projects live under `.generated/mcp-codegen/<family>/<provider>/`
+and are never executed directly from the host. The harness assembles an
+OpenShell policy with explicit filesystem, Landlock, process, and
+binary-scoped network policy, denies network by default, passes credentials to
+the runtime adapter as env references only, and fails closed when the
+OpenShell/MXC runtime adapter is unavailable.
+
 `registry-cli validate` checks committed registry inputs for supported
 `server.json` schema vintages, reverse-DNS server names, exact semantic versions,
 duplicate server names, MCPB `fileSha256` pins, OCI digest pins, and MCP
