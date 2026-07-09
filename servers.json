@@ -1017,6 +1017,215 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/google-eventarc",
+      "version": "0.1.0",
+      "description": "Generated Google Eventarc read-only AsyncAPI/CloudEvents MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/google-eventarc/events.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["GOOGLE_EVENTARC_ACCESS_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "GOOGLE_EVENTARC_ACCESS_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "asyncapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "asyncapi",
+            "cloudevents",
+            "generated",
+            "google-eventarc",
+            "manifest-backed",
+            "read-only"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/google-eventarc",
+            "version": "0.1.0",
+            "title": "Google Eventarc",
+            "description": "Generated Google Eventarc read-only AsyncAPI/CloudEvents MCP catalog manifest.",
+            "labels": [
+              "asyncapi",
+              "cloudevents",
+              "generated",
+              "google-eventarc",
+              "read-only"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "asyncapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+              "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+              "ref": "google-eventarc-event-types-docs@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SUBSCRIBE",
+                  "uriTemplate": "channel://google.cloud.pubsub.topic.v1.messagePublished"
+                },
+                {
+                  "method": "SUBSCRIBE",
+                  "uriTemplate": "channel://google.cloud.storage.object.v1.finalized"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "GOOGLE_EVENTARC_ACCESS_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brokerProtocol": {
+                    "type": "string",
+                    "description": "Eventarc transport binding for generated subscribe tools."
+                  },
+                  "publishTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-call timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "brokerProtocol": "pubsub",
+                "publishTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+                "type": "http",
+                "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+                "ref": "google-eventarc-event-types-docs@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "google-eventarc-event-types-docs@2026-07-09",
+                "notes": [
+                  "Official Google Cloud Eventarc \"Google event types\" documentation page.",
+                  "Google Eventarc does not publish an AsyncAPI document; events are delivered in CloudEvents format. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable precedent (QUI-351, QUI-366) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+                  "Canonical source URL: https://docs.cloud.google.com/eventarc/docs/event-types",
+                  "Verified source SHA-256: 421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+                  "The committed manifest selects a read-only representative subset of documented Google event types: Pub/Sub message published and Cloud Storage object finalized."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://docs.cloud.google.com/eventarc/docs/event-types for source retrieval",
+                  "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished for selected upstream operation",
+                  "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/google-eventarc/events.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/google-eventarc.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/google-eventarc/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished",
+                  "name": "subscribe_google_eventarc_pubsub_message_published",
+                  "deny": false
+                },
+                {
+                  "from": "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized",
+                  "name": "subscribe_google_eventarc_storage_object_finalized",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+              "type": "http",
+              "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+              "ref": "google-eventarc-event-types-docs@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "google-eventarc-event-types-docs@2026-07-09",
+              "notes": [
+                "Official Google Cloud Eventarc \"Google event types\" documentation page.",
+                "Google Eventarc does not publish an AsyncAPI document; events are delivered in CloudEvents format. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable precedent (QUI-351, QUI-366) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+                "Canonical source URL: https://docs.cloud.google.com/eventarc/docs/event-types",
+                "Verified source SHA-256: 421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+                "The committed manifest selects a read-only representative subset of documented Google event types: Pub/Sub message published and Cloud Storage object finalized."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://docs.cloud.google.com/eventarc/docs/event-types for source retrieval",
+                "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished for selected upstream operation",
+                "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/google-eventarc/events.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/google-eventarc.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/google-eventarc/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/google-workspace",
       "version": "0.1.0",
       "description": "Generated Google Workspace Drive read-only MCP catalog manifest.",
@@ -2096,6 +2305,212 @@
                 "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
                 "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
               ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/pagerduty",
+      "version": "0.1.0",
+      "description": "Generated PagerDuty Events API v2 incident event MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/pagerduty/events.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PAGERDUTY_ROUTING_KEY"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PAGERDUTY_ROUTING_KEY",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "asyncapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "asyncapi",
+            "events",
+            "generated",
+            "incident-management",
+            "manifest-backed",
+            "pagerduty",
+            "read-only",
+            "webhooks"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/pagerduty",
+            "version": "0.1.0",
+            "title": "PagerDuty",
+            "description": "Generated PagerDuty Events API v2 incident event MCP catalog manifest.",
+            "labels": [
+              "asyncapi",
+              "events",
+              "generated",
+              "incident-management",
+              "pagerduty",
+              "read-only",
+              "webhooks"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "asyncapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "PUBLISH",
+                  "uriTemplate": "channel://trigger"
+                },
+                {
+                  "method": "PUBLISH",
+                  "uriTemplate": "channel://acknowledge"
+                },
+                {
+                  "method": "PUBLISH",
+                  "uriTemplate": "channel://resolve"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "api-key",
+                "in": "header",
+                "name": "x-routing-key",
+                "valueFrom": {
+                  "env": "PAGERDUTY_ROUTING_KEY"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brokerProtocol": {
+                    "type": "string",
+                    "description": "AsyncAPI broker binding to use for generated tools, such as kafka or mqtt."
+                  },
+                  "publishTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-publish timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "brokerProtocol": "https-events-api",
+                "publishTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "pagerduty-events-api-v2",
+                "notes": [
+                  "Official PagerDuty Events API v2 reference: https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+                  "Overview: https://developer.pagerduty.com/docs/events-api-v2-overview",
+                  "PagerDuty does not publish a formal AsyncAPI document; this manifest models the documented event_action enum (trigger/acknowledge/resolve) as PUBLISH channels.",
+                  "The Events API v2 endpoint is POST https://events.pagerduty.com/v2/enqueue.",
+                  "PagerDuty authenticates Events API v2 calls with an integration routing_key carried in the JSON request body rather than an HTTP header; this manifest models it as an api-key-style env ref, with body placement handled by the importer."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api for source retrieval",
+                  "PUBLISH channel://trigger for selected upstream event",
+                  "PUBLISH channel://acknowledge for selected upstream event",
+                  "PUBLISH channel://resolve for selected upstream event"
+                ],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "PUBLISH channel://trigger",
+                  "name": "publish_channel_trigger",
+                  "deny": false
+                },
+                {
+                  "from": "PUBLISH channel://acknowledge",
+                  "name": "publish_channel_acknowledge",
+                  "deny": false
+                },
+                {
+                  "from": "PUBLISH channel://resolve",
+                  "name": "publish_channel_resolve",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "pagerduty-events-api-v2",
+              "notes": [
+                "Official PagerDuty Events API v2 reference: https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+                "Overview: https://developer.pagerduty.com/docs/events-api-v2-overview",
+                "PagerDuty does not publish a formal AsyncAPI document; this manifest models the documented event_action enum (trigger/acknowledge/resolve) as PUBLISH channels.",
+                "The Events API v2 endpoint is POST https://events.pagerduty.com/v2/enqueue.",
+                "PagerDuty authenticates Events API v2 calls with an integration routing_key carried in the JSON request body rather than an HTTP header; this manifest models it as an api-key-style env ref, with body placement handled by the importer."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api for source retrieval",
+                "PUBLISH channel://trigger for selected upstream event",
+                "PUBLISH channel://acknowledge for selected upstream event",
+                "PUBLISH channel://resolve for selected upstream event"
+              ],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
               "generatedExecution": "openshell-mxc-only",
               "unavailableRuntime": "fail-closed"
             }
@@ -4359,6 +4774,211 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/workday",
+      "version": "0.1.0",
+      "description": "Generated Workday Human Resources SOAP web service MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/workday/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["WORKDAY_PASSWORD", "WORKDAY_USERNAME"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "WORKDAY_PASSWORD",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "WORKDAY_USERNAME",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "hcm",
+            "human-resources",
+            "manifest-backed",
+            "read-only",
+            "soap",
+            "workday",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/workday",
+            "version": "0.1.0",
+            "title": "Workday",
+            "description": "Generated Workday Human Resources SOAP web service MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "hcm",
+              "human-resources",
+              "read-only",
+              "soap",
+              "workday",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Human_Resources/Get_Workers"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Human_Resources/Get_Organizations"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "WORKDAY_USERNAME"
+                },
+                "passwordFrom": {
+                  "env": "WORKDAY_PASSWORD"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the selected WSDL service port."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://wd2-impl-services1.workday.com/ccx/service/example-tenant/Human_Resources/v46.1",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "workday-wws-v46.1-2026R1",
+                "notes": [
+                  "Official Workday Web Services (WWS) directory: https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html",
+                  "SOAP API reference overview: https://community-content.workday.com/en-us/public/products/platform-and-product-extensions/soap-api-reference.html",
+                  "Directory version v46.1 (2026R1), last updated 2026/05/29.",
+                  "The committed manifest selects a read-only, representative subset of the Human Resources web service: Get_Workers and Get_Organizations.",
+                  "Workday SOAP endpoints are per-tenant (https://<host>/ccx/service/<tenant>/Human_Resources/v46.1); the committed config.defaults.endpoint is a placeholder illustrating the WSDL-documented endpoint shape, not a live tenant URL.",
+                  "Workday authenticates SOAP calls via WS-Security UsernameToken (tenant username/password) or an ISU integration system user; this manifest models it as basic auth env refs."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html for source retrieval",
+                  "SOAP Human_Resources/Get_Workers for selected upstream operation",
+                  "SOAP Human_Resources/Get_Organizations for selected upstream operation"
+                ],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP Human_Resources/Get_Workers",
+                  "name": "soap_human_resources_get_workers",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP Human_Resources/Get_Organizations",
+                  "name": "soap_human_resources_get_organizations",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "workday-wws-v46.1-2026R1",
+              "notes": [
+                "Official Workday Web Services (WWS) directory: https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html",
+                "SOAP API reference overview: https://community-content.workday.com/en-us/public/products/platform-and-product-extensions/soap-api-reference.html",
+                "Directory version v46.1 (2026R1), last updated 2026/05/29.",
+                "The committed manifest selects a read-only, representative subset of the Human Resources web service: Get_Workers and Get_Organizations.",
+                "Workday SOAP endpoints are per-tenant (https://<host>/ccx/service/<tenant>/Human_Resources/v46.1); the committed config.defaults.endpoint is a placeholder illustrating the WSDL-documented endpoint shape, not a live tenant URL.",
+                "Workday authenticates SOAP calls via WS-Security UsernameToken (tenant username/password) or an ISU integration system user; this manifest models it as basic auth env refs."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://community.workday.com/sites/default/files/file-hosting/productionapi/index.html for source retrieval",
+                "SOAP Human_Resources/Get_Workers for selected upstream operation",
+                "SOAP Human_Resources/Get_Organizations for selected upstream operation"
+              ],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/wsdl-calculator",
       "version": "0.1.0",
       "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
@@ -5752,6 +6372,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 50
+    "ai.quickdeploy.registry/sourceCount": 53
   }
 }
