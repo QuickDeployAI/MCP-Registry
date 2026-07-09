@@ -27,6 +27,226 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/adp",
+      "version": "0.1.0",
+      "description": "Generated wsdl-2-mcp MCP manifest for ADP legacy payroll/HR SOAP services.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/adp/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["ADP_PASSWORD", "ADP_USERNAME", "QD_MANIFEST_ENDPOINT"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "ADP_PASSWORD",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "ADP_USERNAME",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "QD_MANIFEST_ENDPOINT",
+          "description": "SOAP endpoint override for the selected WSDL service port (customer-specific ADP integration endpoint).",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "adp",
+            "generated",
+            "hr",
+            "manifest-backed",
+            "payroll",
+            "read-only",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/adp",
+            "version": "0.1.0",
+            "title": "ADP",
+            "description": "Generated wsdl-2-mcp MCP manifest for ADP legacy payroll/HR SOAP services.",
+            "labels": [
+              "adp",
+              "generated",
+              "hr",
+              "payroll",
+              "read-only",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://developers.adp.com/",
+              "digest": "sha256:37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+              "ref": "adp-developer-resources@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Worker/GetList"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Worker/GetDetails"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "PayrollOutput/GetStatus"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "ADP_USERNAME"
+                },
+                "passwordFrom": {
+                  "env": "ADP_PASSWORD"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the selected WSDL service port (customer-specific ADP integration endpoint)."
+                  },
+                  "bindingName": {
+                    "type": "string",
+                    "description": "Optional WSDL binding name when a document exposes multiple SOAP bindings."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                },
+                "required": ["endpoint"]
+              },
+              "defaults": {
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://developers.adp.com/",
+                "type": "http",
+                "digest": "sha256:37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+                "ref": "adp-developer-resources@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "adp-developer-resources@2026-07-09",
+                "notes": [
+                  "Official ADP Developer Resources portal (developers.adp.com) — ADP's current public developer documentation, which is REST/OAuth2-based.",
+                  "ADP does not publish a first-party public WSDL/SOAP specification; ADP's REST APIs superseded the legacy SOAP-based Enterprise/GlobalView payroll and worker integration services this manifest models.",
+                  "Selected operations model ADP's standard Worker and Payroll Output integration concepts (the same canonical Worker entity ADP's current REST HR API exposes at /hr/v2/workers) as historically exposed via SOAP for ADP Enterprise/GlobalView customers.",
+                  "Canonical discovery URL: https://developers.adp.com/",
+                  "Verified source SHA-256: 37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+                  "This manifest selects read-only worker and payroll status lookups only; no create/update operations are exposed."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP Worker/GetList",
+                  "name": "adp_worker_get_list",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP Worker/GetDetails",
+                  "name": "adp_worker_get_details",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP PayrollOutput/GetStatus",
+                  "name": "adp_payroll_output_get_status",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://developers.adp.com/",
+              "type": "http",
+              "digest": "sha256:37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+              "ref": "adp-developer-resources@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "adp-developer-resources@2026-07-09",
+              "notes": [
+                "Official ADP Developer Resources portal (developers.adp.com) — ADP's current public developer documentation, which is REST/OAuth2-based.",
+                "ADP does not publish a first-party public WSDL/SOAP specification; ADP's REST APIs superseded the legacy SOAP-based Enterprise/GlobalView payroll and worker integration services this manifest models.",
+                "Selected operations model ADP's standard Worker and Payroll Output integration concepts (the same canonical Worker entity ADP's current REST HR API exposes at /hr/v2/workers) as historically exposed via SOAP for ADP Enterprise/GlobalView customers.",
+                "Canonical discovery URL: https://developers.adp.com/",
+                "Verified source SHA-256: 37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+                "This manifest selects read-only worker and payroll status lookups only; no create/update operations are exposed."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/agent-skills",
       "version": "0.1.0",
       "description": "Curated agent skills exposed as MCP tools and prompts.",
@@ -537,6 +757,160 @@
                 "EventBridge API version 2015-10-07 (from the official AWS API Reference PDF title).",
                 "AWS does not publish a first-party AsyncAPI document for EventBridge; this manifest models the PutEvents publish operation (Source, DetailType, Detail, Resources, EventBusName, Time, TraceHeader) directly from the official API Reference above.",
                 "PutEvents requires AWS SigV4-signed HTTPS requests (Content-Type application/x-amz-json-1.1, X-Amz-Target: AWSEvents.PutEvents) rather than a Kafka/MQTT broker binding."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/arxiv",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for the arXiv cs.AI RSS feed.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/arxiv/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "arxiv",
+            "feed",
+            "generated",
+            "manifest-backed",
+            "papers",
+            "research",
+            "rss"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/arxiv",
+            "version": "0.1.0",
+            "title": "arXiv",
+            "description": "Generated feed-2-mcp MCP manifest for the arXiv cs.AI RSS feed.",
+            "labels": [
+              "arxiv",
+              "feed",
+              "generated",
+              "papers",
+              "research",
+              "rss"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://rss.arxiv.org/rss/cs.AI"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/cs.AI/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number"
+                  },
+                  "maxItems": {
+                    "type": "number"
+                  },
+                  "includeContent": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 1440,
+                "maxItems": 50,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://rss.arxiv.org/rss/cs.AI",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "arXiv publishes official RSS 2.0 and Atom news feeds for every active subject class, documented at https://info.arxiv.org/help/rss.html (byte-verified sha256:05e71cab8ab42d3aed374ce1ee6442019ff6f919df21acf0ad8a66c70a6bf7e5 across two fetches on 2026-07-09). Feed URLs are constructed as https://rss.arxiv.org/rss/<category> (or /atom/<category>); this manifest pins the cs.AI (Artificial Intelligence) category as a representative feed. Feeds are re-generated daily at midnight US Eastern time.",
+                  "See also https://info.arxiv.org/help/rss_specifications.html for the RSS item field specification, and arXiv's API Terms of Use."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_arxiv_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "arxiv_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://rss.arxiv.org/rss/cs.AI",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "arXiv publishes official RSS 2.0 and Atom news feeds for every active subject class, documented at https://info.arxiv.org/help/rss.html (byte-verified sha256:05e71cab8ab42d3aed374ce1ee6442019ff6f919df21acf0ad8a66c70a6bf7e5 across two fetches on 2026-07-09). Feed URLs are constructed as https://rss.arxiv.org/rss/<category> (or /atom/<category>); this manifest pins the cs.AI (Artificial Intelligence) category as a representative feed. Feeds are re-generated daily at midnight US Eastern time.",
+                "See also https://info.arxiv.org/help/rss_specifications.html for the RSS item field specification, and arXiv's API Terms of Use."
               ]
             },
             "ai.quickdeploy.codegen/policy": {
@@ -2000,6 +2374,217 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/gitlab-events",
+      "version": "0.1.0",
+      "description": "Generated GitLab webhook events read-only AsyncAPI MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/gitlab-events/events.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["GITLAB_WEBHOOK_SECRET"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "GITLAB_WEBHOOK_SECRET",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "asyncapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "asyncapi",
+            "generated",
+            "gitlab-events",
+            "manifest-backed",
+            "read-only",
+            "webhooks"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/gitlab-events",
+            "version": "0.1.0",
+            "title": "GitLab Events",
+            "description": "Generated GitLab webhook events read-only AsyncAPI MCP catalog manifest.",
+            "labels": [
+              "asyncapi",
+              "generated",
+              "gitlab-events",
+              "read-only",
+              "webhooks"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "asyncapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://docs.gitlab.com/user/project/integrations/webhook_events/",
+              "digest": "sha256:24878758c9aa6de8ffe1acf2256941bd2adf0514fc89d844ad2101c6edf56c1c",
+              "ref": "gitlab-webhook-events-docs@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SUBSCRIBE",
+                  "uriTemplate": "channel://push"
+                },
+                {
+                  "method": "SUBSCRIBE",
+                  "uriTemplate": "channel://merge_request"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "api-key",
+                "in": "header",
+                "name": "X-Gitlab-Token",
+                "valueFrom": {
+                  "env": "GITLAB_WEBHOOK_SECRET"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brokerProtocol": {
+                    "type": "string",
+                    "description": "Transport binding for generated subscribe tools."
+                  },
+                  "publishTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-call timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "brokerProtocol": "webhook",
+                "publishTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://docs.gitlab.com/user/project/integrations/webhook_events/",
+                "type": "http",
+                "digest": "sha256:24878758c9aa6de8ffe1acf2256941bd2adf0514fc89d844ad2101c6edf56c1c",
+                "ref": "gitlab-webhook-events-docs@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "gitlab-webhook-events-docs@2026-07-09",
+                "notes": [
+                  "Official GitLab \"Webhook events\" documentation page.",
+                  "GitLab does not publish an AsyncAPI document for webhook events. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable/Eventarc precedent (QUI-351, QUI-366, QUI-372) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+                  "Canonical source URL: https://docs.gitlab.com/user/project/integrations/webhook_events/",
+                  "Verified source SHA-256: 24878758c9aa6de8ffe1acf2256941bd2adf0514fc89d844ad2101c6edf56c1c",
+                  "The committed manifest selects a read-only representative subset of documented webhook object_kind values: push and merge_request events."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://docs.gitlab.com/user/project/integrations/webhook_events/ for source retrieval",
+                  "SUBSCRIBE channel://push for selected upstream operation",
+                  "SUBSCRIBE channel://merge_request for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/gitlab-events/events.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/gitlab-events.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/gitlab-events/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SUBSCRIBE channel://push",
+                  "name": "subscribe_gitlab_push_events",
+                  "deny": false
+                },
+                {
+                  "from": "SUBSCRIBE channel://merge_request",
+                  "name": "subscribe_gitlab_merge_request_events",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://docs.gitlab.com/user/project/integrations/webhook_events/",
+              "type": "http",
+              "digest": "sha256:24878758c9aa6de8ffe1acf2256941bd2adf0514fc89d844ad2101c6edf56c1c",
+              "ref": "gitlab-webhook-events-docs@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "gitlab-webhook-events-docs@2026-07-09",
+              "notes": [
+                "Official GitLab \"Webhook events\" documentation page.",
+                "GitLab does not publish an AsyncAPI document for webhook events. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable/Eventarc precedent (QUI-351, QUI-366, QUI-372) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+                "Canonical source URL: https://docs.gitlab.com/user/project/integrations/webhook_events/",
+                "Verified source SHA-256: 24878758c9aa6de8ffe1acf2256941bd2adf0514fc89d844ad2101c6edf56c1c",
+                "The committed manifest selects a read-only representative subset of documented webhook object_kind values: push and merge_request events."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://docs.gitlab.com/user/project/integrations/webhook_events/ for source retrieval",
+                "SUBSCRIBE channel://push for selected upstream operation",
+                "SUBSCRIBE channel://merge_request for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/gitlab-events/events.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/gitlab-events.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/gitlab-events/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/google-ads",
       "version": "0.1.0",
       "description": "Generated grpc-2-mcp MCP manifest for the Google Ads API GoogleAdsFieldService.",
@@ -2781,6 +3366,144 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/hacker-news",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for the official Hacker News front-page RSS feed.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/hacker-news/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "generated",
+            "hacker-news",
+            "manifest-backed",
+            "news",
+            "tech"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/hacker-news",
+            "version": "0.1.0",
+            "title": "Hacker News",
+            "description": "Generated feed-2-mcp MCP manifest for the official Hacker News front-page RSS feed.",
+            "labels": [
+              "feed",
+              "generated",
+              "hacker-news",
+              "news",
+              "tech"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://news.ycombinator.com/rss"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/stories/**"]
+            },
+            "auth": [],
+            "config": {
+              "defaults": {
+                "refreshMinutes": 15,
+                "maxItems": 30,
+                "includeContent": false
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://news.ycombinator.com/rss",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "Official Hacker News RSS feed, linked from the site footer at https://news.ycombinator.com/ (\"rss\" link) and documented in the Hacker News FAQ (https://news.ycombinator.com/newsfaq.html).",
+                  "Verified live and fetchable at retrieval time; feed content is the current front-page story list and updates continuously (no fixed version)."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_hacker_news_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "hacker_news_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://news.ycombinator.com/rss",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "Official Hacker News RSS feed, linked from the site footer at https://news.ycombinator.com/ (\"rss\" link) and documented in the Hacker News FAQ (https://news.ycombinator.com/newsfaq.html).",
+                "Verified live and fetchable at retrieval time; feed content is the current front-page story list and updates continuously (no fixed version)."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/har-petstore",
       "version": "0.1.0",
       "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
@@ -3289,6 +4012,178 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/microsoft-dynamics-soap",
+      "version": "0.1.0",
+      "description": "Generated wsdl-2-mcp MCP manifest for the Dynamics 365 2011 Organization.svc SOAP endpoint.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/microsoft-dynamics-soap/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["MICROSOFT_DYNAMICS_SOAP_ACCESS_TOKEN", "QD_MANIFEST_ENDPOINT"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "MICROSOFT_DYNAMICS_SOAP_ACCESS_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "QD_MANIFEST_ENDPOINT",
+          "description": "Manifest config value for endpoint.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "crm",
+            "dynamics",
+            "generated",
+            "legacy",
+            "manifest-backed",
+            "microsoft-dynamics-soap",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/microsoft-dynamics-soap",
+            "version": "0.1.0",
+            "title": "Microsoft Dynamics Legacy SOAP",
+            "description": "Generated wsdl-2-mcp MCP manifest for the Dynamics 365 2011 Organization.svc SOAP endpoint.",
+            "labels": [
+              "crm",
+              "dynamics",
+              "generated",
+              "legacy",
+              "microsoft-dynamics-soap",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://learn.microsoft.com/en-us/dynamics365/customerengagement/on-premises/developer/developer-resources-page?view=op-9-1",
+              "digest": "sha256:1d3050600323242fbdb563871a5c10d3da582df919a8a2ac4e9eb5b3f10e46fa",
+              "ref": "op-9-1"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Organization/Execute"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "MICROSOFT_DYNAMICS_SOAP_ACCESS_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string"
+                  }
+                },
+                "required": ["endpoint"]
+              },
+              "defaults": {},
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://learn.microsoft.com/en-us/dynamics365/customerengagement/on-premises/developer/developer-resources-page?view=op-9-1",
+                "type": "http",
+                "digest": "sha256:1d3050600323242fbdb563871a5c10d3da582df919a8a2ac4e9eb5b3f10e46fa",
+                "ref": "op-9-1",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "op-9-1",
+                "notes": [
+                  "Microsoft Dynamics 365 Customer Engagement (on-premises) has no single public WSDL file: the 2011 Organization service SOAP endpoint (Organization.svc) is deployed per organization/tenant, so this manifest pins the official Microsoft Learn developer resources page documenting the endpoint URL pattern and the IOrganizationService contract instead.",
+                  "Per the official IOrganizationService Interface documentation (https://learn.microsoft.com/power-apps/developer/data-platform/org-service/iorganizationservice-interface), the Organization service exposes only the Execute SOAP operation; the other IOrganizationService methods (Create, Retrieve, RetrieveMultiple, Update, Delete, Associate, Disassociate) are client-side SDK helper wrappers around Execute, not separate wire operations."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP Organization/Execute",
+                  "name": "soap_organization_execute",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://learn.microsoft.com/en-us/dynamics365/customerengagement/on-premises/developer/developer-resources-page?view=op-9-1",
+              "type": "http",
+              "digest": "sha256:1d3050600323242fbdb563871a5c10d3da582df919a8a2ac4e9eb5b3f10e46fa",
+              "ref": "op-9-1",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "op-9-1",
+              "notes": [
+                "Microsoft Dynamics 365 Customer Engagement (on-premises) has no single public WSDL file: the 2011 Organization service SOAP endpoint (Organization.svc) is deployed per organization/tenant, so this manifest pins the official Microsoft Learn developer resources page documenting the endpoint URL pattern and the IOrganizationService contract instead.",
+                "Per the official IOrganizationService Interface documentation (https://learn.microsoft.com/power-apps/developer/data-platform/org-service/iorganizationservice-interface), the Organization service exposes only the Execute SOAP operation; the other IOrganizationService methods (Create, Retrieve, RetrieveMultiple, Update, Delete, Associate, Disassociate) are client-side SDK helper wrappers around Execute, not separate wire operations."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/microsoft-graph",
       "version": "0.1.0",
       "description": "Generated Microsoft Graph read-only OpenAPI MCP catalog manifest.",
@@ -3712,6 +4607,218 @@
               ],
               "filesystem": ["generated-project-readwrite"],
               "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/paychex",
+      "version": "0.1.0",
+      "description": "Generated Paychex Time Web Services (TWS) read-only SOAP MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/paychex/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PAYCHEX_TWS_PASSWORD", "PAYCHEX_TWS_USERNAME"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PAYCHEX_TWS_PASSWORD",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "PAYCHEX_TWS_USERNAME",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "hcm",
+            "manifest-backed",
+            "paychex",
+            "payroll",
+            "read-only",
+            "soap",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/paychex",
+            "version": "0.1.0",
+            "title": "Paychex",
+            "description": "Generated Paychex Time Web Services (TWS) read-only SOAP MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "hcm",
+              "paychex",
+              "payroll",
+              "read-only",
+              "soap",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+              "ref": "paychex-tws-docs@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "TimeWebServices/ExportEmployeeTime"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "PAYCHEX_TWS_USERNAME"
+                },
+                "passwordFrom": {
+                  "env": "PAYCHEX_TWS_PASSWORD"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the selected Time Web Services (TWS) port."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://centralservers.com/service/ws-soap/2.0",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://paychex.centralservers.com/service/home/about",
+                "type": "http",
+                "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                "ref": "paychex-tws-docs@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "paychex-tws-docs@2026-07-09",
+                "notes": [
+                  "Official Paychex Time Web Services (TWS) documentation: https://paychex.centralservers.com/service/home/about",
+                  "Paychex's modern developer.paychex.com portal is REST-only; the genuine SOAP surface is the legacy Time Web Services (TWS) API for the Stratustime time & attendance engine, exposed at https://centralservers.com/service/ws-soap/2.0 (and a ws-soap/1.0 fallback), alongside XML/JSON variants of the same interface.",
+                  "Verified source SHA-256: 8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                  "Per-operation request/response schemas are exposed through TWS's authenticated interactive library interface rather than a statically downloadable WSDL; the selected operation models Paychex's officially documented read-only employee time-export capability. This mirrors the per-tenant endpoint placeholder precedent set by the merged Workday manifest (registry/workday/soap.mcp.json).",
+                  "This is a read-only export operation only: no time punches, employee records, or payroll data are mutated."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                  "SOAP TimeWebServices/ExportEmployeeTime for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/paychex/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP TimeWebServices/ExportEmployeeTime",
+                  "name": "soap_paychex_export_employee_time",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "type": "http",
+              "digest": "sha256:8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+              "ref": "paychex-tws-docs@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "paychex-tws-docs@2026-07-09",
+              "notes": [
+                "Official Paychex Time Web Services (TWS) documentation: https://paychex.centralservers.com/service/home/about",
+                "Paychex's modern developer.paychex.com portal is REST-only; the genuine SOAP surface is the legacy Time Web Services (TWS) API for the Stratustime time & attendance engine, exposed at https://centralservers.com/service/ws-soap/2.0 (and a ws-soap/1.0 fallback), alongside XML/JSON variants of the same interface.",
+                "Verified source SHA-256: 8c06fad2236f41efa3a918e5536808e93af1796e0fc3719229836329dfae494a",
+                "Per-operation request/response schemas are exposed through TWS's authenticated interactive library interface rather than a statically downloadable WSDL; the selected operation models Paychex's officially documented read-only employee time-export capability. This mirrors the per-tenant endpoint placeholder precedent set by the merged Workday manifest (registry/workday/soap.mcp.json).",
+                "This is a read-only export operation only: no time punches, employee records, or payroll data are mutated."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                "SOAP TimeWebServices/ExportEmployeeTime for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/paychex/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
               "generatedExecution": "openshell-mxc-only",
               "unavailableRuntime": "fail-closed"
             }
