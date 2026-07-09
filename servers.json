@@ -136,6 +136,178 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/google-trends-rss",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for Google Trends RSS.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/google-trends-rss/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "generated",
+            "google-trends-rss",
+            "manifest-backed",
+            "rss",
+            "trending"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/google-trends-rss",
+            "version": "0.1.0",
+            "title": "Google Trends RSS",
+            "description": "Generated feed-2-mcp MCP manifest for Google Trends RSS.",
+            "labels": [
+              "feed",
+              "generated",
+              "google-trends-rss",
+              "rss",
+              "trending"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://trends.google.com/trending/rss?geo=US"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/trending/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number"
+                  },
+                  "maxItems": {
+                    "type": "number"
+                  },
+                  "includeContent": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 15,
+                "maxItems": 50,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://trends.google.com/trending/rss?geo=US",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "Official, unauthenticated, publicly reachable Google Trends daily trending-searches RSS feed for the US region (geo=US). Verified live by direct fetch: valid RSS 2.0 document, root element <rss xmlns:ht=\"https://trends.google.com/trending/rss\" version=\"2.0\">, containing trending-search items with title, approx_traffic, and related news-article sub-elements.",
+                  "No content digest is pinned: this is a live, continuously-updated feed (not a static document), so a fixed SHA-256 of the feed body would go stale immediately and would not meaningfully verify provenance. retrievedAt/sourceVersion record when and how the endpoint was verified instead.",
+                  "The geo query parameter selects the trending-searches region; geo=US is the default region pinned for this catalog entry."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://trends.google.com/trending/rss?geo=US for feed retrieval (source-uri)"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/google-trends-rss/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/google-trends-rss.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/google-trends-rss/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_google_trends_rss_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "google_trends_rss_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://trends.google.com/trending/rss?geo=US",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "Official, unauthenticated, publicly reachable Google Trends daily trending-searches RSS feed for the US region (geo=US). Verified live by direct fetch: valid RSS 2.0 document, root element <rss xmlns:ht=\"https://trends.google.com/trending/rss\" version=\"2.0\">, containing trending-search items with title, approx_traffic, and related news-article sub-elements.",
+                "No content digest is pinned: this is a live, continuously-updated feed (not a static document), so a fixed SHA-256 of the feed body would go stale immediately and would not meaningfully verify provenance. retrievedAt/sourceVersion record when and how the endpoint was verified instead.",
+                "The geo query parameter selects the trending-searches region; geo=US is the default region pinned for this catalog entry."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://trends.google.com/trending/rss?geo=US for feed retrieval (source-uri)"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/google-trends-rss/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/google-trends-rss.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/google-trends-rss/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/google-workspace",
       "version": "0.1.0",
       "description": "Generated Google Workspace Drive read-only MCP catalog manifest.",
@@ -2804,6 +2976,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 37
+    "ai.quickdeploy.registry/sourceCount": 38
   }
 }
