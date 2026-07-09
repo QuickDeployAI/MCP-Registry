@@ -136,6 +136,229 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/airtable",
+      "version": "0.1.0",
+      "description": "Generated Airtable Web API Records read-only OpenAPI MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/airtable/api.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["AIRTABLE_ACCESS_TOKEN", "QD_MANIFEST_BASE_URL"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "AIRTABLE_ACCESS_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "QD_MANIFEST_BASE_URL",
+          "description": "Airtable Web API base URL, e.g. https://api.airtable.com.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "openapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "airtable",
+            "generated",
+            "manifest-backed",
+            "openapi",
+            "productivity",
+            "read-only"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/airtable",
+            "version": "0.1.0",
+            "title": "Airtable",
+            "description": "Generated Airtable Web API Records read-only OpenAPI MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "openapi",
+              "read-only",
+              "productivity",
+              "airtable"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "openapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://airtable.com/developers/web/api/list-records",
+              "digest": "sha256:493d9baa0c43ae01e11b1ca01b3c1fa6164702556da9e5ba8455eb316d1d3814",
+              "ref": "airtable-web-api-openapi@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/v0/{baseId}/{tableIdOrName}"
+                },
+                {
+                  "method": "GET",
+                  "uriTemplate": "/v0/{baseId}/{tableIdOrName}/{recordId}"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "AIRTABLE_ACCESS_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Airtable Web API base URL, e.g. https://api.airtable.com."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request upstream timeout in milliseconds."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Importer execution profile."
+                  }
+                },
+                "required": ["baseUrl"]
+              },
+              "defaults": {
+                "requestTimeoutMs": 30000,
+                "mode": "read-only"
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://airtable.com/developers/web/api/list-records",
+                "type": "http",
+                "digest": "sha256:493d9baa0c43ae01e11b1ca01b3c1fa6164702556da9e5ba8455eb316d1d3814",
+                "ref": "airtable-web-api-openapi@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "airtable-web-api-openapi@2026-07-09",
+                "notes": [
+                  "Airtable does not publish a downloadable OpenAPI file; its official Web API reference pages (https://airtable.com/developers/web/api/*) embed the full OpenAPI 3.1.0 document (title \"Airtable API\") client-side.",
+                  "The raw HTML response is not a stable pin point (each response embeds a fresh per-request CSP nonce), so the digest above is computed over the canonical (sorted-keys, compact) JSON serialization of the embedded `openApi` spec object, extracted from the page.",
+                  "Verified byte-identical (same SHA-256) across two separate fetches of https://airtable.com/developers/web/api/list-records and against https://airtable.com/developers/web/api/get-record, confirming the embedded spec itself is the stable artifact.",
+                  "Verified source SHA-256 (canonical JSON of the embedded spec): 493d9baa0c43ae01e11b1ca01b3c1fa6164702556da9e5ba8455eb316d1d3814",
+                  "Airtable's primary documented auth method (Personal Access Token) is used as a Bearer token in the Authorization header; this manifest models auth accordingly (env ref only, no literal secrets).",
+                  "The committed manifest selects read-only Airtable Web API record list/get operations only (list-records, get-record)."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://airtable.com/developers/web/api/list-records for source retrieval",
+                  "GET https://api.airtable.com/v0/{baseId}/{tableIdOrName} for selected upstream operation",
+                  "GET https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId} for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/airtable/api.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/openapi/airtable.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/openapi/airtable/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /v0/{baseId}/{tableIdOrName}",
+                  "name": "list_airtable_records",
+                  "deny": false
+                },
+                {
+                  "from": "GET /v0/{baseId}/{tableIdOrName}/{recordId}",
+                  "name": "get_airtable_record",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://airtable.com/developers/web/api/list-records",
+              "type": "http",
+              "digest": "sha256:493d9baa0c43ae01e11b1ca01b3c1fa6164702556da9e5ba8455eb316d1d3814",
+              "ref": "airtable-web-api-openapi@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "airtable-web-api-openapi@2026-07-09",
+              "notes": [
+                "Airtable does not publish a downloadable OpenAPI file; its official Web API reference pages (https://airtable.com/developers/web/api/*) embed the full OpenAPI 3.1.0 document (title \"Airtable API\") client-side.",
+                "The raw HTML response is not a stable pin point (each response embeds a fresh per-request CSP nonce), so the digest above is computed over the canonical (sorted-keys, compact) JSON serialization of the embedded `openApi` spec object, extracted from the page.",
+                "Verified byte-identical (same SHA-256) across two separate fetches of https://airtable.com/developers/web/api/list-records and against https://airtable.com/developers/web/api/get-record, confirming the embedded spec itself is the stable artifact.",
+                "Verified source SHA-256 (canonical JSON of the embedded spec): 493d9baa0c43ae01e11b1ca01b3c1fa6164702556da9e5ba8455eb316d1d3814",
+                "Airtable's primary documented auth method (Personal Access Token) is used as a Bearer token in the Authorization header; this manifest models auth accordingly (env ref only, no literal secrets).",
+                "The committed manifest selects read-only Airtable Web API record list/get operations only (list-records, get-record)."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://airtable.com/developers/web/api/list-records for source retrieval",
+                "GET https://api.airtable.com/v0/{baseId}/{tableIdOrName} for selected upstream operation",
+                "GET https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId} for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/airtable/api.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/openapi/airtable.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/openapi/airtable/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/box",
       "version": "0.1.0",
       "description": "Generated Box Platform folders read-only OpenAPI MCP catalog manifest.",
@@ -4154,6 +4377,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 43
+    "ai.quickdeploy.registry/sourceCount": 44
   }
 }
