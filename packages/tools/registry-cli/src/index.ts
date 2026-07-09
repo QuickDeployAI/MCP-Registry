@@ -30,4 +30,5 @@ export * from "./remote-liveness";
 export * from "./registry-validate";
 export * from "./codegen/manifest-generator";
 export * from "./codegen/generated-sandbox";
+export * from "./codegen/test-generator";
 export * from "./codegen/workspace-conventions";
