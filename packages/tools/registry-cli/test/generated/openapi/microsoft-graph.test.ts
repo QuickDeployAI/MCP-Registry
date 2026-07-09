@@ -43,7 +43,7 @@ describeGeneratedMcpManifest({
           },
           {
             "method": "GET",
-            "uriTemplate": "/me/drive/root/children"
+            "uriTemplate": "/me/drive"
           }
         ],
         "grpcMethods": [],
@@ -105,7 +105,7 @@ describeGeneratedMcpManifest({
             "GET https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml for source retrieval",
             "GET https://graph.microsoft.com/v1.0/me for selected upstream operation",
             "GET https://graph.microsoft.com/v1.0/me/messages for selected upstream operation",
-            "GET https://graph.microsoft.com/v1.0/me/drive/root/children for selected upstream operation"
+            "GET https://graph.microsoft.com/v1.0/me/drive for selected upstream operation"
           ],
           "filesystem": [
             "Read committed manifest registry/microsoft-graph/api.mcp.json",
@@ -133,8 +133,8 @@ describeGeneratedMcpManifest({
             "deny": false
           },
           {
-            "from": "GET /me/drive/root/children",
-            "name": "list_current_user_drive_root_children",
+            "from": "GET /me/drive",
+            "name": "get_current_user_drive",
             "deny": false
           }
         ],
@@ -170,7 +170,7 @@ describeGeneratedMcpManifest({
           "GET https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml for source retrieval",
           "GET https://graph.microsoft.com/v1.0/me for selected upstream operation",
           "GET https://graph.microsoft.com/v1.0/me/messages for selected upstream operation",
-          "GET https://graph.microsoft.com/v1.0/me/drive/root/children for selected upstream operation"
+          "GET https://graph.microsoft.com/v1.0/me/drive for selected upstream operation"
         ],
         "filesystem": [
           "Read committed manifest registry/microsoft-graph/api.mcp.json",
@@ -199,8 +199,8 @@ describeGeneratedMcpManifest({
         "deny": false
       },
       {
-        "from": "GET /me/drive/root/children",
-        "name": "list_current_user_drive_root_children",
+        "from": "GET /me/drive",
+        "name": "get_current_user_drive",
         "deny": false
       }
     ],
