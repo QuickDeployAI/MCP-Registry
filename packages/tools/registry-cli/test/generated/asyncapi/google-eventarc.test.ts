@@ -1,0 +1,194 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "asyncapi",
+  provider: "google-eventarc",
+  manifestPath: "registry/google-eventarc/events.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/google-eventarc",
+      "version": "0.1.0",
+      "title": "Google Eventarc",
+      "description": "Generated Google Eventarc read-only AsyncAPI/CloudEvents MCP catalog manifest.",
+      "labels": [
+        "asyncapi",
+        "cloudevents",
+        "generated",
+        "google-eventarc",
+        "read-only"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "asyncapi-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+        "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+        "ref": "google-eventarc-event-types-docs@2026-07-09"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "SUBSCRIBE",
+            "uriTemplate": "channel://google.cloud.pubsub.topic.v1.messagePublished"
+          },
+          {
+            "method": "SUBSCRIBE",
+            "uriTemplate": "channel://google.cloud.storage.object.v1.finalized"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "bearer",
+          "valueFrom": {
+            "env": "GOOGLE_EVENTARC_ACCESS_TOKEN"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "brokerProtocol": {
+              "type": "string",
+              "description": "Eventarc transport binding for generated subscribe tools."
+            },
+            "publishTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-call timeout in milliseconds."
+            }
+          }
+        },
+        "defaults": {
+          "brokerProtocol": "pubsub",
+          "publishTimeoutMs": 30000
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+          "type": "http",
+          "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+          "ref": "google-eventarc-event-types-docs@2026-07-09",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "google-eventarc-event-types-docs@2026-07-09",
+          "notes": [
+            "Official Google Cloud Eventarc \"Google event types\" documentation page.",
+            "Google Eventarc does not publish an AsyncAPI document; events are delivered in CloudEvents format. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable precedent (QUI-351, QUI-366) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+            "Canonical source URL: https://docs.cloud.google.com/eventarc/docs/event-types",
+            "Verified source SHA-256: 421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+            "The committed manifest selects a read-only representative subset of documented Google event types: Pub/Sub message published and Cloud Storage object finalized."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://docs.cloud.google.com/eventarc/docs/event-types for source retrieval",
+            "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished for selected upstream operation",
+            "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized for selected upstream operation"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/google-eventarc/events.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/google-eventarc.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/google-eventarc/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished",
+            "name": "subscribe_google_eventarc_pubsub_message_published",
+            "deny": false
+          },
+          {
+            "from": "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized",
+            "name": "subscribe_google_eventarc_storage_object_finalized",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+        "type": "http",
+        "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+        "ref": "google-eventarc-event-types-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "google-eventarc-event-types-docs@2026-07-09",
+        "notes": [
+          "Official Google Cloud Eventarc \"Google event types\" documentation page.",
+          "Google Eventarc does not publish an AsyncAPI document; events are delivered in CloudEvents format. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable precedent (QUI-351, QUI-366) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+          "Canonical source URL: https://docs.cloud.google.com/eventarc/docs/event-types",
+          "Verified source SHA-256: 421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+          "The committed manifest selects a read-only representative subset of documented Google event types: Pub/Sub message published and Cloud Storage object finalized."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://docs.cloud.google.com/eventarc/docs/event-types for source retrieval",
+          "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished for selected upstream operation",
+          "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/google-eventarc/events.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/google-eventarc.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/google-eventarc/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished",
+        "name": "subscribe_google_eventarc_pubsub_message_published",
+        "deny": false
+      },
+      {
+        "from": "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized",
+        "name": "subscribe_google_eventarc_storage_object_finalized",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "GOOGLE_EVENTARC_ACCESS_TOKEN"
+    ],
+    "serverEnvVars": [
+      "GOOGLE_EVENTARC_ACCESS_TOKEN"
+    ]
+  },
+});
