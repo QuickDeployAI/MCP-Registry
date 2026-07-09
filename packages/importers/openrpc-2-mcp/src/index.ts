@@ -50,7 +50,7 @@ export type OpenRpcModel = {
   raw: OpenrpcDocument;
 };
 
-export type OpenRpcArdEntry = {
+export type OpenRpcSourceEntry = {
   identifier: string;
   displayName: string;
   type: string;
@@ -82,7 +82,7 @@ export type ArtifactParseResult = {
 
 export type ArtifactParser = {
   readonly mediaTypes: readonly string[];
-  parse(nativeArtifact: OpenRpcInlineInput, entry: OpenRpcArdEntry): Promise<ArtifactParseResult>;
+  parse(nativeArtifact: OpenRpcInlineInput, entry: OpenRpcSourceEntry): Promise<ArtifactParseResult>;
 };
 
 export type OpenRpcMcpProjection = {

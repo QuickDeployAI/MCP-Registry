@@ -2,8 +2,8 @@
 
 The registry publishes exact package versions. Do not publish a registry entry
 that points at `latest`, a semver range, or an npm dist-tag. Every public MCP
-server or importer release must update the package version, `server.json`, and
-`registry/index.json` in the same pull request.
+server or importer release must update the package version, `server.json` or
+`McpManifest`, and regenerated `servers.json` in the same pull request.
 
 ## Release Flow
 
@@ -13,8 +13,8 @@ server or importer release must update the package version, `server.json`, and
    version sync.
 3. Update the matching `server.json` in the same PR when a package version
    changes.
-4. Update `registry/index.json` so the entry summary version matches the
-   referenced `server.json`.
+4. Run `pnpm --filter @quickdeployai/registry-cli build:registry` so
+   `servers.json` reflects the entry change.
 5. Run `pnpm check` before opening the PR.
 6. Merge only after the PR `Workspace check` job passes.
 7. Main branch CI publishes the validated release commit with
@@ -27,9 +27,9 @@ validation in place, but do not let that legacy package permission block
 publishing new workspace-owned packages.
 
 Legacy servers under `servers/*` are not workspace packages yet, but they are
-still validated. Their local `package.json`, `server.json`, and
-`registry/index.json` versions must stay identical until those packages migrate
-to package workspaces.
+still validated. Their local `package.json`, `server.json`, and generated
+`servers.json` versions must stay identical until those packages migrate to
+package workspaces.
 
 ## OCI Images
 
@@ -69,5 +69,6 @@ The gate checks:
 - every `server.json` has an exact semver `version`
 - every package entry has an exact semver `version`
 - local package versions match their referenced `server.json`
-- `registry/index.json` summary versions match their referenced `server.json`
+- generated `servers.json` versions match their source `server.json` or
+  `McpManifest`
 - OCI package entries include a `sha256` digest and version tag

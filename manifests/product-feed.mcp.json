@@ -1,0 +1,90 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/product-feed",
+    "version": "0.2.0",
+    "title": "Product Feed",
+    "description": "Release and blog feed corpus exposed through MCP.",
+    "labels": [
+      "feed",
+      "knowledge"
+    ]
+  },
+  "spec": {
+    "importer": {
+      "engine": "knowledge-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://quickdeploy.ai/feed.xml"
+    },
+    "select": {
+      "corpusGlobs": [
+        "/releases/**",
+        "/blog/**"
+      ]
+    },
+    "auth": [],
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refreshMinutes": {
+            "type": "number",
+            "description": "Refresh interval for the feed cache."
+          },
+          "maxItems": {
+            "type": "number",
+            "description": "Maximum feed items retained in the corpus."
+          },
+          "includeContent": {
+            "type": "boolean",
+            "description": "Whether full feed content is exposed in resources."
+          }
+        }
+      },
+      "defaults": {
+        "refreshMinutes": 30,
+        "maxItems": 100,
+        "includeContent": true
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "corpus.search",
+          "name": "search_product_feed"
+        }
+      ],
+      "resources": [
+        {
+          "from": "feed:item",
+          "name": "product_feed_item"
+        }
+      ]
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {},
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "refreshMinutes": {
+          "type": "number"
+        },
+        "maxItems": {
+          "type": "number"
+        },
+        "includeContent": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

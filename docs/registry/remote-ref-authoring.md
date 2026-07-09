@@ -3,8 +3,7 @@
 Remote refs describe externally hosted MCP servers without copying provider
 source or packaging a local runtime. Add them as remotes-only `server.json`
 documents under `manifests/remotes/`, then let `@quickdeployai/registry-cli`
-publish them into the canonical `servers.json` catalog and legacy marketplace
-index.
+publish them into the canonical `servers.json` catalog.
 
 Start from `manifests/remotes/_template.server.json`. Files whose names begin
 with `_` are authoring templates and are not included in generated registry

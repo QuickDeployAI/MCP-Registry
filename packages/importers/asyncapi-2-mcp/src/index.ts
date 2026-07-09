@@ -7,7 +7,7 @@ export const ASYNCAPI_MEDIA_TYPE = "application/vnd.asyncapi+json";
 
 export type AsyncApiInlineInput = AsyncApiDocument | Record<string, unknown> | string | Uint8Array;
 
-export type AsyncApiArdEntry = {
+export type AsyncApiSourceEntry = {
   identifier: string;
   displayName: string;
   type: string;
@@ -39,7 +39,10 @@ export type ArtifactParseResult = {
 
 export type ArtifactParser = {
   readonly mediaTypes: readonly string[];
-  parse(nativeArtifact: AsyncApiInlineInput, entry: AsyncApiArdEntry): Promise<ArtifactParseResult>;
+  parse(
+    nativeArtifact: AsyncApiInlineInput,
+    entry: AsyncApiSourceEntry,
+  ): Promise<ArtifactParseResult>;
 };
 
 export type AsyncApiMcpProjection = {

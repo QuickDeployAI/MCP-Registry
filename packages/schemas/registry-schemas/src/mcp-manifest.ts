@@ -5,8 +5,6 @@ export const MCP_MANIFEST_KIND = "McpManifest" as const;
 export const MCP_MANIFEST_SCHEMA_ID =
   "https://schemas.quickdeploy.ai/mcp-manifest.v1.schema.json" as const;
 export const QUICKDEPLOY_MCP_MANIFEST_META_KEY = "ai.quickdeploy.registry/manifest" as const;
-export const QUICKDEPLOY_MCP_PROJECTION_META_KEY = "ai.quickdeploy.registry/projection" as const;
-export const QUICKDEPLOY_ARD_ENTRY_META_KEY = "ai.quickdeploy.registry/ard-entry" as const;
 export const OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11 =
   "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json" as const;
 
@@ -560,7 +558,7 @@ export const ARAZZO_2_MCP_CONFIG_SCHEMA = {
     },
     resolveSourceDescriptions: {
       type: "boolean",
-      description: "Whether sourceDescriptions should be cross-referenced to ARD entries.",
+      description: "Whether sourceDescriptions should be cross-referenced to known source documents.",
     },
     requestTimeoutMs: {
       type: "number",

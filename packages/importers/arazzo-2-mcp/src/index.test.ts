@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { ARAZZO_MEDIA_TYPE } from "@quickdeployai/registry-schemas";
-import { arazzoToWorkflowCapabilities, loadArazzoDocument, parseArazzoDocument } from "./index";
+import {
+  ARAZZO_MEDIA_TYPE,
+  arazzoToWorkflowCapabilities,
+  loadArazzoDocument,
+  parseArazzoDocument,
+} from "./index";
 
 describe("arazzo-2-mcp", () => {
   it("loads a sample Arazzo document into workflow derived capabilities", async () => {
@@ -11,7 +15,7 @@ describe("arazzo-2-mcp", () => {
 
     const [capability] = arazzoToWorkflowCapabilities(document, {
       sourceUrl: "https://registry.example.test/support-ticket.arazzo.json",
-      sourceArdEntries: [
+      sourceEntries: [
         {
           identifier: "urn:air:api.example.test:api:support",
           type: "application/vnd.oai.openapi+json",
@@ -50,7 +54,7 @@ describe("arazzo-2-mcp", () => {
       expect.objectContaining({
         id: "support-api",
         type: "api-contract",
-        ard_entry_identifier: "urn:air:api.example.test:api:support",
+        source_entry_identifier: "urn:air:api.example.test:api:support",
       }),
     ]);
   });

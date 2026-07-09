@@ -77,7 +77,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/agent-skills.projection.json",
+            "manifests/agent-skills.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -88,65 +88,68 @@
           "verifiedStatus": "review",
           "category": "agent-skills-2-mcp",
           "isOfficial": true,
-          "tags": ["agent", "ard-entry", "projection-backed", "skills"]
+          "tags": ["agent", "manifest-backed", "skills"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:agent-skills",
-          "displayName": "Agent Skills",
-          "type": "application/ai-skill+md",
-          "description": "Curated agent skills exposed as MCP tools and prompts.",
-          "tags": ["skills", "agent"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["skill", "resource"],
-            "importMode": "skill-level"
+            "name": "ai.quickdeploy/agent-skills",
+            "version": "0.1.0",
+            "title": "Agent Skills",
+            "description": "Curated agent skills exposed as MCP tools and prompts.",
+            "labels": ["skills", "agent"]
           },
-          "url": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:agent-skills",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [
-              {
-                "name": "agentic-eval",
-                "globs": ["agentic-eval/**"]
-              },
-              {
-                "name": "playwright-cli",
-                "globs": ["playwright-cli/**"]
-              }
-            ],
-            "knowledgeSources": [],
-            "corpusGlobs": []
+          "spec": {
+            "importer": {
+              "engine": "agent-skills-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "git",
+              "uri": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [
+                {
+                  "name": "agentic-eval",
+                  "globs": ["agentic-eval/**"]
+                },
+                {
+                  "name": "playwright-cli",
+                  "globs": ["playwright-cli/**"]
+                }
+              ],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "expose": {
+              "tools": [
+                {
+                  "from": "playwright/run",
+                  "name": "browser_run",
+                  "deny": false
+                },
+                {
+                  "from": "browser/install-extension",
+                  "deny": true,
+                  "reason": "Extension installation is not safe for hosted execution."
+                }
+              ],
+              "resources": [],
+              "prompts": [
+                {
+                  "from": "agentic-eval/design-eval",
+                  "name": "design_agentic_eval",
+                  "deny": false
+                }
+              ]
+            }
           },
-          "expose": {
-            "tools": [
-              {
-                "from": "playwright/run",
-                "name": "browser_run",
-                "deny": false
-              },
-              {
-                "from": "browser/install-extension",
-                "deny": true,
-                "reason": "Extension installation is not safe for hosted execution."
-              }
-            ],
-            "resources": [],
-            "prompts": [
-              {
-                "from": "agentic-eval/design-eval",
-                "name": "design_agentic_eval",
-                "deny": false
-              }
-            ]
-          },
-          "auth": [],
           "deployment": {
             "transport": "streamable-http",
             "auth": {
@@ -323,7 +326,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/grpc-greeter.projection.json",
+            "manifests/grpc-greeter.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -343,76 +346,79 @@
           "verifiedStatus": "review",
           "category": "grpc-2-mcp",
           "isOfficial": true,
-          "tags": ["ard-entry", "fixture", "grpc", "projection-backed"]
+          "tags": ["fixture", "grpc", "manifest-backed"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
-          "displayName": "gRPC Greeter Fixture",
-          "type": "application/protobuf",
-          "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
-          "tags": ["grpc", "fixture"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["api-contract", "tool"],
-            "importMode": "operation-level"
+            "name": "ai.quickdeploy/grpc-greeter",
+            "version": "0.1.0",
+            "title": "gRPC Greeter Fixture",
+            "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
+            "labels": ["grpc", "fixture"]
           },
-          "url": "file://packages/importers/grpc-2-mcp/fixtures/greeter.binpb"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [
-              {
-                "service": "quickdeploy.fixture.Greeter",
-                "method": "SayHello"
-              },
-              {
-                "service": "quickdeploy.fixture.Greeter",
-                "method": "DescribeProfile"
-              }
-            ],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "quickdeploy.fixture.Greeter/SayHello",
-                "name": "quickdeploy_fixture_greeter_say_hello",
-                "deny": false
-              },
-              {
-                "from": "quickdeploy.fixture.Greeter/DescribeProfile",
-                "name": "quickdeploy_fixture_greeter_describe_profile",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "endpoint": {
-                  "type": "string",
-                  "description": "gRPC host:port endpoint."
-                },
-                "protoPath": {
-                  "type": "string",
-                  "description": "Local proto file used by the runtime proxy."
-                }
-              },
-              "required": ["endpoint"]
+          "spec": {
+            "importer": {
+              "engine": "grpc-2-mcp",
+              "versionRange": "^0.1.0"
             },
-            "defaults": {
-              "protoPath": "./packages/importers/grpc-2-mcp/fixtures/greeter.proto"
+            "source": {
+              "type": "file",
+              "uri": "file://packages/importers/grpc-2-mcp/fixtures/greeter.binpb"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [
+                {
+                  "service": "quickdeploy.fixture.Greeter",
+                  "method": "SayHello"
+                },
+                {
+                  "service": "quickdeploy.fixture.Greeter",
+                  "method": "DescribeProfile"
+                }
+              ],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "description": "gRPC host:port endpoint."
+                  },
+                  "protoPath": {
+                    "type": "string",
+                    "description": "Local proto file used by the runtime proxy."
+                  }
+                },
+                "required": ["endpoint"]
+              },
+              "defaults": {
+                "protoPath": "./packages/importers/grpc-2-mcp/fixtures/greeter.proto"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "quickdeploy.fixture.Greeter/SayHello",
+                  "name": "quickdeploy_fixture_greeter_say_hello",
+                  "deny": false
+                },
+                {
+                  "from": "quickdeploy.fixture.Greeter/DescribeProfile",
+                  "name": "quickdeploy_fixture_greeter_describe_profile",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {
@@ -452,7 +458,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/har-petstore.projection.json",
+            "manifests/har-petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -472,87 +478,90 @@
           "verifiedStatus": "review",
           "category": "har-2-mcp",
           "isOfficial": true,
-          "tags": ["ard-entry", "har", "petstore", "projection-backed"]
+          "tags": ["har", "manifest-backed", "petstore"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:har-petstore",
-          "displayName": "HAR Petstore Fixture",
-          "type": "application/vnd.har+json",
-          "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
-          "tags": ["har", "petstore"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["api-contract", "tool"],
-            "importMode": "operation-level"
+            "name": "ai.quickdeploy/har-petstore",
+            "version": "0.1.0",
+            "title": "HAR Petstore Fixture",
+            "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
+            "labels": ["har", "petstore"]
           },
-          "url": "file://packages/importers/har-2-mcp/fixtures/petstore.har"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:har-petstore",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [
-              {
-                "method": "GET",
-                "uriTemplate": "/pet/{petId}"
-              },
-              {
-                "method": "POST",
-                "uriTemplate": "/pet"
-              }
-            ],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "GET /pet/{petId}",
-                "name": "har_get_pet",
-                "deny": false
-              },
-              {
-                "from": "POST /pet",
-                "name": "har_create_pet",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "baseUrl": {
-                  "type": "string",
-                  "description": "Base URL for reviewed HAR replay."
-                },
-                "redactionPolicy": {
-                  "type": "string",
-                  "description": "Redaction policy applied before publication."
-                },
-                "includeMethods": {
-                  "type": "array",
-                  "description": "HTTP methods retained from the capture."
-                },
-                "requestTimeoutMs": {
-                  "type": "number",
-                  "description": "Per-request upstream timeout."
-                }
-              },
-              "required": ["baseUrl"]
+          "spec": {
+            "importer": {
+              "engine": "har-2-mcp",
+              "versionRange": "^0.1.0"
             },
-            "defaults": {
-              "baseUrl": "https://petstore3.swagger.io/api/v3",
-              "redactionPolicy": "strict",
-              "includeMethods": ["GET", "POST"],
-              "requestTimeoutMs": 5000
+            "source": {
+              "type": "file",
+              "uri": "file://packages/importers/har-2-mcp/fixtures/petstore.har"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/pet/{petId}"
+                },
+                {
+                  "method": "POST",
+                  "uriTemplate": "/pet"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "Base URL for reviewed HAR replay."
+                  },
+                  "redactionPolicy": {
+                    "type": "string",
+                    "description": "Redaction policy applied before publication."
+                  },
+                  "includeMethods": {
+                    "type": "array",
+                    "description": "HTTP methods retained from the capture."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "description": "Per-request upstream timeout."
+                  }
+                },
+                "required": ["baseUrl"]
+              },
+              "defaults": {
+                "baseUrl": "https://petstore3.swagger.io/api/v3",
+                "redactionPolicy": "strict",
+                "includeMethods": ["GET", "POST"],
+                "requestTimeoutMs": 5000
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /pet/{petId}",
+                  "name": "har_get_pet",
+                  "deny": false
+                },
+                {
+                  "from": "POST /pet",
+                  "name": "har_create_pet",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {
@@ -592,7 +601,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/knowledge-okf-example.projection.json",
+            "manifests/knowledge-okf-example.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -603,98 +612,95 @@
           "verifiedStatus": "review",
           "category": "knowledge-2-mcp",
           "isOfficial": true,
-          "tags": [
-            "ard-entry",
-            "knowledge",
-            "okf",
-            "openwiki",
-            "projection-backed"
-          ]
+          "tags": ["knowledge", "manifest-backed", "okf", "openwiki"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
-          "displayName": "OKF Knowledge Bundle Example",
-          "type": "application/vnd.quickdeploy.okf+json",
-          "description": "Open Knowledge Format bundle ingested through knowledge-2-mcp.",
-          "tags": ["knowledge", "okf", "openwiki"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["resource", "tool"],
-            "importMode": "whole-artifact"
+            "name": "ai.quickdeploy/knowledge-okf-example",
+            "version": "0.1.0",
+            "title": "OKF Knowledge Bundle Example",
+            "description": "Open Knowledge Format bundle ingested through knowledge-2-mcp.",
+            "labels": ["knowledge", "okf", "openwiki"]
           },
-          "url": "git+https://github.com/example/generated-openwiki.git#main"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": ["**/*.md", "**/*.mdx"]
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "knowledge.search",
-                "name": "knowledge_search",
-                "deny": false
-              },
-              {
-                "from": "knowledge.getDocument",
-                "name": "knowledge_get_document",
-                "deny": false
-              },
-              {
-                "from": "knowledge.refresh",
-                "name": "knowledge_refresh",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "bundleUri": {
-                  "type": "string",
-                  "description": "OKF bundle source URI."
-                },
-                "maxChars": {
-                  "type": "number",
-                  "description": "Maximum characters per chunk."
-                },
-                "overlap": {
-                  "type": "number",
-                  "description": "Overlap characters between adjacent chunks."
-                },
-                "embeddingModel": {
-                  "type": "string",
-                  "description": "Embedding model used for vector indexing."
-                },
-                "embeddingDimensions": {
-                  "type": "number",
-                  "description": "Embedding vector dimensions."
-                },
-                "queryableMetadata": {
-                  "type": "array",
-                  "description": "Metadata fields exposed for search filters."
+          "spec": {
+            "importer": {
+              "engine": "knowledge-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "git",
+              "uri": "git+https://github.com/example/generated-openwiki.git#main"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["**/*.md", "**/*.mdx"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bundleUri": {
+                    "type": "string",
+                    "description": "OKF bundle source URI."
+                  },
+                  "maxChars": {
+                    "type": "number",
+                    "description": "Maximum characters per chunk."
+                  },
+                  "overlap": {
+                    "type": "number",
+                    "description": "Overlap characters between adjacent chunks."
+                  },
+                  "embeddingModel": {
+                    "type": "string",
+                    "description": "Embedding model used for vector indexing."
+                  },
+                  "embeddingDimensions": {
+                    "type": "number",
+                    "description": "Embedding vector dimensions."
+                  },
+                  "queryableMetadata": {
+                    "type": "array",
+                    "description": "Metadata fields exposed for search filters."
+                  }
                 }
+              },
+              "defaults": {
+                "bundleUri": "git+https://github.com/example/generated-openwiki.git#main",
+                "maxChars": 1200,
+                "overlap": 240,
+                "embeddingModel": "text-embedding-3-small",
+                "embeddingDimensions": 1536,
+                "queryableMetadata": ["type", "tags", "resource"]
               }
             },
-            "defaults": {
-              "bundleUri": "git+https://github.com/example/generated-openwiki.git#main",
-              "maxChars": 1200,
-              "overlap": 240,
-              "embeddingModel": "text-embedding-3-small",
-              "embeddingDimensions": 1536,
-              "queryableMetadata": ["type", "tags", "resource"]
+            "expose": {
+              "tools": [
+                {
+                  "from": "knowledge.search",
+                  "name": "knowledge_search",
+                  "deny": false
+                },
+                {
+                  "from": "knowledge.getDocument",
+                  "name": "knowledge_get_document",
+                  "deny": false
+                },
+                {
+                  "from": "knowledge.refresh",
+                  "name": "knowledge_refresh",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {
@@ -743,7 +749,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/petstore.projection.json",
+            "manifests/petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -763,77 +769,80 @@
           "verifiedStatus": "review",
           "category": "openapi-2-mcp",
           "isOfficial": true,
-          "tags": ["ard-entry", "openapi", "petstore", "projection-backed"]
+          "tags": ["manifest-backed", "openapi", "petstore"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:petstore",
-          "displayName": "Petstore",
-          "type": "application/vnd.oai.openapi+json",
-          "description": "Selected Petstore operations exposed as MCP tools.",
-          "tags": ["openapi", "petstore"],
-          "version": "1.0.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["api-contract", "tool"],
-            "importMode": "operation-level"
+            "name": "ai.quickdeploy/petstore",
+            "version": "1.0.0",
+            "title": "Petstore",
+            "description": "Selected Petstore operations exposed as MCP tools.",
+            "labels": ["openapi", "petstore"]
           },
-          "url": "https://petstore3.swagger.io/api/v3/openapi.json"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:petstore",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [
+          "spec": {
+            "importer": {
+              "engine": "openapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://petstore3.swagger.io/api/v3/openapi.json"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/pet/{petId}"
+                },
+                {
+                  "method": "POST",
+                  "uriTemplate": "/pet"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
               {
-                "method": "GET",
-                "uriTemplate": "/pet/{petId}"
-              },
-              {
-                "method": "POST",
-                "uriTemplate": "/pet"
-              }
-            ],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "GET /pet/{petId}",
-                "name": "get_pet",
-                "deny": false
-              },
-              {
-                "from": "POST /pet",
-                "name": "create_pet",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [
-            {
-              "type": "bearer",
-              "valueFrom": {
-                "env": "PETSTORE_API_TOKEN"
-              }
-            }
-          ],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "baseUrl": {
-                  "type": "string"
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "PETSTORE_API_TOKEN"
                 }
               }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string"
+                  }
+                }
+              },
+              "defaults": {
+                "baseUrl": "https://petstore3.swagger.io/api/v3"
+              }
             },
-            "defaults": {
-              "baseUrl": "https://petstore3.swagger.io/api/v3"
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /pet/{petId}",
+                  "name": "get_pet",
+                  "deny": false
+                },
+                {
+                  "from": "POST /pet",
+                  "name": "create_pet",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {
@@ -872,7 +881,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/postman-petstore.projection.json",
+            "manifests/postman-petstore.mcp.json",
             "--transport",
             "streamable-http"
           ],
@@ -898,104 +907,101 @@
           "verifiedStatus": "review",
           "category": "postman-2-mcp",
           "isOfficial": true,
-          "tags": [
-            "ard-entry",
-            "openapi",
-            "petstore",
-            "postman",
-            "projection-backed"
-          ]
+          "tags": ["manifest-backed", "openapi", "petstore", "postman"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:postman-petstore",
-          "displayName": "Postman Petstore",
-          "type": "application/vnd.postman.collection+json",
-          "description": "Postman Collection requests exposed as MCP tools.",
-          "tags": ["postman", "openapi", "petstore"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["api-contract", "tool"],
-            "importMode": "operation-level"
+            "name": "ai.quickdeploy/postman-petstore",
+            "version": "0.1.0",
+            "title": "Postman Petstore",
+            "description": "Postman Collection requests exposed as MCP tools.",
+            "labels": ["postman", "openapi", "petstore"]
           },
-          "url": "file://packages/importers/postman-2-mcp/fixtures/petstore-collection.json"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:postman-petstore",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [
-              {
-                "method": "GET",
-                "uriTemplate": "/pets/{petId}"
-              },
-              {
-                "method": "POST",
-                "uriTemplate": "/pets"
-              }
-            ],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "GET /pets/{petId}",
-                "name": "postman_get_pet",
-                "deny": false
-              },
-              {
-                "from": "POST /pets",
-                "name": "postman_create_pet",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [
-            {
-              "type": "bearer",
-              "valueFrom": {
-                "env": "PETSTORE_API_TOKEN"
-              }
+          "spec": {
+            "importer": {
+              "engine": "postman-2-mcp",
+              "versionRange": "^0.1.0"
             },
-            {
-              "type": "api-key",
-              "in": "header",
-              "name": "x-api-key",
-              "valueFrom": {
-                "env": "PETSTORE_API_KEY"
-              }
-            }
-          ],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "baseUrl": {
-                  "type": "string",
-                  "description": "Base URL for collection requests."
+            "source": {
+              "type": "file",
+              "uri": "file://packages/importers/postman-2-mcp/fixtures/petstore-collection.json"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/pets/{petId}"
                 },
-                "variables": {
-                  "type": "object",
-                  "description": "Non-secret Postman variable overrides."
-                },
-                "requestTimeoutMs": {
-                  "type": "number",
-                  "description": "Per-request upstream timeout in milliseconds."
+                {
+                  "method": "POST",
+                  "uriTemplate": "/pets"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "PETSTORE_API_TOKEN"
+                }
+              },
+              {
+                "type": "api-key",
+                "in": "header",
+                "name": "x-api-key",
+                "valueFrom": {
+                  "env": "PETSTORE_API_KEY"
                 }
               }
-            },
-            "defaults": {
-              "baseUrl": "https://petstore.example/v1",
-              "variables": {
-                "defaultStatus": "available"
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "Base URL for collection requests."
+                  },
+                  "variables": {
+                    "type": "object",
+                    "description": "Non-secret Postman variable overrides."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "description": "Per-request upstream timeout in milliseconds."
+                  }
+                }
               },
-              "requestTimeoutMs": 30000
+              "defaults": {
+                "baseUrl": "https://petstore.example/v1",
+                "variables": {
+                  "defaultStatus": "available"
+                },
+                "requestTimeoutMs": 30000
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /pets/{petId}",
+                  "name": "postman_get_pet",
+                  "deny": false
+                },
+                {
+                  "from": "POST /pets",
+                  "name": "postman_create_pet",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {
@@ -1034,7 +1040,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/product-feed.projection.json",
+            "manifests/product-feed.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -1045,73 +1051,76 @@
           "verifiedStatus": "review",
           "category": "knowledge-2-mcp",
           "isOfficial": true,
-          "tags": ["ard-entry", "feed", "knowledge", "projection-backed"]
+          "tags": ["feed", "knowledge", "manifest-backed"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:product-feed",
-          "displayName": "Product Feed",
-          "type": "application/rss+xml",
-          "description": "Release and blog feed corpus exposed through MCP.",
-          "tags": ["feed", "knowledge"],
-          "version": "0.2.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["resource", "tool"],
-            "importMode": "whole-artifact"
+            "name": "ai.quickdeploy/product-feed",
+            "version": "0.2.0",
+            "title": "Product Feed",
+            "description": "Release and blog feed corpus exposed through MCP.",
+            "labels": ["feed", "knowledge"]
           },
-          "url": "https://quickdeploy.ai/feed.xml"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:product-feed",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": ["/releases/**", "/blog/**"]
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "corpus.search",
-                "name": "search_product_feed",
-                "deny": false
-              }
-            ],
-            "resources": [
-              {
-                "from": "feed:item",
-                "name": "product_feed_item",
-                "deny": false
-              }
-            ],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "refreshMinutes": {
-                  "type": "number",
-                  "description": "Refresh interval for the feed cache."
-                },
-                "maxItems": {
-                  "type": "number",
-                  "description": "Maximum feed items retained in the corpus."
-                },
-                "includeContent": {
-                  "type": "boolean",
-                  "description": "Whether full feed content is exposed in resources."
+          "spec": {
+            "importer": {
+              "engine": "knowledge-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://quickdeploy.ai/feed.xml"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/releases/**", "/blog/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "description": "Refresh interval for the feed cache."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "description": "Maximum feed items retained in the corpus."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether full feed content is exposed in resources."
+                  }
                 }
+              },
+              "defaults": {
+                "refreshMinutes": 30,
+                "maxItems": 100,
+                "includeContent": true
               }
             },
-            "defaults": {
-              "refreshMinutes": 30,
-              "maxItems": 100,
-              "includeContent": true
+            "expose": {
+              "tools": [
+                {
+                  "from": "corpus.search",
+                  "name": "search_product_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "product_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
             }
           },
           "deployment": {
@@ -1149,12 +1158,7 @@
           "identifier": "ghcr.io/quickdeployai/mcp-host",
           "runtimeHint": "mcp-host",
           "transport": "stdio",
-          "runtimeArguments": [
-            "run",
-            "manifests/qdai-git-fixture.projection.json",
-            "--transport",
-            "stdio"
-          ]
+          "runtimeArguments": ["run", "manifests/qdai-git-fixture.mcp.json", "--transport", "stdio"]
         }
       ],
       "_meta": {
@@ -1162,87 +1166,84 @@
           "verifiedStatus": "review",
           "category": "git-2-mcp",
           "isOfficial": true,
-          "tags": [
-            "ard-entry",
-            "example",
-            "git",
-            "projection-backed",
-            "python"
-          ]
+          "tags": ["example", "git", "manifest-backed", "python"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
-          "displayName": "QuickDeployAI Git Fixture",
-          "type": "application/vnd.quickdeploy.git-repository",
-          "description": "git-2-mcp dogfood example, every lib method of a small Python package as a tool.",
-          "tags": ["git", "python", "example"],
-          "version": "1.0.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["tool"],
-            "importMode": "method-level"
+            "name": "ai.quickdeploy/qdai-git-fixture",
+            "version": "1.0.0",
+            "title": "QuickDeployAI Git Fixture",
+            "description": "git-2-mcp dogfood example, every lib method of a small Python package as a tool.",
+            "labels": ["git", "python", "example"]
           },
-          "url": "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [],
-            "pythonFunctions": ["qdai_git_fixture.*"],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "qdai_git_fixture.add",
-                "name": "fixture_add",
-                "deny": false
-              },
-              {
-                "from": "qdai_git_fixture.slugify",
-                "name": "fixture_slugify",
-                "deny": false
-              },
-              {
-                "from": "qdai_git_fixture.summarize",
-                "name": "fixture_summarize",
-                "deny": false
-              },
-              {
-                "from": "qdai_git_fixture.guess_kind",
-                "name": "fixture_guess_kind",
-                "deny": false
-              },
-              {
-                "from": "qdai_git_fixture.TextTools.initials",
-                "name": "fixture_text_initials",
-                "deny": false
-              },
-              {
-                "from": "qdai_git_fixture.TextTools.repeat",
-                "name": "fixture_text_repeat",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "packageRoot": {
-                  "type": "string",
-                  "description": "Materialized checkout path for the pinned git source."
-                }
-              }
+          "spec": {
+            "importer": {
+              "engine": "git-2-mcp",
+              "versionRange": "^0.1.0"
             },
-            "defaults": {}
+            "source": {
+              "type": "git",
+              "uri": "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": ["qdai_git_fixture.*"],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "packageRoot": {
+                    "type": "string",
+                    "description": "Materialized checkout path for the pinned git source."
+                  }
+                }
+              },
+              "defaults": {}
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "qdai_git_fixture.add",
+                  "name": "fixture_add",
+                  "deny": false
+                },
+                {
+                  "from": "qdai_git_fixture.slugify",
+                  "name": "fixture_slugify",
+                  "deny": false
+                },
+                {
+                  "from": "qdai_git_fixture.summarize",
+                  "name": "fixture_summarize",
+                  "deny": false
+                },
+                {
+                  "from": "qdai_git_fixture.guess_kind",
+                  "name": "fixture_guess_kind",
+                  "deny": false
+                },
+                {
+                  "from": "qdai_git_fixture.TextTools.initials",
+                  "name": "fixture_text_initials",
+                  "deny": false
+                },
+                {
+                  "from": "qdai_git_fixture.TextTools.repeat",
+                  "name": "fixture_text_repeat",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
           },
           "deployment": {
             "transport": "stdio",
@@ -1272,7 +1273,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/quickdeploy-skills.projection.json",
+            "manifests/quickdeploy-skills.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -1283,71 +1284,68 @@
           "verifiedStatus": "review",
           "category": "agent-skills-2-mcp",
           "isOfficial": true,
-          "tags": [
-            "agent-skills",
-            "ard-entry",
-            "projection-backed",
-            "quickdeploy",
-            "skills"
-          ]
+          "tags": ["agent-skills", "manifest-backed", "quickdeploy", "skills"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:skills",
-          "displayName": "QuickDeploy Skills",
-          "type": "application/ai-skill+md",
-          "description": "Curated QuickDeploy Agent Skills exposed as MCP prompts.",
-          "tags": ["agent-skills", "quickdeploy", "skills"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["skill", "resource"],
-            "importMode": "skill-level"
+            "name": "ai.quickdeploy/skills",
+            "version": "0.1.0",
+            "title": "QuickDeploy Skills",
+            "description": "Curated QuickDeploy Agent Skills exposed as MCP prompts.",
+            "labels": ["agent-skills", "quickdeploy", "skills"]
           },
-          "url": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:skills",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [
-              {
-                "name": "agentic-eval",
-                "globs": ["agentic-eval/**"]
-              },
-              {
-                "name": "playwright-cli",
-                "globs": ["playwright-cli/**"]
-              }
-            ],
-            "knowledgeSources": [],
-            "corpusGlobs": []
+          "spec": {
+            "importer": {
+              "engine": "agent-skills-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "git",
+              "uri": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [
+                {
+                  "name": "agentic-eval",
+                  "globs": ["agentic-eval/**"]
+                },
+                {
+                  "name": "playwright-cli",
+                  "globs": ["playwright-cli/**"]
+                }
+              ],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "expose": {
+              "tools": [
+                {
+                  "from": "playwright/run",
+                  "name": "browser_run",
+                  "deny": false
+                },
+                {
+                  "from": "browser/install-extension",
+                  "deny": true,
+                  "reason": "Extension installation is not safe for hosted execution."
+                }
+              ],
+              "resources": [],
+              "prompts": [
+                {
+                  "from": "agentic-eval/design-eval",
+                  "name": "design_agentic_eval",
+                  "deny": false
+                }
+              ]
+            }
           },
-          "expose": {
-            "tools": [
-              {
-                "from": "playwright/run",
-                "name": "browser_run",
-                "deny": false
-              },
-              {
-                "from": "browser/install-extension",
-                "deny": true,
-                "reason": "Extension installation is not safe for hosted execution."
-              }
-            ],
-            "resources": [],
-            "prompts": [
-              {
-                "from": "agentic-eval/design-eval",
-                "name": "design_agentic_eval",
-                "deny": false
-              }
-            ]
-          },
-          "auth": [],
           "deployment": {
             "transport": "streamable-http",
             "auth": {
@@ -1384,7 +1382,7 @@
           "transport": "streamable-http",
           "runtimeArguments": [
             "run",
-            "manifests/wsdl-calculator.projection.json",
+            "manifests/wsdl-calculator.mcp.json",
             "--transport",
             "streamable-http"
           ]
@@ -1395,77 +1393,74 @@
           "verifiedStatus": "review",
           "category": "wsdl-2-mcp",
           "isOfficial": true,
-          "tags": [
-            "ard-entry",
-            "fixture",
-            "projection-backed",
-            "soap",
-            "wsdl"
-          ]
+          "tags": ["fixture", "manifest-backed", "soap", "wsdl"]
         },
-        "ai.quickdeploy.registry/ard-entry": {
-          "identifier": "urn:air:quickdeploy.ai:mcp:wsdl-calculator",
-          "displayName": "WSDL Calculator Fixture",
-          "type": "application/wsdl+xml",
-          "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
-          "tags": ["wsdl", "soap", "fixture"],
-          "version": "0.1.0",
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
           "metadata": {
-            "capabilityKinds": ["api-contract", "tool"],
-            "importMode": "operation-level"
+            "name": "ai.quickdeploy/wsdl-calculator",
+            "version": "0.1.0",
+            "title": "WSDL Calculator Fixture",
+            "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
+            "labels": ["wsdl", "soap", "fixture"]
           },
-          "url": "file://packages/importers/wsdl-2-mcp/fixtures/calculator-document-literal.wsdl"
-        },
-        "ai.quickdeploy.registry/projection": {
-          "kind": "McpProjectionConfig",
-          "entryRef": "urn:air:quickdeploy.ai:mcp:wsdl-calculator",
-          "importerVersionRange": "^0.1.0",
-          "select": {
-            "requests": [
-              {
-                "method": "POST",
-                "uriTemplate": "/soap/CalculatorService/Add"
-              }
-            ],
-            "grpcMethods": [],
-            "pythonFunctions": [],
-            "skills": [],
-            "knowledgeSources": [],
-            "corpusGlobs": []
-          },
-          "expose": {
-            "tools": [
-              {
-                "from": "POST /soap/CalculatorService/Add",
-                "name": "calculator_add",
-                "deny": false
-              }
-            ],
-            "resources": [],
-            "prompts": []
-          },
-          "auth": [],
-          "config": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "endpoint": {
-                  "type": "string",
-                  "description": "SOAP endpoint override for the selected service port."
-                },
-                "bindingName": {
-                  "type": "string",
-                  "description": "Optional WSDL binding name when multiple bindings are present."
-                },
-                "requestTimeoutMs": {
-                  "type": "number",
-                  "description": "Per-request SOAP timeout in milliseconds."
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "file",
+              "uri": "file://packages/importers/wsdl-2-mcp/fixtures/calculator-document-literal.wsdl"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "POST",
+                  "uriTemplate": "/soap/CalculatorService/Add"
                 }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "description": "SOAP endpoint override for the selected service port."
+                  },
+                  "bindingName": {
+                    "type": "string",
+                    "description": "Optional WSDL binding name when multiple bindings are present."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "description": "Per-request SOAP timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://example.invalid/soap/calculator",
+                "requestTimeoutMs": 30000
               }
             },
-            "defaults": {
-              "endpoint": "https://example.invalid/soap/calculator",
-              "requestTimeoutMs": 30000
+            "expose": {
+              "tools": [
+                {
+                  "from": "POST /soap/CalculatorService/Add",
+                  "name": "calculator_add",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
             }
           },
           "deployment": {

@@ -4,10 +4,9 @@ Runtime host for `McpManifest` documents. It validates a manifest, resolves an
 importer engine, checks config and secret references, then serves the resulting
 MCP surface over stdio or streamable HTTP.
 
-Registry authors should start with
-[`docs/registry/ard-projection-authoring-guide.md`](../../docs/registry/ard-projection-authoring-guide.md)
-for the committed ARD entry plus projection flow. `mcp-host` still accepts
-`McpManifest` runtime files directly for local fixtures and baked deployments.
+Registry authors should commit `McpManifest` files under `manifests/` for
+hosted importer-backed entries. `mcp-host` accepts those same manifest files for
+local fixtures and baked deployments.
 
 ```bash
 vp run @quickdeployai/mcp-host#start -- run examples/petstore.mcp.yaml --transport streamable-http --port 3000

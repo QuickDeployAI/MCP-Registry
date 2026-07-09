@@ -2,9 +2,8 @@
 
 Official repo for Quick Deploy AI - MCP servers.
 
-This is a trusted public source for the QuickDeploy marketplace: the platform
-reads it to populate official default MCP server entries in the capability
-registry.
+This is a trusted public source for QuickDeploy MCP server metadata. The
+platform reads `servers.json` to populate official default MCP entries.
 
 ## Workspace Layout
 
@@ -20,8 +19,7 @@ Workspace package lanes:
   shapes into MCP packages.
 - `packages/runtime/*` — shared runtime services for generated and baked MCP
   packages.
-- `packages/schemas/*` — registry and ARD schemas shared by the repo and the
-  marketplace.
+- `packages/schemas/*` — MCP registry and manifest schemas shared by the repo.
 - `packages/tools/*` — repo-local CLIs and validation tools.
 
 Common workspace commands:
@@ -47,9 +45,8 @@ Each server lives at `servers/<server-name>/` on `main`:
 - `index.mjs` — the runnable stdio server implementation.
 - `package.json` — npm package with a `bin` entry for `npx` execution.
 
-`registry/index.json` is the machine-readable catalog consumed by the
-marketplace ARD endpoints
-(`https://raw.githubusercontent.com/QuickDeployAI/MCP-Registry/main/registry/index.json`).
+`servers.json` is the machine-readable MCP catalog
+(`https://raw.githubusercontent.com/QuickDeployAI/MCP-Registry/main/servers.json`).
 
 ## Servers
 
@@ -79,6 +76,7 @@ arguments.
 1. Create `servers/<name>/` with `server.json`, `package.json`, and the
    implementation. Keep `name` in `server.json` under the `ai.quickdeploy/`
    namespace.
-2. Add a summary entry to `registry/index.json` with `is_official: true`.
+2. Run `pnpm --filter @quickdeployai/registry-cli build:registry` to regenerate
+   `servers.json`.
 3. Verify the server responds to `initialize`, `tools/list`, and a
    representative `tools/call` over stdio before merging.

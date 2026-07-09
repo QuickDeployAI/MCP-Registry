@@ -2,7 +2,7 @@
   "name": "@quickdeployai/registry-schemas",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared registry + capability schemas, listing DTOs, manifest inference, and a typed client for the registries edge function. Consumed from source by Vite/tsc — no build step.",
+  "description": "Shared MCP registry schemas consumed from source by Vite/tsc — no build step.",
   "files": [
     "src"
   ],
@@ -14,25 +14,10 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./inference": {
-      "types": "./src/inference.ts",
-      "import": "./src/inference.ts",
-      "default": "./src/inference.ts"
-    },
-    "./client": {
-      "types": "./src/client.ts",
-      "import": "./src/client.ts",
-      "default": "./src/client.ts"
-    },
     "./mcp-manifest": {
       "types": "./src/mcp-manifest.ts",
       "import": "./src/mcp-manifest.ts",
       "default": "./src/mcp-manifest.ts"
-    },
-    "./mcp-projection": {
-      "types": "./src/mcp-projection.ts",
-      "import": "./src/mcp-projection.ts",
-      "default": "./src/mcp-projection.ts"
     }
   },
   "scripts": {

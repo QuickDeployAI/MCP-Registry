@@ -152,7 +152,7 @@ function exposeFromOptions(options: ScaffoldManifestOptions): ManifestDraftExpos
 
 /**
  * Builds a validated McpManifest from scaffold options. Every select/expose
- * shape mirrors the legacy mcp-host fixture examples; mcp-host derives tool names
+ * shape mirrors the mcp-host fixture examples; mcp-host derives tool names
  * for select.requests/grpcMethods automatically when expose.tools omits them,
  * so expose is only needed to rename or deny a generated tool.
  */
@@ -476,8 +476,8 @@ Next steps:
    config validation both pick it up.
 3. Add an engine adapter in \`packages/runtime/mcp-host/src/runtime.ts\`'s
    \`defaultEngines\` once this importer is ready to run under \`mcp-host\`.
- 4. For committed registry publication, create an ARD entry plus projection config
-    (see \`docs/registry/ard-projection-authoring-guide.md\`).
+ 4. For committed registry publication, add this manifest under \`manifests/\`
+    and run \`pnpm --filter @quickdeployai/registry-cli build:registry\`.
 `;
 
   const dockerfile = `# Reference Dockerfile for running this importer's checks in isolation.

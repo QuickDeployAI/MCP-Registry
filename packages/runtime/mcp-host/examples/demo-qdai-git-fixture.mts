@@ -1,7 +1,7 @@
 /**
  * Demo: an agent calling every method of a small Python library through MCP.
  *
- * Loads the qdai-git-fixture ARD entry + projection config, hosts it in-process with
+ * Loads the qdai-git-fixture MCP manifest, hosts it in-process with
  * @quickdeployai/mcp-host, lists the tools git-2-mcp derived from the
  * package's public surface, then calls each one exactly as an MCP client
  * would over JSON-RPC.
@@ -13,12 +13,7 @@ import { fileURLToPath } from "node:url";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fixturePackageRoot } from "@quickdeployai/git-2-mcp";
-import {
-  ArdEntrySchema,
-  McpProjectionConfigSchema,
-  sourceMediaTypeToImporterEngine,
-  validateMcpManifestImporterConfig,
-} from "@quickdeployai/registry-schemas";
+import { validateMcpManifestImporterConfig } from "@quickdeployai/registry-schemas";
 import { createMcpHost } from "../src/runtime.js";
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -33,7 +28,7 @@ const calls = [
 ];
 
 async function main() {
-  const manifest = await loadProjectedManifest("manifests/qdai-git-fixture.ard.json");
+  const manifest = await loadCommittedManifest("manifests/qdai-git-fixture.mcp.json");
   const host = createMcpHost({
     manifest,
     userConfig: { packageRoot: fixturePackageRoot() },
@@ -64,38 +59,10 @@ async function main() {
   }
 }
 
-async function loadProjectedManifest(entryPath: string) {
-  const absoluteEntryPath = resolve(rootDir, entryPath);
-  const projectionPath = absoluteEntryPath.replace(/\.ard\.json$/, ".projection.json");
-  const entry = ArdEntrySchema.parse(JSON.parse(await readFile(absoluteEntryPath, "utf8")));
-  const projection = McpProjectionConfigSchema.parse(
-    JSON.parse(await readFile(projectionPath, "utf8")),
+async function loadCommittedManifest(manifestPath: string) {
+  return validateMcpManifestImporterConfig(
+    JSON.parse(await readFile(resolve(rootDir, manifestPath), "utf8")),
   );
-  const engine = sourceMediaTypeToImporterEngine(entry.type);
-  if (!engine || !entry.url) throw new Error(`Cannot project ${entryPath}.`);
-  if (projection.entryRef !== entry.identifier) {
-    throw new Error(`Projection ${projectionPath} references ${projection.entryRef}.`);
-  }
-  return validateMcpManifestImporterConfig({
-    apiVersion: "quickdeploy.ai/v1",
-    kind: "McpManifest",
-    metadata: {
-      name: `ai.quickdeploy/${entry.identifier.split(":").at(-1)}`,
-      version: entry.version ?? "0.1.0",
-      title: entry.displayName,
-      description: entry.description,
-      labels: entry.tags,
-    },
-    spec: {
-      importer: { engine, versionRange: projection.importerVersionRange },
-      source: { type: "git", uri: entry.url },
-      select: projection.select,
-      auth: projection.auth,
-      ...(projection.config ? { config: projection.config } : {}),
-      expose: projection.expose,
-    },
-    deployment: projection.deployment,
-  });
 }
 
 main().catch((error) => {
