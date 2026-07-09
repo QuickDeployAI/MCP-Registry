@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/asyncapi-2-mcp-importer",
+  "version": "0.1.0",
+  "description": "AsyncAPI v3 publish-side importer image for Kafka-backed send operations.",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
+      "version": "0.1.0",
+      "runtimeHint": "node22-importer",
+      "runtimeArguments": ["--help"]
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "asyncapi-2-mcp",
+      "isOfficial": true,
+      "tags": ["asyncapi", "importer", "kafka", "oci"]
+    }
+  }
+}

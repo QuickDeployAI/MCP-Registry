@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.linear/mcp",
+  "version": "1.0.0",
+  "description": "Linear hosted MCP endpoint.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.linear.app/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "productivity",
+      "isOfficial": true,
+      "tags": ["linear", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Linear's hosted MCP endpoint is connected by supported clients through runtime authorization."
+    }
+  }
+}

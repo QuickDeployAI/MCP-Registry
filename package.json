@@ -13,12 +13,12 @@
     "changeset": "changeset",
     "version:packages": "changeset version && pnpm registry:validate",
     "publish:packages": "pnpm registry:validate && changeset publish",
-    "registry:validate": "pnpm --filter @quickdeployai/mcp-registry-cli build && node packages/tools/registry-cli/bin/registry-cli.mjs validate"
+    "registry:validate": "pnpm --filter @quickdeployai/registry-cli registry:validate"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
     "@eslint/js": "catalog:",
-    "@quickdeployai/mcp-registry-cli": "workspace:*",
+    "@quickdeployai/registry-cli": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "turbo": "catalog:",

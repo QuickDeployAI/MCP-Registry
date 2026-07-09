@@ -1,0 +1,35 @@
+{
+  "applicationName": "petstore-subset",
+  "publisher": {
+    "name": "QuickDeployAI",
+    "contactEmail": "registry@quickdeploy.ai"
+  },
+  "apiDependencies": {
+    "petstore": {
+      "apiDescriptionUrl": "https://petstore.example/openapi.json",
+      "apiDescriptionVersion": "1.0.0",
+      "apiDeploymentBaseUrl": "https://petstore.example/v1",
+      "authorizationRequirements": {
+        "clientIdentifier": "quickdeploy-petstore-importer",
+        "access": [
+          {
+            "type": "scope",
+            "scope": "pets.read orders.write"
+          }
+        ]
+      },
+      "requests": [
+        {
+          "method": "get",
+          "uriTemplate": "/pets/{petId}",
+          "dataClassification": ["urn:quickdeploy:data:pets"]
+        },
+        {
+          "method": "post",
+          "uriTemplate": "/orders",
+          "dataClassification": ["urn:quickdeploy:data:orders"]
+        }
+      ]
+    }
+  }
+}

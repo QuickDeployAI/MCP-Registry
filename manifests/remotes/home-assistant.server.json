@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.home-assistant/mcp-server",
+  "version": "1.0.0",
+  "description": "Home Assistant official MCP integration exposed from a user's Home Assistant instance for Assist API device context and control.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://{home_assistant_external_url}/api/mcp",
+      "variables": {
+        "home_assistant_external_url": {
+          "description": "Public or gateway-proxied Home Assistant base host, without https://."
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "iot",
+      "isOfficial": true,
+      "tags": ["home-assistant", "iot", "smart-home", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Home Assistant supports MCP OAuth for capable clients and long-lived access tokens for clients that need bearer authentication."
+    }
+  }
+}

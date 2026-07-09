@@ -1,0 +1,48 @@
+{
+  "name": "@quickdeployai/mcp-host",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runtime host for QuickDeploy MCP manifests over stdio and streamable HTTP.",
+  "bin": {
+    "mcp-host": "./src/cli.mts"
+  },
+  "files": [
+    "src",
+    "examples",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "image:build": "docker build -f Dockerfile -t ghcr.io/quickdeployai/mcp-host:local ../../..",
+    "mcp-host": "tsx src/cli.mts",
+    "start": "tsx src/cli.mts",
+    "demo:git-fixture": "tsx examples/demo-qdai-git-fixture.mts",
+    "test:pact": "vitest run test/runtime.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@quickdeployai/git-2-mcp": "workspace:*",
+    "@quickdeployai/importer-core": "workspace:*",
+    "@quickdeployai/registry-schemas": "workspace:*",
+    "tsx": "catalog:",
+    "yaml": "^2.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

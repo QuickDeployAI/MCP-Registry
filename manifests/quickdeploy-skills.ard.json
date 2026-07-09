@@ -1,0 +1,13 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:skills",
+  "displayName": "QuickDeploy Skills",
+  "type": "application/ai-skill+md",
+  "description": "Curated QuickDeploy Agent Skills exposed as MCP prompts.",
+  "tags": ["agent-skills", "quickdeploy", "skills"],
+  "version": "0.1.0",
+  "url": "git+https://github.com/QuickDeployAI/agent-skills.git#main",
+  "metadata": {
+    "importMode": "skill-level",
+    "capabilityKinds": ["skill", "resource"]
+  }
+}

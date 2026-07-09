@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="https://quickdeploy.ai/fixtures/wsdl/calculator/types"
+  xmlns:tns="https://quickdeploy.ai/fixtures/wsdl/calculator/types"
+  elementFormDefault="qualified">
+  <xs:element name="AddRequest" type="tns:AddRequest"/>
+  <xs:element name="AddResponse" type="tns:AddResponse"/>
+  <xs:element name="CalculationFault" type="tns:CalculationFault"/>
+
+  <xs:complexType name="AddRequest">
+    <xs:sequence>
+      <xs:element name="left" type="xs:int"/>
+      <xs:element name="right" type="xs:int"/>
+      <xs:element name="audit" type="tns:AuditContext" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuditContext">
+    <xs:sequence>
+      <xs:element name="requestId" type="xs:string"/>
+      <xs:element name="tags" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddResponse">
+    <xs:sequence>
+      <xs:element name="sum" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CalculationFault">
+    <xs:sequence>
+      <xs:element name="code" type="xs:string"/>
+      <xs:element name="message" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

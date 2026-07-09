@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.confluent/managed-mcp",
+  "version": "1.0.0",
+  "description": "Confluent Cloud managed MCP endpoints for read-only organization, connector, metrics, topic, and schema inspection.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.confluent.cloud/mcp/v1"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.{region}.{cloud}.confluent.cloud/mcp/v1/organizations/{organization_id}",
+      "variables": {
+        "region": {
+          "description": "Confluent Cloud region, for example us-west-2."
+        },
+        "cloud": {
+          "description": "Confluent Cloud provider: aws, gcp, or azure."
+        },
+        "organization_id": {
+          "description": "Confluent Cloud organization ID."
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "eventing",
+      "isOfficial": true,
+      "tags": ["confluent", "kafka", "schema-registry", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "http-basic",
+      "notes": "Confluent managed MCP uses Base64-encoded API key and secret credentials in the Authorization header."
+    }
+  }
+}

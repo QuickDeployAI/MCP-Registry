@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.cloudflare/observability-mcp",
+  "version": "1.0.0",
+  "description": "Cloudflare managed observability MCP endpoint for application logs and analytics.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://observability.mcp.cloudflare.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "observability",
+      "isOfficial": true,
+      "tags": ["cloudflare", "observability", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+    }
+  }
+}

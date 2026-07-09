@@ -1,0 +1,40 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.context7/mcp",
+  "version": "1.0.0",
+  "description": "Context7 hosted MCP endpoint for up-to-date library documentation and code examples.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "description": "Optional Context7 API key header.",
+          "required": false,
+          "value": "${CONTEXT7_API_KEY}"
+        }
+      ]
+    }
+  ],
+  "environmentVariables": [
+    {
+      "name": "CONTEXT7_API_KEY",
+      "description": "Optional API key for Context7 higher quota or account-scoped usage.",
+      "isRequired": false,
+      "isSecret": true
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "docs",
+      "isOfficial": true,
+      "tags": ["context7", "docs", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "optional-static-header",
+      "notes": "Context7 documents CONTEXT7_API_KEY as an optional header for API-key-backed usage."
+    }
+  }
+}

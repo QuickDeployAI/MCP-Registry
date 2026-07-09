@@ -21,3 +21,16 @@ export {
   operationsToTools,
   operationToTool,
 } from "./operation.js";
+export {
+  buildBody as buildOpenApiBody,
+  buildUrl as buildOpenApiUrl,
+  openApiToProxyTools,
+  parseVersion,
+  schemaToZod as openApiSchemaToZod,
+} from "./openapi.js";
+export type {
+  HttpExecutor,
+  OpenApiAuthConfig,
+  OpenApiProxyTool,
+  OpenApiToProxyToolsOptions,
+} from "./openapi.js";

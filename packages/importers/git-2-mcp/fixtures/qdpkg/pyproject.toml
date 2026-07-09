@@ -1,0 +1,5 @@
+[project]
+name = "qdai-git-fixture"
+version = "0.1.0"
+description = "Fixture package for git-2-mcp sandbox surface discovery."
+requires-python = ">=3.11"

@@ -1,0 +1,2080 @@
+{
+  "$schema": "https://quickdeploy.ai/schemas/servers-json.schema.json",
+  "servers": [
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.llamaindex/llamaparse-mcp",
+      "version": "1.0.0",
+      "description": "LlamaIndex LlamaParse hosted MCP endpoint for document parsing and extraction through LlamaCloud.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.llamaindex.ai/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "docs",
+          "isOfficial": true,
+          "tags": ["llamaindex", "llamaparse", "llamacloud", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "LlamaIndex documents sign-in with a LlamaCloud account on first use."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/admin",
+      "version": "1.0.0",
+      "description": "Org and enterprise governance for QuickDeploy AI: list and evaluate policies, review and decide approval requests, manage cost budgets and caps, and page signed audit events.",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@quickdeployai/mcp-admin",
+          "version": "1.0.0",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "name": "QDAI_API_TOKEN",
+              "description": "QuickDeploy service-account bearer token with policies/approvals/costs/events scopes (see https://api.quickdeploy.ai/auth.md).",
+              "isRequired": true,
+              "isSecret": true
+            },
+            {
+              "name": "QDAI_API_BASE",
+              "description": "Control-Plane API origin override. Defaults to https://api.quickdeploy.ai.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          ],
+          "registryBaseUrl": "https://registry.npmjs.org"
+        }
+      ],
+      "title": "QuickDeploy Admin",
+      "websiteUrl": "https://quickdeploy.ai",
+      "repository": {
+        "url": "https://github.com/QuickDeployAI/MCP-Registry",
+        "source": "github",
+        "subfolder": "servers/quickdeploy-admin"
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/agent-skills",
+      "version": "0.1.0",
+      "description": "Curated agent skills exposed as MCP tools and prompts.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/agent-skills.projection.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "agent-skills-2-mcp",
+          "isOfficial": true,
+          "tags": ["agent", "ard-entry", "projection-backed", "skills"]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:agent-skills",
+          "displayName": "Agent Skills",
+          "type": "application/ai-skill+md",
+          "description": "Curated agent skills exposed as MCP tools and prompts.",
+          "tags": ["skills", "agent"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["skill", "resource"],
+            "importMode": "skill-level"
+          },
+          "url": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:agent-skills",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [
+              {
+                "name": "agentic-eval",
+                "globs": ["agentic-eval/**"]
+              },
+              {
+                "name": "playwright-cli",
+                "globs": ["playwright-cli/**"]
+              }
+            ],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "playwright/run",
+                "name": "browser_run",
+                "deny": false
+              },
+              {
+                "from": "browser/install-extension",
+                "deny": true,
+                "reason": "Extension installation is not safe for hosted execution."
+              }
+            ],
+            "resources": [],
+            "prompts": [
+              {
+                "from": "agentic-eval/design-eval",
+                "name": "design_agentic_eval",
+                "deny": false
+              }
+            ]
+          },
+          "auth": [],
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "workspaceRoot": {
+                "type": "string",
+                "description": "Workspace root passed to the skills runtime."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "workspaceRoot": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/agent-skills-2-mcp",
+      "version": "0.1.0",
+      "description": "QuickDeploy Agent Skills importer for exposing SKILL.md prompts, resources, and allowlisted script tools over MCP.",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@quickdeployai/agent-skills-2-mcp",
+          "version": "0.1.0",
+          "runtimeHint": "node",
+          "transport": "stdio"
+        },
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/agent-skills-2-mcp@sha256:b9d83df5a250128413dad70fedd907d4a4ab526aad198f2e394e7d6c496dc04c",
+          "version": "0.1.0",
+          "runtimeHint": "container",
+          "transport": "stdio"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "agent-skills-2-mcp",
+          "isOfficial": true,
+          "tags": ["agent-skills", "importer", "mcp"]
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/asyncapi-2-mcp-importer",
+      "version": "0.1.0",
+      "description": "AsyncAPI v3 publish-side importer image for Kafka-backed send operations.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
+          "version": "0.1.0",
+          "runtimeHint": "node22-importer",
+          "runtimeArguments": ["--help"]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "asyncapi-2-mcp",
+          "isOfficial": true,
+          "tags": ["asyncapi", "importer", "kafka", "oci"]
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/control-plane",
+      "version": "1.0.0",
+      "description": "Manage QuickDeploy AI tenant deployments through the Control-Plane API: create deployments, read lifecycle and health state, run pause/resume/promote/rollback/quarantine/delete actions, read logs, and list target environments.",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@quickdeployai/mcp-control-plane",
+          "version": "1.0.0",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "environmentVariables": [
+            {
+              "name": "QDAI_API_TOKEN",
+              "description": "QuickDeploy service-account bearer token with deployments/environments/observability scopes (see https://api.quickdeploy.ai/auth.md).",
+              "isRequired": true,
+              "isSecret": true
+            },
+            {
+              "name": "QDAI_API_BASE",
+              "description": "Control-Plane API origin override. Defaults to https://api.quickdeploy.ai.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          ],
+          "registryBaseUrl": "https://registry.npmjs.org"
+        }
+      ],
+      "title": "QuickDeploy Control Plane",
+      "websiteUrl": "https://quickdeploy.ai",
+      "repository": {
+        "url": "https://github.com/QuickDeployAI/MCP-Registry",
+        "source": "github",
+        "subfolder": "servers/quickdeploy-control-plane"
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/docs",
+      "version": "1.0.0",
+      "description": "Queryable access to official QuickDeploy AI documentation: search the llms.txt index and read markdown page variants from the public docs surfaces. Read-only; no authentication required.",
+      "packages": [
+        {
+          "registryType": "npm",
+          "identifier": "@quickdeployai/mcp-docs",
+          "version": "1.0.0",
+          "runtimeHint": "npx",
+          "transport": {
+            "type": "stdio"
+          },
+          "registryBaseUrl": "https://registry.npmjs.org"
+        }
+      ],
+      "title": "QuickDeploy Docs",
+      "websiteUrl": "https://docs.quickdeploy.ai",
+      "repository": {
+        "url": "https://github.com/QuickDeployAI/MCP-Registry",
+        "source": "github",
+        "subfolder": "servers/quickdeploy-docs"
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/grpc-2-mcp-importer",
+      "version": "0.1.0",
+      "description": "gRPC unary runtime proxy importer image for descriptor-backed services.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/importers/grpc-2-mcp:0.1.0",
+          "version": "0.1.0",
+          "runtimeHint": "node22-importer",
+          "runtimeArguments": ["catalog"]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "grpc-2-mcp",
+          "isOfficial": true,
+          "tags": ["grpc", "importer", "oci"]
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/grpc-greeter",
+      "version": "0.1.0",
+      "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/grpc-greeter.projection.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["QD_MANIFEST_ENDPOINT"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "QD_MANIFEST_ENDPOINT",
+          "description": "Manifest config value for endpoint.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "grpc-2-mcp",
+          "isOfficial": true,
+          "tags": ["ard-entry", "fixture", "grpc", "projection-backed"]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
+          "displayName": "gRPC Greeter Fixture",
+          "type": "application/protobuf",
+          "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
+          "tags": ["grpc", "fixture"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["api-contract", "tool"],
+            "importMode": "operation-level"
+          },
+          "url": "file://packages/importers/grpc-2-mcp/fixtures/greeter.binpb"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [
+              {
+                "service": "quickdeploy.fixture.Greeter",
+                "method": "SayHello"
+              },
+              {
+                "service": "quickdeploy.fixture.Greeter",
+                "method": "DescribeProfile"
+              }
+            ],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "quickdeploy.fixture.Greeter/SayHello",
+                "name": "quickdeploy_fixture_greeter_say_hello",
+                "deny": false
+              },
+              {
+                "from": "quickdeploy.fixture.Greeter/DescribeProfile",
+                "name": "quickdeploy_fixture_greeter_describe_profile",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "description": "gRPC host:port endpoint."
+                },
+                "protoPath": {
+                  "type": "string",
+                  "description": "Local proto file used by the runtime proxy."
+                }
+              },
+              "required": ["endpoint"]
+            },
+            "defaults": {
+              "protoPath": "./packages/importers/grpc-2-mcp/fixtures/greeter.proto"
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "endpoint": {
+                "type": "string",
+                "description": "gRPC host:port endpoint."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string"
+                }
+              },
+              "required": ["endpoint"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/har-petstore",
+      "version": "0.1.0",
+      "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/har-petstore.projection.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["QD_MANIFEST_BASE_URL"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "QD_MANIFEST_BASE_URL",
+          "description": "Manifest config value for baseUrl.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "har-2-mcp",
+          "isOfficial": true,
+          "tags": ["ard-entry", "har", "petstore", "projection-backed"]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:har-petstore",
+          "displayName": "HAR Petstore Fixture",
+          "type": "application/vnd.har+json",
+          "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
+          "tags": ["har", "petstore"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["api-contract", "tool"],
+            "importMode": "operation-level"
+          },
+          "url": "file://packages/importers/har-2-mcp/fixtures/petstore.har"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:har-petstore",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [
+              {
+                "method": "GET",
+                "uriTemplate": "/pet/{petId}"
+              },
+              {
+                "method": "POST",
+                "uriTemplate": "/pet"
+              }
+            ],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "GET /pet/{petId}",
+                "name": "har_get_pet",
+                "deny": false
+              },
+              {
+                "from": "POST /pet",
+                "name": "har_create_pet",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string",
+                  "description": "Base URL for reviewed HAR replay."
+                },
+                "redactionPolicy": {
+                  "type": "string",
+                  "description": "Redaction policy applied before publication."
+                },
+                "includeMethods": {
+                  "type": "array",
+                  "description": "HTTP methods retained from the capture."
+                },
+                "requestTimeoutMs": {
+                  "type": "number",
+                  "description": "Per-request upstream timeout."
+                }
+              },
+              "required": ["baseUrl"]
+            },
+            "defaults": {
+              "baseUrl": "https://petstore3.swagger.io/api/v3",
+              "redactionPolicy": "strict",
+              "includeMethods": ["GET", "POST"],
+              "requestTimeoutMs": 5000
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "baseUrl": {
+                "type": "string",
+                "description": "Base URL for reviewed HAR replay."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string"
+                }
+              },
+              "required": ["baseUrl"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/knowledge-okf-example",
+      "version": "0.1.0",
+      "description": "Open Knowledge Format bundle ingested through knowledge-2-mcp.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/knowledge-okf-example.projection.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "knowledge-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "ard-entry",
+            "knowledge",
+            "okf",
+            "openwiki",
+            "projection-backed"
+          ]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
+          "displayName": "OKF Knowledge Bundle Example",
+          "type": "application/vnd.quickdeploy.okf+json",
+          "description": "Open Knowledge Format bundle ingested through knowledge-2-mcp.",
+          "tags": ["knowledge", "okf", "openwiki"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["resource", "tool"],
+            "importMode": "whole-artifact"
+          },
+          "url": "git+https://github.com/example/generated-openwiki.git#main"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": ["**/*.md", "**/*.mdx"]
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "knowledge.search",
+                "name": "knowledge_search",
+                "deny": false
+              },
+              {
+                "from": "knowledge.getDocument",
+                "name": "knowledge_get_document",
+                "deny": false
+              },
+              {
+                "from": "knowledge.refresh",
+                "name": "knowledge_refresh",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "bundleUri": {
+                  "type": "string",
+                  "description": "OKF bundle source URI."
+                },
+                "maxChars": {
+                  "type": "number",
+                  "description": "Maximum characters per chunk."
+                },
+                "overlap": {
+                  "type": "number",
+                  "description": "Overlap characters between adjacent chunks."
+                },
+                "embeddingModel": {
+                  "type": "string",
+                  "description": "Embedding model used for vector indexing."
+                },
+                "embeddingDimensions": {
+                  "type": "number",
+                  "description": "Embedding vector dimensions."
+                },
+                "queryableMetadata": {
+                  "type": "array",
+                  "description": "Metadata fields exposed for search filters."
+                }
+              }
+            },
+            "defaults": {
+              "bundleUri": "git+https://github.com/example/generated-openwiki.git#main",
+              "maxChars": 1200,
+              "overlap": 240,
+              "embeddingModel": "text-embedding-3-small",
+              "embeddingDimensions": 1536,
+              "queryableMetadata": ["type", "tags", "resource"]
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {},
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "bundleUri": {
+                  "type": "string"
+                },
+                "maxChars": {
+                  "type": "number"
+                },
+                "overlap": {
+                  "type": "number"
+                },
+                "embeddingModel": {
+                  "type": "string"
+                },
+                "embeddingDimensions": {
+                  "type": "number"
+                },
+                "queryableMetadata": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/petstore",
+      "version": "1.0.0",
+      "description": "Selected Petstore operations exposed as MCP tools.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/petstore.projection.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PETSTORE_API_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PETSTORE_API_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "openapi-2-mcp",
+          "isOfficial": true,
+          "tags": ["ard-entry", "openapi", "petstore", "projection-backed"]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:petstore",
+          "displayName": "Petstore",
+          "type": "application/vnd.oai.openapi+json",
+          "description": "Selected Petstore operations exposed as MCP tools.",
+          "tags": ["openapi", "petstore"],
+          "version": "1.0.0",
+          "metadata": {
+            "capabilityKinds": ["api-contract", "tool"],
+            "importMode": "operation-level"
+          },
+          "url": "https://petstore3.swagger.io/api/v3/openapi.json"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:petstore",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [
+              {
+                "method": "GET",
+                "uriTemplate": "/pet/{petId}"
+              },
+              {
+                "method": "POST",
+                "uriTemplate": "/pet"
+              }
+            ],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "GET /pet/{petId}",
+                "name": "get_pet",
+                "deny": false
+              },
+              {
+                "from": "POST /pet",
+                "name": "create_pet",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [
+            {
+              "type": "bearer",
+              "valueFrom": {
+                "env": "PETSTORE_API_TOKEN"
+              }
+            }
+          ],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string"
+                }
+              }
+            },
+            "defaults": {
+              "baseUrl": "https://petstore3.swagger.io/api/v3"
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "baseUrl": {
+                "type": "string",
+                "description": "Petstore API base URL."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/postman-petstore",
+      "version": "0.1.0",
+      "description": "Postman Collection requests exposed as MCP tools.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/postman-petstore.projection.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PETSTORE_API_KEY", "PETSTORE_API_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PETSTORE_API_KEY",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "PETSTORE_API_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "postman-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "ard-entry",
+            "openapi",
+            "petstore",
+            "postman",
+            "projection-backed"
+          ]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:postman-petstore",
+          "displayName": "Postman Petstore",
+          "type": "application/vnd.postman.collection+json",
+          "description": "Postman Collection requests exposed as MCP tools.",
+          "tags": ["postman", "openapi", "petstore"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["api-contract", "tool"],
+            "importMode": "operation-level"
+          },
+          "url": "file://packages/importers/postman-2-mcp/fixtures/petstore-collection.json"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:postman-petstore",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [
+              {
+                "method": "GET",
+                "uriTemplate": "/pets/{petId}"
+              },
+              {
+                "method": "POST",
+                "uriTemplate": "/pets"
+              }
+            ],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "GET /pets/{petId}",
+                "name": "postman_get_pet",
+                "deny": false
+              },
+              {
+                "from": "POST /pets",
+                "name": "postman_create_pet",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [
+            {
+              "type": "bearer",
+              "valueFrom": {
+                "env": "PETSTORE_API_TOKEN"
+              }
+            },
+            {
+              "type": "api-key",
+              "in": "header",
+              "name": "x-api-key",
+              "valueFrom": {
+                "env": "PETSTORE_API_KEY"
+              }
+            }
+          ],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string",
+                  "description": "Base URL for collection requests."
+                },
+                "variables": {
+                  "type": "object",
+                  "description": "Non-secret Postman variable overrides."
+                },
+                "requestTimeoutMs": {
+                  "type": "number",
+                  "description": "Per-request upstream timeout in milliseconds."
+                }
+              }
+            },
+            "defaults": {
+              "baseUrl": "https://petstore.example/v1",
+              "variables": {
+                "defaultStatus": "available"
+              },
+              "requestTimeoutMs": 30000
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "baseUrl": {
+                "type": "string",
+                "description": "Base URL for collection requests."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "baseUrl": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/product-feed",
+      "version": "0.2.0",
+      "description": "Release and blog feed corpus exposed through MCP.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/product-feed.projection.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "knowledge-2-mcp",
+          "isOfficial": true,
+          "tags": ["ard-entry", "feed", "knowledge", "projection-backed"]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:product-feed",
+          "displayName": "Product Feed",
+          "type": "application/rss+xml",
+          "description": "Release and blog feed corpus exposed through MCP.",
+          "tags": ["feed", "knowledge"],
+          "version": "0.2.0",
+          "metadata": {
+            "capabilityKinds": ["resource", "tool"],
+            "importMode": "whole-artifact"
+          },
+          "url": "https://quickdeploy.ai/feed.xml"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:product-feed",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": ["/releases/**", "/blog/**"]
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "corpus.search",
+                "name": "search_product_feed",
+                "deny": false
+              }
+            ],
+            "resources": [
+              {
+                "from": "feed:item",
+                "name": "product_feed_item",
+                "deny": false
+              }
+            ],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "refreshMinutes": {
+                  "type": "number",
+                  "description": "Refresh interval for the feed cache."
+                },
+                "maxItems": {
+                  "type": "number",
+                  "description": "Maximum feed items retained in the corpus."
+                },
+                "includeContent": {
+                  "type": "boolean",
+                  "description": "Whether full feed content is exposed in resources."
+                }
+              }
+            },
+            "defaults": {
+              "refreshMinutes": 30,
+              "maxItems": 100,
+              "includeContent": true
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {},
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "refreshMinutes": {
+                  "type": "number"
+                },
+                "maxItems": {
+                  "type": "number"
+                },
+                "includeContent": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/qdai-git-fixture",
+      "version": "1.0.0",
+      "description": "git-2-mcp dogfood example, every lib method of a small Python package as a tool.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "stdio",
+          "runtimeArguments": [
+            "run",
+            "manifests/qdai-git-fixture.projection.json",
+            "--transport",
+            "stdio"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "git-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "ard-entry",
+            "example",
+            "git",
+            "projection-backed",
+            "python"
+          ]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
+          "displayName": "QuickDeployAI Git Fixture",
+          "type": "application/vnd.quickdeploy.git-repository",
+          "description": "git-2-mcp dogfood example, every lib method of a small Python package as a tool.",
+          "tags": ["git", "python", "example"],
+          "version": "1.0.0",
+          "metadata": {
+            "capabilityKinds": ["tool"],
+            "importMode": "method-level"
+          },
+          "url": "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [],
+            "pythonFunctions": ["qdai_git_fixture.*"],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "qdai_git_fixture.add",
+                "name": "fixture_add",
+                "deny": false
+              },
+              {
+                "from": "qdai_git_fixture.slugify",
+                "name": "fixture_slugify",
+                "deny": false
+              },
+              {
+                "from": "qdai_git_fixture.summarize",
+                "name": "fixture_summarize",
+                "deny": false
+              },
+              {
+                "from": "qdai_git_fixture.guess_kind",
+                "name": "fixture_guess_kind",
+                "deny": false
+              },
+              {
+                "from": "qdai_git_fixture.TextTools.initials",
+                "name": "fixture_text_initials",
+                "deny": false
+              },
+              {
+                "from": "qdai_git_fixture.TextTools.repeat",
+                "name": "fixture_text_repeat",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "packageRoot": {
+                  "type": "string",
+                  "description": "Materialized checkout path for the pinned git source."
+                }
+              }
+            },
+            "defaults": {}
+          },
+          "deployment": {
+            "transport": "stdio",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "packageRoot": {
+                "type": "string",
+                "description": "Materialized checkout path for the pinned git source."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/skills",
+      "version": "0.1.0",
+      "description": "Curated QuickDeploy Agent Skills exposed as MCP prompts.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/quickdeploy-skills.projection.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "agent-skills-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "agent-skills",
+            "ard-entry",
+            "projection-backed",
+            "quickdeploy",
+            "skills"
+          ]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:skills",
+          "displayName": "QuickDeploy Skills",
+          "type": "application/ai-skill+md",
+          "description": "Curated QuickDeploy Agent Skills exposed as MCP prompts.",
+          "tags": ["agent-skills", "quickdeploy", "skills"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["skill", "resource"],
+            "importMode": "skill-level"
+          },
+          "url": "git+https://github.com/QuickDeployAI/agent-skills.git#main"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:skills",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [
+              {
+                "name": "agentic-eval",
+                "globs": ["agentic-eval/**"]
+              },
+              {
+                "name": "playwright-cli",
+                "globs": ["playwright-cli/**"]
+              }
+            ],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "playwright/run",
+                "name": "browser_run",
+                "deny": false
+              },
+              {
+                "from": "browser/install-extension",
+                "deny": true,
+                "reason": "Extension installation is not safe for hosted execution."
+              }
+            ],
+            "resources": [],
+            "prompts": [
+              {
+                "from": "agentic-eval/design-eval",
+                "name": "design_agentic_eval",
+                "deny": false
+              }
+            ]
+          },
+          "auth": [],
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "workspaceRoot": {
+                "type": "string",
+                "description": "Workspace root passed to the skills runtime."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "workspaceRoot": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/wsdl-calculator",
+      "version": "0.1.0",
+      "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "manifests/wsdl-calculator.projection.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "ard-entry",
+            "fixture",
+            "projection-backed",
+            "soap",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/ard-entry": {
+          "identifier": "urn:air:quickdeploy.ai:mcp:wsdl-calculator",
+          "displayName": "WSDL Calculator Fixture",
+          "type": "application/wsdl+xml",
+          "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
+          "tags": ["wsdl", "soap", "fixture"],
+          "version": "0.1.0",
+          "metadata": {
+            "capabilityKinds": ["api-contract", "tool"],
+            "importMode": "operation-level"
+          },
+          "url": "file://packages/importers/wsdl-2-mcp/fixtures/calculator-document-literal.wsdl"
+        },
+        "ai.quickdeploy.registry/projection": {
+          "kind": "McpProjectionConfig",
+          "entryRef": "urn:air:quickdeploy.ai:mcp:wsdl-calculator",
+          "importerVersionRange": "^0.1.0",
+          "select": {
+            "requests": [
+              {
+                "method": "POST",
+                "uriTemplate": "/soap/CalculatorService/Add"
+              }
+            ],
+            "grpcMethods": [],
+            "pythonFunctions": [],
+            "skills": [],
+            "knowledgeSources": [],
+            "corpusGlobs": []
+          },
+          "expose": {
+            "tools": [
+              {
+                "from": "POST /soap/CalculatorService/Add",
+                "name": "calculator_add",
+                "deny": false
+              }
+            ],
+            "resources": [],
+            "prompts": []
+          },
+          "auth": [],
+          "config": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "description": "SOAP endpoint override for the selected service port."
+                },
+                "bindingName": {
+                  "type": "string",
+                  "description": "Optional WSDL binding name when multiple bindings are present."
+                },
+                "requestTimeoutMs": {
+                  "type": "number",
+                  "description": "Per-request SOAP timeout in milliseconds."
+                }
+              }
+            },
+            "defaults": {
+              "endpoint": "https://example.invalid/soap/calculator",
+              "requestTimeoutMs": 30000
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "endpoint": {
+                "type": "string",
+                "description": "SOAP endpoint override for hosted runtime use."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "endpoint": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.atlassian/rovo-mcp",
+      "version": "1.0.0",
+      "description": "Atlassian Rovo hosted MCP endpoint for Jira, Confluence, Jira Service Management, Bitbucket, and Compass context.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.atlassian.com/v1/mcp/authv2"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "developer-tools",
+          "isOfficial": true,
+          "tags": ["atlassian", "jira", "confluence", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Atlassian documents OAuth authorization through compatible MCP clients."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/ai-gateway-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed MCP endpoint for searching AI Gateway logs and prompt or response details.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://ai-gateway.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "observability",
+          "isOfficial": true,
+          "tags": ["cloudflare", "ai-gateway", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/api-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed MCP endpoint for broad Cloudflare API search and execution.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "cloud",
+          "isOfficial": true,
+          "tags": ["cloudflare", "api", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/browser-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed Browser Run MCP endpoint for fetching pages, screenshots, and markdown conversion.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://browser.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "browser",
+          "isOfficial": true,
+          "tags": ["cloudflare", "browser", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/docs-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed documentation MCP endpoint for current Cloudflare reference information.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://docs.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "docs",
+          "isOfficial": true,
+          "tags": ["cloudflare", "docs", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/observability-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed observability MCP endpoint for application logs and analytics.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://observability.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "observability",
+          "isOfficial": true,
+          "tags": ["cloudflare", "observability", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/workers-bindings-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed MCP endpoint for Workers bindings, storage, AI, and compute primitives.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://bindings.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "developer-tools",
+          "isOfficial": true,
+          "tags": ["cloudflare", "workers", "bindings", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.cloudflare/workers-builds-mcp",
+      "version": "1.0.0",
+      "description": "Cloudflare managed MCP endpoint for Workers Builds insight and operations.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://builds.mcp.cloudflare.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "developer-tools",
+          "isOfficial": true,
+          "tags": ["cloudflare", "workers", "builds", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.confluent/managed-mcp",
+      "version": "1.0.0",
+      "description": "Confluent Cloud managed MCP endpoints for read-only organization, connector, metrics, topic, and schema inspection.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://api.confluent.cloud/mcp/v1"
+        },
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.{region}.{cloud}.confluent.cloud/mcp/v1/organizations/{organization_id}",
+          "variables": {
+            "region": {
+              "description": "Confluent Cloud region, for example us-west-2."
+            },
+            "cloud": {
+              "description": "Confluent Cloud provider: aws, gcp, or azure."
+            },
+            "organization_id": {
+              "description": "Confluent Cloud organization ID."
+            }
+          }
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "eventing",
+          "isOfficial": true,
+          "tags": ["confluent", "kafka", "schema-registry", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "http-basic",
+          "notes": "Confluent managed MCP uses Base64-encoded API key and secret credentials in the Authorization header."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.context7/mcp",
+      "version": "1.0.0",
+      "description": "Context7 hosted MCP endpoint for up-to-date library documentation and code examples.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.context7.com/mcp",
+          "headers": [
+            {
+              "name": "CONTEXT7_API_KEY",
+              "description": "Optional Context7 API key header.",
+              "required": false,
+              "value": "${CONTEXT7_API_KEY}"
+            }
+          ]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "description": "Optional API key for Context7 higher quota or account-scoped usage.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "docs",
+          "isOfficial": true,
+          "tags": ["context7", "docs", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "optional-static-header",
+          "notes": "Context7 documents CONTEXT7_API_KEY as an optional header for API-key-backed usage."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.getdbt/platform-mcp",
+      "version": "1.0.0",
+      "description": "dbt Platform remote MCP endpoint for Semantic Layer, metadata, lineage, SQL, and Discovery API workflows.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://{dbt_host}/api/ai/v1/mcp",
+          "variables": {
+            "dbt_host": {
+              "description": "dbt platform Access URL hostname from Account settings, without https://."
+            }
+          }
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "analytics",
+          "isOfficial": true,
+          "tags": ["dbt", "semantic-layer", "analytics", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "dbt remote MCP supports OAuth when the client supports HTTP MCP OAuth, or PAT/service-token authentication for automation."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.github.copilot/mcp",
+      "version": "1.0.0",
+      "description": "GitHub Copilot hosted MCP endpoint.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://api.githubcopilot.com/mcp/"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "developer-tools",
+          "isOfficial": true,
+          "tags": ["github", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "GitHub Copilot manages the GitHub MCP server authorization in supported clients."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.hubspot/crm-mcp",
+      "version": "1.0.0",
+      "description": "HubSpot hosted CRM MCP endpoint for contacts, deals, companies, and engagement data.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.hubspot.com"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "crm",
+          "isOfficial": true,
+          "tags": ["hubspot", "crm", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "HubSpot documents OAuth 2.0 with account scopes for the remote MCP endpoint."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.linear/mcp",
+      "version": "1.0.0",
+      "description": "Linear hosted MCP endpoint.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.linear.app/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "productivity",
+          "isOfficial": true,
+          "tags": ["linear", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Linear's hosted MCP endpoint is connected by supported clients through runtime authorization."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.notion/mcp",
+      "version": "1.0.0",
+      "description": "Notion hosted MCP endpoint for secure access to Notion workspace content.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.notion.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "productivity",
+          "isOfficial": true,
+          "tags": ["notion", "workspace", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Notion documents OAuth authorization for its hosted MCP server."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.postman/mcp",
+      "version": "1.0.0",
+      "description": "Postman remote MCP server for Postman API workflow, collection, workspace, and code-generation tools.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.postman.com/mcp"
+        },
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.postman.com/minimal"
+        },
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.postman.com/code"
+        },
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.eu.postman.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "dev-platform",
+          "isOfficial": true,
+          "tags": ["postman", "api", "collections", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "US remote endpoints support OAuth or API-key bearer auth; EU remote endpoints require API-key bearer auth."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.slack/mcp",
+      "version": "1.0.0",
+      "description": "Slack hosted MCP endpoint for search, messages, canvases, and workspace users.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.slack.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "productivity",
+          "isOfficial": true,
+          "tags": ["slack", "collaboration", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Slack documents confidential OAuth for MCP clients."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.supabase/mcp",
+      "version": "1.0.0",
+      "description": "Supabase hosted remote MCP server for project, database, edge function, docs, and development-branch workflows.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.supabase.com/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "database",
+          "isOfficial": true,
+          "tags": ["supabase", "postgres", "database", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Supabase hosted MCP uses dynamic OAuth for interactive clients and Authorization bearer tokens for CI or non-interactive clients."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "com.vercel/mcp",
+      "version": "1.0.0",
+      "description": "Vercel hosted MCP endpoint for project, deployment, documentation, and log context.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.vercel.com"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "cloud",
+          "isOfficial": true,
+          "tags": ["vercel", "deployments", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Vercel documents OAuth authorization for its official remote MCP server."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.home-assistant/mcp-server",
+      "version": "1.0.0",
+      "description": "Home Assistant official MCP integration exposed from a user's Home Assistant instance for Assist API device context and control.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://{home_assistant_external_url}/api/mcp",
+          "variables": {
+            "home_assistant_external_url": {
+              "description": "Public or gateway-proxied Home Assistant base host, without https://."
+            }
+          }
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "iot",
+          "isOfficial": true,
+          "tags": ["home-assistant", "iot", "smart-home", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth-or-bearer",
+          "notes": "Home Assistant supports MCP OAuth for capable clients and long-lived access tokens for clients that need bearer authentication."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "io.sentry/mcp",
+      "version": "1.0.0",
+      "description": "Sentry hosted MCP endpoint for issue, trace, and project context.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.sentry.dev/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "observability",
+          "isOfficial": true,
+          "tags": ["sentry", "observability", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Sentry's hosted MCP endpoint requires runtime user authorization in supported clients."
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "tech.neon/mcp",
+      "version": "1.0.0",
+      "description": "Neon hosted MCP endpoint for managing Neon Postgres projects and databases.",
+      "remotes": [
+        {
+          "type": "streamable-http",
+          "url": "https://mcp.neon.tech/mcp"
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "database",
+          "isOfficial": true,
+          "tags": ["neon", "postgres", "database", "remote"]
+        },
+        "ai.quickdeploy.registry/auth": {
+          "type": "runtime-oauth",
+          "notes": "Neon documents OAuth for the managed remote MCP server."
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
+    "ai.quickdeploy.registry/sourceCount": 39
+  }
+}

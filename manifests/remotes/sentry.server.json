@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.sentry/mcp",
+  "version": "1.0.0",
+  "description": "Sentry hosted MCP endpoint for issue, trace, and project context.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.sentry.dev/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "observability",
+      "isOfficial": true,
+      "tags": ["sentry", "observability", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Sentry's hosted MCP endpoint requires runtime user authorization in supported clients."
+    }
+  }
+}

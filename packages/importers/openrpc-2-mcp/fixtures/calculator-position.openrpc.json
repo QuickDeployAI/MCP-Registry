@@ -1,0 +1,33 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "Calculator",
+    "version": "1.0.0"
+  },
+  "methods": [
+    {
+      "name": "add",
+      "paramStructure": "by-position",
+      "params": [
+        {
+          "name": "left",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "right",
+          "schema": {
+            "type": "number"
+          }
+        }
+      ],
+      "result": {
+        "name": "sum",
+        "schema": {
+          "type": "number"
+        }
+      }
+    }
+  ]
+}

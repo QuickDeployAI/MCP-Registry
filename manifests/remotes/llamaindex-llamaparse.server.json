@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.llamaindex/llamaparse-mcp",
+  "version": "1.0.0",
+  "description": "LlamaIndex LlamaParse hosted MCP endpoint for document parsing and extraction through LlamaCloud.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.llamaindex.ai/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "docs",
+      "isOfficial": true,
+      "tags": ["llamaindex", "llamaparse", "llamacloud", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "LlamaIndex documents sign-in with a LlamaCloud account on first use."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.notion/mcp",
+  "version": "1.0.0",
+  "description": "Notion hosted MCP endpoint for secure access to Notion workspace content.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.notion.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "productivity",
+      "isOfficial": true,
+      "tags": ["notion", "workspace", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Notion documents OAuth authorization for its hosted MCP server."
+    }
+  }
+}

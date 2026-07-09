@@ -1,22 +1,48 @@
 {
-  "name": "@quickdeployai/mcp-registry-cli",
-  "version": "0.0.0",
+  "name": "@quickdeployai/registry-cli",
+  "version": "0.1.0",
   "private": true,
-  "description": "Validation tools for MCP Registry release and catalog invariants",
-  "type": "module",
+  "description": "Build QuickDeploy MCP servers.json and legacy registry/index.json artifacts.",
   "bin": {
-    "registry-cli": "bin/registry-cli.mjs"
+    "registry-cli": "./src/cli.mts"
   },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint .",
-    "test": "node --test test/*.test.mjs"
+    "start": "tsx src/cli.mts",
+    "build:registry": "tsx src/cli.mts build",
+    "check:generated": "tsx src/cli.mts build --check",
+    "validate": "tsx src/cli.mts validate",
+    "registry:validate": "tsx src/cli.mts validate",
+    "validate:remotes": "tsx src/cli.mts validate-remotes",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --testTimeout=30000"
+  },
+  "dependencies": {
+    "@quickdeployai/importer-core": "workspace:*",
+    "@quickdeployai/registry-schemas": "workspace:*",
+    "yaml": "^2.9.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@quickdeployai/mcp-registry-workspace-config": "workspace:*"
+    "@quickdeployai/mcp-host": "workspace:*",
+    "@types/node": "^24.13.2",
+    "tsx": "catalog:",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
   }
 }

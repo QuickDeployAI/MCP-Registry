@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.supabase/mcp",
+  "version": "1.0.0",
+  "description": "Supabase hosted remote MCP server for project, database, edge function, docs, and development-branch workflows.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.supabase.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "database",
+      "isOfficial": true,
+      "tags": ["supabase", "postgres", "database", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Supabase hosted MCP uses dynamic OAuth for interactive clients and Authorization bearer tokens for CI or non-interactive clients."
+    }
+  }
+}

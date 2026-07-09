@@ -1,0 +1,13 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
+  "displayName": "gRPC Greeter Fixture",
+  "type": "application/protobuf",
+  "description": "Descriptor-backed gRPC unary fixture exposed through grpc-2-mcp.",
+  "tags": ["grpc", "fixture"],
+  "version": "0.1.0",
+  "url": "file://packages/importers/grpc-2-mcp/fixtures/greeter.binpb",
+  "metadata": {
+    "importMode": "operation-level",
+    "capabilityKinds": ["api-contract", "tool"]
+  }
+}

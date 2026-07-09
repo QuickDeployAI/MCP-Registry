@@ -1,0 +1,19 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:product-feed",
+  "displayName": "Product Feed",
+  "type": "application/rss+xml",
+  "description": "Release and blog feed corpus exposed through MCP.",
+  "tags": [
+    "feed",
+    "knowledge"
+  ],
+  "version": "0.2.0",
+  "url": "https://quickdeploy.ai/feed.xml",
+  "metadata": {
+    "importMode": "whole-artifact",
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ]
+  }
+}

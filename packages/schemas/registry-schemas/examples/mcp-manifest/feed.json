@@ -1,0 +1,58 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/product-feed",
+    "version": "0.2.0",
+    "title": "Product Feed",
+    "description": "Release and blog feed corpus exposed through MCP resources.",
+    "labels": ["feed", "knowledge"]
+  },
+  "spec": {
+    "importer": {
+      "engine": "knowledge-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://quickdeploy.ai/feed.xml"
+    },
+    "select": {
+      "corpusGlobs": ["/releases/**", "/blog/**"]
+    },
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refreshMinutes": {
+            "type": "number",
+            "description": "Refresh interval for the feed cache."
+          }
+        }
+      },
+      "defaults": {
+        "refreshMinutes": 30
+      }
+    },
+    "expose": {
+      "resources": [
+        {
+          "from": "feed:item",
+          "name": "product_feed_item"
+        }
+      ]
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "userConfig": {},
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "refreshMinutes": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

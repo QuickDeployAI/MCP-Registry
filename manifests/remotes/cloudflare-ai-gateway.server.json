@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.cloudflare/ai-gateway-mcp",
+  "version": "1.0.0",
+  "description": "Cloudflare managed MCP endpoint for searching AI Gateway logs and prompt or response details.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://ai-gateway.mcp.cloudflare.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "observability",
+      "isOfficial": true,
+      "tags": ["cloudflare", "ai-gateway", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+    }
+  }
+}

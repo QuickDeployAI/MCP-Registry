@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.cloudflare/api-mcp",
+  "version": "1.0.0",
+  "description": "Cloudflare managed MCP endpoint for broad Cloudflare API search and execution.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.cloudflare.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "cloud",
+      "isOfficial": true,
+      "tags": ["cloudflare", "api", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+    }
+  }
+}

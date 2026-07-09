@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.cloudflare/browser-mcp",
+  "version": "1.0.0",
+  "description": "Cloudflare managed Browser Run MCP endpoint for fetching pages, screenshots, and markdown conversion.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://browser.mcp.cloudflare.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "browser",
+      "isOfficial": true,
+      "tags": ["cloudflare", "browser", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+    }
+  }
+}

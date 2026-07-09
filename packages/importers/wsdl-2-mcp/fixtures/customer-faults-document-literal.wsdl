@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:tns="https://quickdeploy.ai/fixtures/wsdl/customer"
+  targetNamespace="https://quickdeploy.ai/fixtures/wsdl/customer"
+  name="CustomerProfileService">
+  <types>
+    <xsd:schema
+      targetNamespace="https://quickdeploy.ai/fixtures/wsdl/customer"
+      elementFormDefault="qualified">
+      <xsd:element name="GetCustomerRequest" type="tns:GetCustomerRequest"/>
+      <xsd:element name="GetCustomerResponse" type="tns:GetCustomerResponse"/>
+      <xsd:element name="CustomerNotFoundFault" type="tns:ServiceFault"/>
+      <xsd:element name="PolicyFault" type="tns:ServiceFault"/>
+
+      <xsd:complexType name="GetCustomerRequest">
+        <xsd:sequence>
+          <xsd:element name="customerId" type="xsd:string"/>
+          <xsd:element name="include" type="tns:IncludeOption" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:simpleType name="IncludeOption">
+        <xsd:restriction base="xsd:string">
+          <xsd:enumeration value="contacts"/>
+          <xsd:enumeration value="contracts"/>
+          <xsd:enumeration value="riskSignals"/>
+        </xsd:restriction>
+      </xsd:simpleType>
+
+      <xsd:complexType name="GetCustomerResponse">
+        <xsd:sequence>
+          <xsd:element name="customer" type="tns:CustomerProfile"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="CustomerProfile">
+        <xsd:sequence>
+          <xsd:element name="id" type="xsd:string"/>
+          <xsd:element name="name" type="xsd:string"/>
+          <xsd:element name="contacts" type="tns:Contact" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="Contact">
+        <xsd:sequence>
+          <xsd:element name="kind" type="xsd:string"/>
+          <xsd:element name="value" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="ServiceFault">
+        <xsd:sequence>
+          <xsd:element name="code" type="xsd:string"/>
+          <xsd:element name="message" type="xsd:string"/>
+          <xsd:element name="retryable" type="xsd:boolean"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </types>
+
+  <message name="GetCustomerInput">
+    <part name="parameters" element="tns:GetCustomerRequest"/>
+  </message>
+  <message name="GetCustomerOutput">
+    <part name="parameters" element="tns:GetCustomerResponse"/>
+  </message>
+  <message name="CustomerNotFoundFaultMessage">
+    <part name="fault" element="tns:CustomerNotFoundFault"/>
+  </message>
+  <message name="PolicyFaultMessage">
+    <part name="fault" element="tns:PolicyFault"/>
+  </message>
+
+  <portType name="CustomerProfilePortType">
+    <operation name="GetCustomer">
+      <input message="tns:GetCustomerInput"/>
+      <output message="tns:GetCustomerOutput"/>
+      <fault name="CustomerNotFoundFault" message="tns:CustomerNotFoundFaultMessage"/>
+      <fault name="PolicyFault" message="tns:PolicyFaultMessage"/>
+    </operation>
+  </portType>
+
+  <binding name="CustomerProfileSoapBinding" type="tns:CustomerProfilePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="GetCustomer">
+      <soap:operation soapAction="https://quickdeploy.ai/fixtures/wsdl/customer/GetCustomer"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="CustomerNotFoundFault">
+        <soap:fault name="CustomerNotFoundFault" use="literal"/>
+      </fault>
+      <fault name="PolicyFault">
+        <soap:fault name="PolicyFault" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+
+  <service name="CustomerProfileService">
+    <port name="CustomerProfileSoapPort" binding="tns:CustomerProfileSoapBinding">
+      <soap:address location="https://example.invalid/soap/customer-profile"/>
+    </port>
+  </service>
+</definitions>

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "tech.neon/mcp",
+  "version": "1.0.0",
+  "description": "Neon hosted MCP endpoint for managing Neon Postgres projects and databases.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.neon.tech/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "database",
+      "isOfficial": true,
+      "tags": ["neon", "postgres", "database", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Neon documents OAuth for the managed remote MCP server."
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/github-search",
+    "version": "1.0.0",
+    "title": "GitHub Search",
+    "description": "Selected GitHub REST operations exposed as MCP tools.",
+    "labels": ["openapi", "github"]
+  },
+  "spec": {
+    "importer": {
+      "engine": "openapi-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://api.github.com/openapi.json"
+    },
+    "select": {
+      "requests": [
+        {
+          "method": "get",
+          "uriTemplate": "/search/issues"
+        },
+        {
+          "method": "post",
+          "uriTemplate": "/repos/{owner}/{repo}/dispatches"
+        }
+      ]
+    },
+    "auth": [
+      {
+        "type": "bearer",
+        "valueFrom": {
+          "env": "GITHUB_TOKEN"
+        }
+      }
+    ],
+    "config": {
+      "schema": {
+        "type": "object",
+        "required": ["tenant"],
+        "properties": {
+          "tenant": {
+            "type": "string",
+            "description": "QuickDeploy tenant slug."
+          }
+        }
+      },
+      "defaults": {
+        "tenant": "demo"
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "GET /search/issues",
+          "name": "github_search_issues"
+        },
+        {
+          "from": "POST /repos/{owner}/{repo}/dispatches",
+          "name": "github_repository_dispatch"
+        }
+      ]
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "userConfig": {
+      "tenant": {
+        "type": "string",
+        "description": "QuickDeploy tenant slug."
+      }
+    },
+    "configSchema": {
+      "type": "object",
+      "required": ["tenant"],
+      "properties": {
+        "tenant": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

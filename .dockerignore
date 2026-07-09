@@ -1,0 +1,22 @@
+# Root Docker build-context excludes. Every image in this monorepo (mcp-host,
+# packages/mcp-importers/*) builds with the repo root as context so pnpm can
+# resolve workspace: dependencies; without this file the whole tree — including
+# the multi-GB node_modules — is sent to the Docker daemon on every build.
+node_modules
+**/node_modules
+.git
+.turbo
+**/.turbo
+.vite
+.cache
+dist
+**/dist
+coverage
+**/coverage
+**/*.log
+.pnpm-store
+**/.pnpm-store
+.env
+.env.*
+!.env.schema
+!.env.schema.*
