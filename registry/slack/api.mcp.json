@@ -1,0 +1,193 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/slack",
+    "version": "0.1.0",
+    "title": "Slack",
+    "description": "Generated Slack Web API read-only OpenAPI MCP catalog manifest.",
+    "labels": [
+      "generated",
+      "openapi",
+      "read-only",
+      "slack",
+      "slack-web-api"
+    ]
+  },
+  "spec": {
+    "importer": {
+      "engine": "openapi-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json",
+      "digest": "sha256:742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+      "ref": "dfea73e06d146c368d7f94b52ac90796dc4e27e1"
+    },
+    "select": {
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/auth.test"
+        },
+        {
+          "method": "GET",
+          "uriTemplate": "/team.info"
+        },
+        {
+          "method": "GET",
+          "uriTemplate": "/users.list"
+        },
+        {
+          "method": "GET",
+          "uriTemplate": "/conversations.list"
+        }
+      ],
+      "grpcMethods": [],
+      "pythonFunctions": [],
+      "skills": [],
+      "knowledgeSources": [],
+      "corpusGlobs": []
+    },
+    "auth": [
+      {
+        "type": "bearer",
+        "valueFrom": {
+          "env": "SLACK_BOT_TOKEN"
+        }
+      }
+    ],
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Slack Web API base URL."
+          },
+          "requestTimeoutMs": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Per-request upstream timeout in milliseconds."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Importer execution profile."
+          }
+        }
+      },
+      "defaults": {
+        "baseUrl": "https://slack.com/api",
+        "requestTimeoutMs": 30000,
+        "mode": "read-only"
+      },
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json",
+        "type": "http",
+        "digest": "sha256:742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+        "ref": "dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "slackapi/slack-api-specs@dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+        "notes": [
+          "Official Slack platform spec repository: https://github.com/slackapi/slack-api-specs (now archived/read-only)",
+          "Pinned source path: web-api/slack_web_openapi_v2.json (Slack Web API, Swagger/OpenAPI 2.0, spec version 1.7.0)",
+          "Pinned commit date: 2020-10-06 (October 2020 spec updates), the last commit touching this file",
+          "Verified source SHA-256: 742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+          "The committed manifest selects read-only Slack auth, team, users, and conversations list operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json for source retrieval",
+          "GET https://slack.com/api/auth.test for selected upstream operation",
+          "GET https://slack.com/api/team.info for selected upstream operation",
+          "GET https://slack.com/api/users.list for selected upstream operation",
+          "GET https://slack.com/api/conversations.list for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/slack/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/slack.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/slack/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "GET /auth.test",
+          "name": "get_slack_auth_test",
+          "deny": false
+        },
+        {
+          "from": "GET /team.info",
+          "name": "get_slack_team_info",
+          "deny": false
+        },
+        {
+          "from": "GET /users.list",
+          "name": "list_slack_users",
+          "deny": false
+        },
+        {
+          "from": "GET /conversations.list",
+          "name": "list_slack_conversations",
+          "deny": false
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  },
+  "_meta": {
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json",
+      "type": "http",
+      "digest": "sha256:742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+      "ref": "dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "slackapi/slack-api-specs@dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+      "notes": [
+        "Official Slack platform spec repository: https://github.com/slackapi/slack-api-specs (now archived/read-only)",
+        "Pinned source path: web-api/slack_web_openapi_v2.json (Slack Web API, Swagger/OpenAPI 2.0, spec version 1.7.0)",
+        "Pinned commit date: 2020-10-06 (October 2020 spec updates), the last commit touching this file",
+        "Verified source SHA-256: 742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+        "The committed manifest selects read-only Slack auth, team, users, and conversations list operations only."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json for source retrieval",
+        "GET https://slack.com/api/auth.test for selected upstream operation",
+        "GET https://slack.com/api/team.info for selected upstream operation",
+        "GET https://slack.com/api/users.list for selected upstream operation",
+        "GET https://slack.com/api/conversations.list for selected upstream operation"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/slack/api.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/openapi/slack.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/openapi/slack/"
+      ],
+      "process": [
+        "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+        "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  }
+}
