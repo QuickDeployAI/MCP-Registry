@@ -21,6 +21,35 @@ Package descriptors under `packages/**` and throwaway implementations are not
 catalog sources. `registry/index.json` is generated as a local source index and
 ignored by Git; `servers.json` is the committed generated MCP catalog.
 
+## Generated MCP workspace
+
+Provider catalog work is generated from committed manifest intent, then tested,
+then materialized as an ignored project:
+
+- Manifest: `registry/<provider>/<capability>.mcp.json`
+- Generated tests:
+  `packages/tools/registry-cli/test/generated/<family>/<provider>.test.ts`
+- Codegen project: `.generated/mcp-codegen/<family>/<provider>/`
+- Shared codegen tooling: `packages/tools/registry-cli/src/codegen/`
+
+`servers.json` and `registry/index.json` are generated outputs from the
+committed registry sources. `registry/index.json` and `.generated/` stay ignored
+by Git; provider codegen projects are disposable and must not be tracked.
+
+Names are deterministic and provider-safe:
+
+- `<provider>` is a lowercase kebab-case slug derived from the provider name,
+  with unsupported filesystem characters removed or collapsed to one hyphen.
+- `<family>` is the importer family without the `-2-mcp` suffix: `openapi`,
+  `asyncapi`, `grpc`, `wsdl`, or `feed`.
+- `<capability>` is the exposed surface, for example `api`, `feed`, `events`,
+  `proto`, or `wsdl`.
+
+Generated provider code must never run directly on the host. Build and test
+steps for `.generated/mcp-codegen/<family>/<provider>/` must use the repo
+sandbox harness with NVIDIA OpenShell as the MXC-backed runtime and fail closed
+when MXC or OpenShell is unavailable.
+
 Manifest-backed entries are compiled by applying the `McpManifest` selection,
 auth, config, expose, and deployment settings to the shared `mcp-host` runtime.
 Manifest config is validated against the referenced importer's registered

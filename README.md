@@ -50,6 +50,31 @@ index and is intentionally ignored by Git. `servers.json` is the generated
 machine-readable MCP catalog
 (`https://raw.githubusercontent.com/QuickDeployAI/MCP-Registry/main/servers.json`).
 
+## Generated MCP Conventions
+
+Generated MCP catalog work follows a manifest-first layout so provider issues
+write to deterministic locations:
+
+- Committed manifests live at `registry/<provider>/<capability>.mcp.json`.
+- Committed generated tests live at
+  `packages/tools/registry-cli/test/generated/<family>/<provider>.test.ts`.
+- Generated provider projects live at
+  `.generated/mcp-codegen/<family>/<provider>/` and are ignored by Git.
+- Shared generation tooling lives under
+  `packages/tools/registry-cli/src/codegen/`.
+
+Use provider slugs that are lowercase, kebab-cased, and filesystem-safe. Use
+family slugs matching the importer family without the `-2-mcp` suffix:
+`openapi`, `asyncapi`, `grpc`, `wsdl`, or `feed`. Capability file names should
+name the exposed surface, such as `api.mcp.json`, `feed.mcp.json`,
+`events.mcp.json`, `proto.mcp.json`, or `wsdl.mcp.json`.
+
+Generated provider projects are throwaway build artifacts. Do not commit files
+from `.generated/`, and do not execute generated provider code directly on the
+host. Generated build/test execution must go through the repo sandbox harness
+using NVIDIA OpenShell as the MXC-backed runtime, and must fail closed if that
+runtime is unavailable.
+
 ## Adding a server
 
 1. Add a provider folder under `registry/` if one does not already exist.
