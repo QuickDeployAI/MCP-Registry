@@ -136,6 +136,178 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/google-news-rss",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for Google News RSS.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/google-news-rss/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "generated",
+            "google-news-rss",
+            "manifest-backed",
+            "news",
+            "rss"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/google-news-rss",
+            "version": "0.1.0",
+            "title": "Google News RSS",
+            "description": "Generated feed-2-mcp MCP manifest for Google News RSS.",
+            "labels": [
+              "feed",
+              "generated",
+              "google-news-rss",
+              "news",
+              "rss"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/news/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number"
+                  },
+                  "maxItems": {
+                    "type": "number"
+                  },
+                  "includeContent": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 15,
+                "maxItems": 50,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "Official, unauthenticated, publicly reachable Google News top-stories RSS feed for the en-US/US edition (hl=en-US&gl=US&ceid=US:en). Verified live by direct fetch: valid RSS 2.0 document, root element <rss version=\"2.0\">, containing top-story items with title, link, and source sub-elements.",
+                  "No content digest is pinned: this is a live, continuously-updated feed (not a static document), so a fixed SHA-256 of the feed body would go stale immediately and would not meaningfully verify provenance. retrievedAt/sourceVersion record when and how the endpoint was verified instead.",
+                  "The hl/gl/ceid query parameters select language/region/edition; en-US/US is the default edition pinned for this catalog entry."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en for feed retrieval (source-uri)"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/google-news-rss/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/google-news-rss.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/google-news-rss/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_google_news_rss_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "google_news_rss_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "Official, unauthenticated, publicly reachable Google News top-stories RSS feed for the en-US/US edition (hl=en-US&gl=US&ceid=US:en). Verified live by direct fetch: valid RSS 2.0 document, root element <rss version=\"2.0\">, containing top-story items with title, link, and source sub-elements.",
+                "No content digest is pinned: this is a live, continuously-updated feed (not a static document), so a fixed SHA-256 of the feed body would go stale immediately and would not meaningfully verify provenance. retrievedAt/sourceVersion record when and how the endpoint was verified instead.",
+                "The hl/gl/ceid query parameters select language/region/edition; en-US/US is the default edition pinned for this catalog entry."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en for feed retrieval (source-uri)"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/google-news-rss/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/google-news-rss.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/google-news-rss/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/google-workspace",
       "version": "0.1.0",
       "description": "Generated Google Workspace Drive read-only MCP catalog manifest.",
@@ -2804,6 +2976,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 37
+    "ai.quickdeploy.registry/sourceCount": 38
   }
 }
