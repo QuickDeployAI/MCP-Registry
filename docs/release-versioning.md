@@ -7,8 +7,8 @@ server or importer release must update the package version, `server.json`, and
 
 ## Release Flow
 
-1. Add a changeset for each public package under `packages/mcp-importers/*` or
-   `packages/mcps/*`.
+1. Add a changeset for each public package under `packages/importers/*`,
+   `packages/runtime/*`, or `packages/tools/*`.
 2. Run `pnpm version:packages` to apply changesets and then validate registry
    version sync.
 3. Update the matching `server.json` in the same PR when a package version
@@ -29,7 +29,7 @@ publishing new workspace-owned packages.
 Legacy servers under `servers/*` are not workspace packages yet, but they are
 still validated. Their local `package.json`, `server.json`, and
 `registry/index.json` versions must stay identical until those packages migrate
-to `packages/mcps/*`.
+to package workspaces.
 
 ## OCI Images
 

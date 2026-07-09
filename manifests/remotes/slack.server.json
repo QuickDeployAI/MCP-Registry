@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.slack/mcp",
+  "version": "1.0.0",
+  "description": "Slack hosted MCP endpoint for search, messages, canvases, and workspace users.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.slack.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "productivity",
+      "isOfficial": true,
+      "tags": ["slack", "collaboration", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Slack documents confidential OAuth for MCP clients."
+    }
+  }
+}

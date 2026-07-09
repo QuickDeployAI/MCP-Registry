@@ -1,0 +1,42 @@
+apiVersion: quickdeploy.ai/v1
+kind: McpManifest
+metadata:
+  name: ai.quickdeploy/git-fixture
+  version: 1.0.0
+  title: Git Fixture
+  description: Selected Python functions exposed as MCP tools.
+  labels:
+    - git
+    - python
+spec:
+  importer:
+    engine: git-2-mcp
+    versionRange: ^0.1.0
+  source:
+    type: git
+    uri: git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567
+  select:
+    pythonFunctions:
+      - qdai_git_fixture.add
+      - qdai_git_fixture.slugify
+  config:
+    schema:
+      type: object
+      properties:
+        packageRoot:
+          type: string
+          description: Materialized checkout path for the pinned git source.
+  expose:
+    tools:
+      - from: qdai_git_fixture.add
+        name: fixture_add
+      - from: qdai_git_fixture.slugify
+        name: fixture_slugify
+deployment:
+  transport: stdio
+  auth:
+    type: none
+  userConfig:
+    packageRoot:
+      type: string
+      description: Materialized checkout path for the pinned git source.

@@ -1,0 +1,51 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "Petstore JSON-RPC",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "name": "main",
+      "url": "https://rpc.example.test"
+    }
+  ],
+  "methods": [
+    {
+      "name": "pets.get",
+      "summary": "Get a pet",
+      "paramStructure": "by-name",
+      "params": [
+        {
+          "name": "petId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "pet",
+        "schema": {
+          "$ref": "#/components/schemas/Pet"
+        }
+      }
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

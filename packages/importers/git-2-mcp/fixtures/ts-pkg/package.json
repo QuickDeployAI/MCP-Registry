@@ -1,0 +1,8 @@
+{
+  "name": "@quickdeployai/git-2-mcp-ts-fixture",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

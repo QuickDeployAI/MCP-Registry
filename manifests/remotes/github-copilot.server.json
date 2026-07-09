@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.github.copilot/mcp",
+  "version": "1.0.0",
+  "description": "GitHub Copilot hosted MCP endpoint.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "developer-tools",
+      "isOfficial": true,
+      "tags": ["github", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "GitHub Copilot manages the GitHub MCP server authorization in supported clients."
+    }
+  }
+}

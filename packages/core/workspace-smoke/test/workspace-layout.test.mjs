@@ -8,8 +8,9 @@ test("workspace package lanes are declared", async () => {
 
   for (const lane of [
     "packages/core/*",
-    "packages/mcp-importers/*",
-    "packages/mcps/*",
+    "packages/importers/*",
+    "packages/runtime/*",
+    "packages/schemas/*",
     "packages/tools/*",
   ]) {
     assert.match(workspace, new RegExp(`- ${lane.replace("*", "\\*")}`));

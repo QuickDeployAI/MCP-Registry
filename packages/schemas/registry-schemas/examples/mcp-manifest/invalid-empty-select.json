@@ -1,0 +1,22 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/empty-select",
+    "version": "1.0.0"
+  },
+  "spec": {
+    "importer": {
+      "engine": "openapi-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://api.example.com/openapi.json"
+    },
+    "select": {}
+  },
+  "deployment": {
+    "transport": "streamable-http"
+  }
+}

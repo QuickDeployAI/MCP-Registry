@@ -1,0 +1,37 @@
+{
+  "name": "@quickdeployai/arazzo-2-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Arazzo workflow artifact importer utilities for QuickDeployAI derived workflow capabilities.",
+  "files": [
+    "src",
+    "fixtures",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@quickdeployai/registry-schemas": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

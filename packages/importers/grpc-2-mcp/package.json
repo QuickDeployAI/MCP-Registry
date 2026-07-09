@@ -1,0 +1,43 @@
+{
+  "name": "@quickdeployai/grpc-2-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "gRPC unary runtime proxy MCP importer for descriptor-backed services.",
+  "bin": {
+    "grpc-2-mcp": "./src/bin.mts"
+  },
+  "files": [
+    "src",
+    "fixtures",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.12.0",
+    "@grpc/grpc-js": "catalog:",
+    "@grpc/proto-loader": "catalog:",
+    "@quickdeployai/importer-core": "workspace:*",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

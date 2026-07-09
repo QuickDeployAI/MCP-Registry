@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:types="https://quickdeploy.ai/fixtures/wsdl/calculator/types"
+  xmlns:tns="https://quickdeploy.ai/fixtures/wsdl/calculator"
+  targetNamespace="https://quickdeploy.ai/fixtures/wsdl/calculator"
+  name="CalculatorService">
+  <types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import
+        namespace="https://quickdeploy.ai/fixtures/wsdl/calculator/types"
+        schemaLocation="calculator-types.xsd"/>
+    </xsd:schema>
+  </types>
+
+  <message name="AddInput">
+    <part name="parameters" element="types:AddRequest"/>
+  </message>
+  <message name="AddOutput">
+    <part name="parameters" element="types:AddResponse"/>
+  </message>
+  <message name="CalculationFaultMessage">
+    <part name="fault" element="types:CalculationFault"/>
+  </message>
+
+  <portType name="CalculatorPortType">
+    <operation name="Add">
+      <documentation>Add two integers and return the sum.</documentation>
+      <input message="tns:AddInput"/>
+      <output message="tns:AddOutput"/>
+      <fault name="CalculationFault" message="tns:CalculationFaultMessage"/>
+    </operation>
+  </portType>
+
+  <binding name="CalculatorSoapBinding" type="tns:CalculatorPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="Add">
+      <soap:operation soapAction="https://quickdeploy.ai/fixtures/wsdl/calculator/Add"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="CalculationFault">
+        <soap:fault name="CalculationFault" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+
+  <service name="CalculatorService">
+    <port name="CalculatorSoapPort" binding="tns:CalculatorSoapBinding">
+      <soap:address location="https://example.invalid/soap/calculator"/>
+    </port>
+  </service>
+</definitions>

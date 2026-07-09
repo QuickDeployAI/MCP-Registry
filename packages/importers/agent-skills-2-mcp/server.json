@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/agent-skills-2-mcp",
+  "version": "0.1.0",
+  "description": "QuickDeploy Agent Skills importer for exposing SKILL.md prompts, resources, and allowlisted script tools over MCP.",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@quickdeployai/agent-skills-2-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "node",
+      "transport": "stdio"
+    },
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/quickdeployai/agent-skills-2-mcp@sha256:b9d83df5a250128413dad70fedd907d4a4ab526aad198f2e394e7d6c496dc04c",
+      "version": "0.1.0",
+      "runtimeHint": "container",
+      "transport": "stdio"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "agent-skills-2-mcp",
+      "isOfficial": true,
+      "tags": ["agent-skills", "importer", "mcp"]
+    }
+  }
+}

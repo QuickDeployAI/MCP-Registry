@@ -3,6 +3,57 @@ export type CredentialSource =
   | { readonly valueFrom: { readonly env: string } }
   | { readonly value: string };
 
+export class ImporterConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ImporterConfigError";
+  }
+}
+
+export type EnvCredentialSource = {
+  env: string;
+};
+
+export type SecuritySchemeBinding = {
+  securityScheme?: string;
+};
+
+export type CredentialPlacement = "header" | "query" | "cookie";
+
+export type BearerCredential = SecuritySchemeBinding & {
+  type: "bearer";
+  valueFrom: EnvCredentialSource;
+};
+
+export type OAuth2Credential = SecuritySchemeBinding & {
+  type: "oauth2";
+  valueFrom: EnvCredentialSource;
+};
+
+export type BasicCredential = SecuritySchemeBinding & {
+  type: "basic";
+  valueFrom: EnvCredentialSource;
+};
+
+export type ApiKeyCredential = SecuritySchemeBinding & {
+  type: "api-key";
+  valueFrom: EnvCredentialSource;
+  name: string;
+  in: CredentialPlacement;
+};
+
+export type ResolvedCredential =
+  | (BearerCredential & { value: string })
+  | (OAuth2Credential & { value: string })
+  | (BasicCredential & { value: string })
+  | (ApiKeyCredential & { value: string });
+
+export type CredentialRequestPatch = {
+  headers: Record<string, string>;
+  query: Record<string, string>;
+  cookies: Record<string, string>;
+};
+
 export type BearerAuthConfig = {
   readonly type: "bearer";
   readonly token: CredentialSource;
@@ -70,6 +121,18 @@ export function resolveCredential(
   return value;
 }
 
+export function readEnvCredential<
+  T extends BearerCredential | OAuth2Credential | BasicCredential | ApiKeyCredential,
+>(credential: T, env: NodeJS.ProcessEnv = process.env): T & { value: string } {
+  const value = env[credential.valueFrom.env];
+  if (!value) {
+    throw new ImporterConfigError(
+      `Missing required auth environment variable ${credential.valueFrom.env} for ${credential.type} auth.`,
+    );
+  }
+  return { ...credential, value };
+}
+
 export function applyCredentialAuth(
   configs: readonly CredentialAuthConfig[],
   env: NodeJS.ProcessEnv = process.env,
@@ -114,6 +177,26 @@ export function applyCredentialAuth(
   };
 }
 
+export function applyCredentialToRequest(credential: ResolvedCredential): CredentialRequestPatch {
+  switch (credential.type) {
+    case "bearer":
+    case "oauth2":
+      return {
+        headers: { Authorization: `Bearer ${credential.value}` },
+        query: {},
+        cookies: {},
+      };
+    case "basic":
+      return {
+        headers: { Authorization: `Basic ${Buffer.from(credential.value).toString("base64")}` },
+        query: {},
+        cookies: {},
+      };
+    case "api-key":
+      return applyApiKeyCredential(credential);
+  }
+}
+
 export function authEnvironmentVariables(
   configs: readonly CredentialAuthConfig[],
 ): AuthEnvironmentVariable[] {
@@ -131,12 +214,17 @@ export function authEnvironmentVariables(
 
 export function redactCredentialValues(
   text: string,
-  configs: readonly CredentialAuthConfig[],
+  configs: readonly CredentialAuthConfig[] | readonly ResolvedCredential[],
   env: NodeJS.ProcessEnv = process.env,
 ): string {
   let redacted = text;
   for (const config of configs) {
-    for (const [source] of credentialDescriptions(config)) {
+    if ("value" in config && typeof config.value === "string") {
+      if (config.value) redacted = redacted.split(config.value).join("[REDACTED]");
+      continue;
+    }
+
+    for (const [source] of credentialDescriptions(config as CredentialAuthConfig)) {
       try {
         const value = resolveCredential(source, env);
         if (value) redacted = redacted.split(value).join("[REDACTED]");
@@ -146,6 +234,19 @@ export function redactCredentialValues(
     }
   }
   return redacted;
+}
+
+function applyApiKeyCredential(
+  credential: ApiKeyCredential & { value: string },
+): CredentialRequestPatch {
+  switch (credential.in) {
+    case "header":
+      return { headers: { [credential.name]: credential.value }, query: {}, cookies: {} };
+    case "query":
+      return { headers: {}, query: { [credential.name]: credential.value }, cookies: {} };
+    case "cookie":
+      return { headers: {}, query: {}, cookies: { [credential.name]: credential.value } };
+  }
 }
 
 function headersToMetadata(headers: Record<string, string>): Record<string, string> {

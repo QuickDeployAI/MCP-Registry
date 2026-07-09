@@ -1,0 +1,52 @@
+{
+  "name": "@quickdeployai/asyncapi-2-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AsyncAPI v3 MCP importer utilities for Kafka- and MQTT-backed send and receive operations.",
+  "bin": {
+    "asyncapi-2-mcp": "./src/bin.mts"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./kafka": {
+      "types": "./src/kafka.ts",
+      "import": "./src/kafka.ts",
+      "default": "./src/kafka.ts"
+    },
+    "./mqtt": {
+      "types": "./src/mqtt.ts",
+      "import": "./src/mqtt.ts",
+      "default": "./src/mqtt.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --testTimeout=30000"
+  },
+  "dependencies": {
+    "@asyncapi/parser": "^3.6.0",
+    "ajv": "^8.20.0",
+    "commander": "^14.0.3",
+    "kafkajs": "^2.2.4",
+    "mqtt": "^5.10.4",
+    "tsx": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.postman/mcp",
+  "version": "1.0.0",
+  "description": "Postman remote MCP server for Postman API workflow, collection, workspace, and code-generation tools.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.postman.com/mcp"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.postman.com/minimal"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.postman.com/code"
+    },
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.eu.postman.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "dev-platform",
+      "isOfficial": true,
+      "tags": ["postman", "api", "collections", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "US remote endpoints support OAuth or API-key bearer auth; EU remote endpoints require API-key bearer auth."
+    }
+  }
+}

@@ -1,3 +1,3 @@
 export function workspacePackageKinds(): readonly string[] {
-  return ["core", "mcp-importers", "mcps", "tools"] as const;
+  return ["core", "importers", "runtime", "schemas", "tools"] as const;
 }

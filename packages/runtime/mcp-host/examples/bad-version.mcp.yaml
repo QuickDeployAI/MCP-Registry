@@ -1,0 +1,19 @@
+apiVersion: quickdeploy.ai/v1
+kind: McpManifest
+metadata:
+  name: ai.quickdeploy/petstore
+  version: 1.0.0
+spec:
+  importer:
+    engine: openapi-2-mcp
+    versionRange: ^9.0.0
+  source:
+    type: http
+    uri: https://petstore3.swagger.io/api/v3/openapi.json
+  select:
+    requests:
+      - method: get
+        uriTemplate: /pet/{petId}
+deployment:
+  transport: streamable-http
+  userConfig: {}

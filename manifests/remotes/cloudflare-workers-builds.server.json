@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.cloudflare/workers-builds-mcp",
+  "version": "1.0.0",
+  "description": "Cloudflare managed MCP endpoint for Workers Builds insight and operations.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://builds.mcp.cloudflare.com/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "developer-tools",
+      "isOfficial": true,
+      "tags": ["cloudflare", "workers", "builds", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "Cloudflare supports OAuth in clients and account API tokens for automation."
+    }
+  }
+}

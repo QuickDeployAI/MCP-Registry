@@ -5,7 +5,22 @@
   "description": "Shared runtime helpers for QuickDeployAI MCP importers",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "default": "./dist/auth.js"
+    },
+    "./bindings": {
+      "types": "./dist/bindings.d.ts",
+      "default": "./dist/bindings.js"
+    },
+    "./json-rpc": {
+      "types": "./dist/json-rpc.d.ts",
+      "default": "./dist/json-rpc.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -16,6 +31,7 @@
   "devDependencies": {
     "@quickdeployai/mcp-registry-workspace-config": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

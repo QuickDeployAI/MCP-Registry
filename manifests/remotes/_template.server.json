@@ -1,0 +1,43 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.example/hosted-mcp",
+  "version": "1.0.0",
+  "description": "Example provider-hosted MCP endpoint for remote-ref authoring.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.example.com/{tenant_id}/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer ${EXAMPLE_MCP_API_TOKEN}",
+          "isSecret": true
+        }
+      ],
+      "variables": {
+        "tenant_id": {
+          "description": "Provider tenant slug or account id used in the hosted MCP URL.",
+          "required": true
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "example",
+      "isOfficial": true,
+      "tags": ["example", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "static-bearer",
+      "notes": "Use static headers only for provider-documented API tokens. Runtime OAuth should be discovered by the MCP client and documented here instead of encoded as a static secret."
+    },
+    "ai.quickdeploy.registry/review": {
+      "providerOwnedEndpoint": true,
+      "termsReviewed": false,
+      "stabilityReviewed": false,
+      "notes": "Replace this template with provider-specific endpoint, auth, ToS, and stability evidence before publishing."
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "info": {
+    "name": "Postman Petstore",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://petstore.example/v1"
+    },
+    {
+      "key": "defaultStatus",
+      "value": "available"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{petstoreApiToken}}"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Get pet",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/pets/:petId?status={{defaultStatus}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["pets", ":petId"],
+          "query": [
+            {
+              "key": "status",
+              "value": "{{defaultStatus}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create pet",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/pets",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Biscuit\",\"tags\":[\"demo\"],\"available\":true}"
+        },
+        "auth": {
+          "type": "apikey",
+          "apikey": [
+            {
+              "key": "key",
+              "value": "x-api-key"
+            },
+            {
+              "key": "value",
+              "value": "{{petstoreApiKey}}"
+            },
+            {
+              "key": "in",
+              "value": "header"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

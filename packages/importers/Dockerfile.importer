@@ -1,0 +1,86 @@
+# Shared multi-stage Dockerfile template for packages/importers/*.
+#
+# One template, one image per importer: which package gets built is selected
+# entirely by the PACKAGE build arg. Build from the repository root (pnpm needs
+# the workspace lockfile + manifests to resolve workspace:* dependencies):
+#
+#   docker build -f packages/importers/Dockerfile.importer \
+#     --build-arg PACKAGE=openapi-2-mcp \
+#     -t ghcr.io/quickdeployai/openapi-2-mcp:dev .
+#
+# Publish tags should be promoted by digest, matching the convention already
+# used by packages/runtime/mcp-host/Dockerfile and packages/tools/registry-cli's
+# `bake` command (see packages/tools/registry-cli/src/registry-build.ts,
+# compileBakedManifestToServerJson):
+#
+#   ghcr.io/quickdeployai/<package>@sha256:<digest>
+#
+# Runtime resolution (see docker-entrypoint.sh): if the package ships a
+# compiled dist/index.js (built here via its own "build" script, e.g.
+# agent-skills-2-mcp's `tsc`), that's what runs. Most importers today are
+# TS-source-only libraries (package.json "exports" point at ./src/*.ts,
+# tsconfig has "noEmit": true) consumed at the runtime boundary the same way
+# packages/runtime/mcp-host runs its own CLI via tsx, so the entrypoint falls back
+# to `node --import tsx src/index.ts` when there is nothing to compile.
+#
+# See packages/importers/README.md for how a new importer adopts this.
+
+FROM node:22-slim AS build
+ARG PACKAGE
+RUN if [ -z "$PACKAGE" ]; then \
+      echo "PACKAGE build arg is required, e.g. --build-arg PACKAGE=openapi-2-mcp" >&2; \
+      exit 1; \
+    fi
+RUN corepack enable
+WORKDIR /repo
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
+# Shared workspace libraries importers may depend on (small: core is ~80KB,
+# registry-schemas ~280KB) — copied unconditionally so the template stays
+# generic across importers with different workspace dependency graphs.
+COPY packages/core ./packages/core
+COPY packages/schemas/registry-schemas ./packages/schemas/registry-schemas
+COPY packages/importers/package.json ./packages/importers/package.json
+COPY packages/importers/${PACKAGE} ./packages/importers/${PACKAGE}
+
+# --ignore-scripts avoids wiring repo hooks inside the container build context.
+RUN pnpm install --frozen-lockfile --ignore-scripts --filter "@quickdeployai/${PACKAGE}..."
+RUN echo "inject-workspace-packages=true" >> .npmrc
+# Compiles packages that have a real "build" script (e.g. agent-skills-2-mcp's
+# tsc); a no-op for TS-source-only importers that don't define one. (pnpm's
+# own `--if-present` still hard-fails under --filter when no package in the
+# selection has the script at all, so the check is done explicitly here.)
+RUN if node -e "process.exit(require('./packages/importers/${PACKAGE}/package.json').scripts?.build ? 0 : 1)"; then \
+      pnpm --filter "@quickdeployai/${PACKAGE}" run build; \
+    else \
+      echo "@quickdeployai/${PACKAGE} has no build script; running TS source via tsx at runtime instead"; \
+    fi
+RUN pnpm --filter "@quickdeployai/${PACKAGE}" deploy --prod --ignore-scripts /out
+
+# tsx is not guaranteed to be a production dependency of every importer (most
+# ship TS source only, the same execution model packages/runtime/mcp-host uses
+# for its own CLI). Node's ESM loader resolves `--import tsx` relative to the running
+# package, not a global install path, so tsx is provisioned into its own
+# throwaway node_modules here and merged into the runtime image afterwards —
+# installing straight into the deployed /out tree instead would make npm try
+# to re-run other packages' lifecycle scripts against a --prod tree that had
+# their devDependencies pruned (e.g. openapi-types' "prepare": "tsc").
+FROM node:22-slim AS tsx-runtime
+WORKDIR /tsx
+RUN npm init --yes >/dev/null && npm install tsx@4 --no-save --ignore-scripts
+
+FROM node:22-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY --from=build /out ./
+# pnpm deploy can leave a package-local node_modules/tsx entry for importers
+# that already declare tsx. Replace that entry with the full runtime install
+# so Docker does not try to copy a directory over a symlink or file.
+RUN rm -rf ./node_modules/tsx
+COPY --from=tsx-runtime /tsx/node_modules ./node_modules
+COPY packages/importers/docker-entrypoint.sh /usr/local/bin/mcp-importer-entrypoint
+RUN chmod +x /usr/local/bin/mcp-importer-entrypoint
+
+USER node
+ENTRYPOINT ["/usr/local/bin/mcp-importer-entrypoint"]

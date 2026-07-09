@@ -16,10 +16,12 @@ Workspace package lanes:
 
 - `packages/core/*` — shared libraries and workspace config used by importers
   and registry tools.
-- `packages/mcp-importers/*` — converters that turn external API or content
+- `packages/importers/*` — converters that turn external API or content
   shapes into MCP packages.
-- `packages/mcps/*` — first-party MCP server packages after they migrate out of
-  the legacy `servers/` tree.
+- `packages/runtime/*` — shared runtime services for generated and baked MCP
+  packages.
+- `packages/schemas/*` — registry and ARD schemas shared by the repo and the
+  marketplace.
 - `packages/tools/*` — repo-local CLIs and validation tools.
 
 Common workspace commands:
@@ -33,8 +35,8 @@ pnpm test
 pnpm check
 ```
 
-The placeholder package at `packages/core/workspace-smoke` keeps the initial
-Turbo pipeline executable while the importer and MCP package migrations land.
+The placeholder package at `packages/core/workspace-smoke` keeps the Turbo
+pipeline checking the expected workspace layout.
 
 ## Legacy Server Layout
 

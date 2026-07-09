@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.hubspot/crm-mcp",
+  "version": "1.0.0",
+  "description": "HubSpot hosted CRM MCP endpoint for contacts, deals, companies, and engagement data.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.hubspot.com"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "crm",
+      "isOfficial": true,
+      "tags": ["hubspot", "crm", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "HubSpot documents OAuth 2.0 with account scopes for the remote MCP endpoint."
+    }
+  }
+}

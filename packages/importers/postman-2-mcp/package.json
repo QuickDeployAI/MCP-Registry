@@ -1,0 +1,33 @@
+{
+  "name": "@quickdeployai/postman-2-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Postman Collection to MCP shim importer utilities over an OpenAPI contract.",
+  "files": [
+    "src",
+    "fixtures",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

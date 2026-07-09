@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.vercel/mcp",
+  "version": "1.0.0",
+  "description": "Vercel hosted MCP endpoint for project, deployment, documentation, and log context.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.vercel.com"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "cloud",
+      "isOfficial": true,
+      "tags": ["vercel", "deployments", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Vercel documents OAuth authorization for its official remote MCP server."
+    }
+  }
+}

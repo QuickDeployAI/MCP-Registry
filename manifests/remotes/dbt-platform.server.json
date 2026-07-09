@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.getdbt/platform-mcp",
+  "version": "1.0.0",
+  "description": "dbt Platform remote MCP endpoint for Semantic Layer, metadata, lineage, SQL, and Discovery API workflows.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://{dbt_host}/api/ai/v1/mcp",
+      "variables": {
+        "dbt_host": {
+          "description": "dbt platform Access URL hostname from Account settings, without https://."
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "analytics",
+      "isOfficial": true,
+      "tags": ["dbt", "semantic-layer", "analytics", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth-or-bearer",
+      "notes": "dbt remote MCP supports OAuth when the client supports HTTP MCP OAuth, or PAT/service-token authentication for automation."
+    }
+  }
+}

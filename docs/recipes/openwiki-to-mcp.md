@@ -94,7 +94,7 @@ from.
 ## Example manifest
 
 A worked example lives at
-[`packages/mcp-importers/knowledge-2-mcp/examples/openwiki.manifest.yaml`](../../packages/mcp-importers/knowledge-2-mcp/examples/openwiki.manifest.yaml).
+[`packages/importers/knowledge-2-mcp/examples/openwiki.manifest.yaml`](../../packages/importers/knowledge-2-mcp/examples/openwiki.manifest.yaml).
 
 > **Status note:** the MCP Manifest v1 format and its `mcp-host` runtime
 > (tracked under the "MCP Manifest Spec & Runtime Host" project) do not yet

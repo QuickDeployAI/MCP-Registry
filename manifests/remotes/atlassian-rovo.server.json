@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.atlassian/rovo-mcp",
+  "version": "1.0.0",
+  "description": "Atlassian Rovo hosted MCP endpoint for Jira, Confluence, Jira Service Management, Bitbucket, and Compass context.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.atlassian.com/v1/mcp/authv2"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "developer-tools",
+      "isOfficial": true,
+      "tags": ["atlassian", "jira", "confluence", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Atlassian documents OAuth authorization through compatible MCP clients."
+    }
+  }
+}
