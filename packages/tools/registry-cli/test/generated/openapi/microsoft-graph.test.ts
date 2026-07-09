@@ -1,0 +1,216 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "openapi",
+  provider: "microsoft-graph",
+  manifestPath: "registry/microsoft-graph/api.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/microsoft-graph",
+      "version": "0.1.0",
+      "title": "Microsoft Graph",
+      "description": "Generated Microsoft Graph read-only OpenAPI MCP catalog manifest.",
+      "labels": [
+        "generated",
+        "microsoft-365",
+        "microsoft-graph",
+        "openapi",
+        "read-only"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "openapi-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml",
+        "digest": "sha256:4c42be96a6d221bc45cde94fbdcd0b92b4c486426d69b3d90359f69c77ac5eaf",
+        "ref": "c60e1f8a558818cbafef1103602b55ec4aa11fb9"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "GET",
+            "uriTemplate": "/me"
+          },
+          {
+            "method": "GET",
+            "uriTemplate": "/me/messages"
+          },
+          {
+            "method": "GET",
+            "uriTemplate": "/me/drive/root/children"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "bearer",
+          "valueFrom": {
+            "env": "MICROSOFT_GRAPH_ACCESS_TOKEN"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Microsoft Graph v1.0 API base URL."
+            },
+            "requestTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-request upstream timeout in milliseconds."
+            },
+            "mode": {
+              "type": "string",
+              "description": "Importer execution profile."
+            }
+          }
+        },
+        "defaults": {
+          "baseUrl": "https://graph.microsoft.com/v1.0",
+          "requestTimeoutMs": 30000,
+          "mode": "read-only"
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml",
+          "type": "http",
+          "digest": "sha256:4c42be96a6d221bc45cde94fbdcd0b92b4c486426d69b3d90359f69c77ac5eaf",
+          "ref": "c60e1f8a558818cbafef1103602b55ec4aa11fb9",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "microsoftgraph/msgraph-metadata@c60e1f8a558818cbafef1103602b55ec4aa11fb9",
+          "notes": [
+            "Official Microsoft Graph metadata repository: https://github.com/microsoftgraph/msgraph-metadata",
+            "Pinned source path: openapi/v1.0/openapi.yaml",
+            "Pinned commit date: 2026-07-07T20:36:10Z",
+            "Verified source SHA-256: 4c42be96a6d221bc45cde94fbdcd0b92b4c486426d69b3d90359f69c77ac5eaf",
+            "The committed manifest selects read-only v1.0 Microsoft Graph operations only."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml for source retrieval",
+            "GET https://graph.microsoft.com/v1.0/me for selected upstream operation",
+            "GET https://graph.microsoft.com/v1.0/me/messages for selected upstream operation",
+            "GET https://graph.microsoft.com/v1.0/me/drive/root/children for selected upstream operation"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/microsoft-graph/api.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/openapi/microsoft-graph.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/openapi/microsoft-graph/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "GET /me",
+            "name": "get_current_user_profile",
+            "deny": false
+          },
+          {
+            "from": "GET /me/messages",
+            "name": "list_current_user_messages",
+            "deny": false
+          },
+          {
+            "from": "GET /me/drive/root/children",
+            "name": "list_current_user_drive_root_children",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml",
+        "type": "http",
+        "digest": "sha256:4c42be96a6d221bc45cde94fbdcd0b92b4c486426d69b3d90359f69c77ac5eaf",
+        "ref": "c60e1f8a558818cbafef1103602b55ec4aa11fb9",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "microsoftgraph/msgraph-metadata@c60e1f8a558818cbafef1103602b55ec4aa11fb9",
+        "notes": [
+          "Official Microsoft Graph metadata repository: https://github.com/microsoftgraph/msgraph-metadata",
+          "Pinned source path: openapi/v1.0/openapi.yaml",
+          "Pinned commit date: 2026-07-07T20:36:10Z",
+          "Verified source SHA-256: 4c42be96a6d221bc45cde94fbdcd0b92b4c486426d69b3d90359f69c77ac5eaf",
+          "The committed manifest selects read-only v1.0 Microsoft Graph operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/c60e1f8a558818cbafef1103602b55ec4aa11fb9/openapi/v1.0/openapi.yaml for source retrieval",
+          "GET https://graph.microsoft.com/v1.0/me for selected upstream operation",
+          "GET https://graph.microsoft.com/v1.0/me/messages for selected upstream operation",
+          "GET https://graph.microsoft.com/v1.0/me/drive/root/children for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/microsoft-graph/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/microsoft-graph.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/microsoft-graph/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "GET /me",
+        "name": "get_current_user_profile",
+        "deny": false
+      },
+      {
+        "from": "GET /me/messages",
+        "name": "list_current_user_messages",
+        "deny": false
+      },
+      {
+        "from": "GET /me/drive/root/children",
+        "name": "list_current_user_drive_root_children",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "MICROSOFT_GRAPH_ACCESS_TOKEN"
+    ],
+    "serverEnvVars": [
+      "MICROSOFT_GRAPH_ACCESS_TOKEN"
+    ]
+  },
+});
