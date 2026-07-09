@@ -1224,6 +1224,217 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/paychex",
+      "version": "0.1.0",
+      "description": "Generated Paychex Time Web Services (TWS) SOAP web service MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/paychex/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["PAYCHEX_TWS_AUTH_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PAYCHEX_TWS_AUTH_TOKEN",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "manifest-backed",
+            "paychex",
+            "read-only",
+            "soap",
+            "time-attendance",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/paychex",
+            "version": "0.1.0",
+            "title": "Paychex",
+            "description": "Generated Paychex Time Web Services (TWS) SOAP web service MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "paychex",
+              "read-only",
+              "soap",
+              "time-attendance",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "ref": "paychex-tws-v2-servicerouter"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "ServiceRouter/GetUserBasic"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "ServiceRouter/GetTimeOffPolicy"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "api-key",
+                "in": "header",
+                "name": "Auth-Token",
+                "valueFrom": {
+                  "env": "PAYCHEX_TWS_AUTH_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the Paychex TWS ServiceRouter service."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://paychex.centralservers.com/service/ws-soap/2.0/ServiceRouter.asmx",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://paychex.centralservers.com/service/home/about",
+                "type": "http",
+                "ref": "paychex-tws-v2-servicerouter",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "paychex-tws-v2-servicerouter",
+                "notes": [
+                  "Official Paychex Time Web Services (TWS) API documentation portal: https://paychex.centralservers.com/service/home/about (also mirrored at https://paychex.flextime.paychex.com/service/Home/About).",
+                  "TWS is Paychex's private-labeled Time & Attendance / Stratustime SOAP+XML+JSON web service; the SOAP surface is exposed by the ServiceRouter class in the AppOne.Services.V2 namespace, documented at https://paychex.centralservers.com/service/Help/Docs/html/1d583575-d7da-c95a-cd9f-90bd013672d9.htm (\"V2 Endpoints\").",
+                  "TWS SOAP endpoints are per-customer-alias (multi-tenant), following the base pattern https://<host>/service/ws-soap/<version>/ServiceRouter.asmx; no fixed public WSDL URL is published, so the committed config.defaults.endpoint models the documented endpoint shape rather than a live tenant URL - same precedent as Workday (QUI-381).",
+                  "Authentication requires calling CreateToken with CustomerAlias/SharedKey/UserName/UserPass to obtain a security token, which is then passed as the Auth-Token HTTP header on subsequent SOAP calls; modeled here as an api-key auth env ref.",
+                  "The committed manifest selects read-only GetUserBasic and GetTimeOffPolicy ServiceRouter operations only."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                  "SOAP https://paychex.centralservers.com/service/ws-soap/2.0/ServiceRouter.asmx ServiceRouter/GetUserBasic for selected upstream operation",
+                  "SOAP https://paychex.centralservers.com/service/ws-soap/2.0/ServiceRouter.asmx ServiceRouter/GetTimeOffPolicy for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/paychex/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP ServiceRouter/GetUserBasic",
+                  "name": "get_paychex_user_basic",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP ServiceRouter/GetTimeOffPolicy",
+                  "name": "get_paychex_time_off_policy",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://paychex.centralservers.com/service/home/about",
+              "type": "http",
+              "ref": "paychex-tws-v2-servicerouter",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "paychex-tws-v2-servicerouter",
+              "notes": [
+                "Official Paychex Time Web Services (TWS) API documentation portal: https://paychex.centralservers.com/service/home/about (also mirrored at https://paychex.flextime.paychex.com/service/Home/About).",
+                "TWS is Paychex's private-labeled Time & Attendance / Stratustime SOAP+XML+JSON web service; the SOAP surface is exposed by the ServiceRouter class in the AppOne.Services.V2 namespace, documented at https://paychex.centralservers.com/service/Help/Docs/html/1d583575-d7da-c95a-cd9f-90bd013672d9.htm (\"V2 Endpoints\").",
+                "TWS SOAP endpoints are per-customer-alias (multi-tenant), following the base pattern https://<host>/service/ws-soap/<version>/ServiceRouter.asmx; no fixed public WSDL URL is published, so the committed config.defaults.endpoint models the documented endpoint shape rather than a live tenant URL - same precedent as Workday (QUI-381).",
+                "Authentication requires calling CreateToken with CustomerAlias/SharedKey/UserName/UserPass to obtain a security token, which is then passed as the Auth-Token HTTP header on subsequent SOAP calls; modeled here as an api-key auth env ref.",
+                "The committed manifest selects read-only GetUserBasic and GetTimeOffPolicy ServiceRouter operations only."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://paychex.centralservers.com/service/home/about for source retrieval",
+                "SOAP https://paychex.centralservers.com/service/ws-soap/2.0/ServiceRouter.asmx ServiceRouter/GetUserBasic for selected upstream operation",
+                "SOAP https://paychex.centralservers.com/service/ws-soap/2.0/ServiceRouter.asmx ServiceRouter/GetTimeOffPolicy for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/paychex/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/paychex.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/paychex/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/petstore",
       "version": "1.0.0",
       "description": "Selected Petstore operations exposed as MCP tools.",
@@ -2804,6 +3015,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 37
+    "ai.quickdeploy.registry/sourceCount": 38
   }
 }
