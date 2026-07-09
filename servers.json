@@ -9639,6 +9639,189 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/youtube",
+      "version": "0.1.0",
+      "description": "Generated YouTube channel video Atom feed MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/youtube/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "generated",
+            "manifest-backed",
+            "media",
+            "read-only",
+            "rss",
+            "video",
+            "youtube"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/youtube",
+            "version": "0.1.0",
+            "title": "YouTube",
+            "description": "Generated YouTube channel video Atom feed MCP catalog manifest.",
+            "labels": [
+              "feed",
+              "generated",
+              "media",
+              "read-only",
+              "rss",
+              "video",
+              "youtube"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/videos/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Background polling interval in minutes for refreshing the feed."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Maximum number of feed items retained per channel."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether to include full item description/content text in query responses."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 15,
+                "maxItems": 50,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "youtube-channel-atom-feed",
+                "notes": [
+                  "YouTube publishes a public per-channel Atom feed at https://www.youtube.com/feeds/videos.xml?channel_id={channelId} (playlist_id and legacy user query params are also supported); this is a long-standing, stable YouTube platform feature rather than a page in Google's formal API developer docs, so it is cited here as a stable, widely-used public endpoint rather than a versioned developer-portal document.",
+                  "Confirmed live via a direct fetch of the reference channel feed (channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw, \"Google for Developers\"): root <feed> element declares the yt (http://www.youtube.com/xml/schemas/2015) and media (http://search.yahoo.com/mrss/) namespace extensions over the base Atom namespace; each <entry> carries yt:videoId, yt:channelId, title, link, published, updated, author, and a media:group block (media:title, media:content, media:thumbnail, media:description, media:community/statistics).",
+                  "The feed is public and read-only; no API key or authentication is required.",
+                  "The importer's config schema only supports refreshMinutes/maxItems/includeContent (no per-channel override field), so the channel is pinned via the committed source.uri (channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw, the reference \"Google for Developers\" channel used to validate the feed shape above); pointing this manifest at a different channel means editing source.uri."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://www.youtube.com/feeds/videos.xml?channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw for the pinned channel's public video feed (read-only, no auth)"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/youtube/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/youtube.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/youtube/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_youtube_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "youtube_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.youtube.com/feeds/videos.xml?channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "youtube-channel-atom-feed",
+              "notes": [
+                "YouTube publishes a public per-channel Atom feed at https://www.youtube.com/feeds/videos.xml?channel_id={channelId} (playlist_id and legacy user query params are also supported); this is a long-standing, stable YouTube platform feature rather than a page in Google's formal API developer docs, so it is cited here as a stable, widely-used public endpoint rather than a versioned developer-portal document.",
+                "Confirmed live via a direct fetch of the reference channel feed (channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw, \"Google for Developers\"): root <feed> element declares the yt (http://www.youtube.com/xml/schemas/2015) and media (http://search.yahoo.com/mrss/) namespace extensions over the base Atom namespace; each <entry> carries yt:videoId, yt:channelId, title, link, published, updated, author, and a media:group block (media:title, media:content, media:thumbnail, media:description, media:community/statistics).",
+                "The feed is public and read-only; no API key or authentication is required.",
+                "The importer's config schema only supports refreshMinutes/maxItems/includeContent (no per-channel override field), so the channel is pinned via the committed source.uri (channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw, the reference \"Google for Developers\" channel used to validate the feed shape above); pointing this manifest at a different channel means editing source.uri."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://www.youtube.com/feeds/videos.xml?channel_id=UC_x5XG1OV2P6uZZ5FSM9Ttw for the pinned channel's public video feed (read-only, no auth)"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/youtube/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/youtube.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/youtube/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/zendesk",
       "version": "0.1.0",
       "description": "Generated Zendesk Support Tickets read-only OpenAPI MCP catalog manifest.",
@@ -10678,6 +10861,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 75
+    "ai.quickdeploy.registry/sourceCount": 77
   }
 }
