@@ -10,6 +10,10 @@ import {
   type GeneratedMcpCodegenFlowIntent,
 } from "./codegen/orchestrator";
 import {
+  formatGeneratedMcpReadinessResult,
+  validateGeneratedMcpReadiness,
+} from "./codegen/readiness-gate";
+import {
   buildRegistryArtifacts,
   checkGeneratedRegistryArtifacts,
   compileBakedManifestFileToServerJson,
@@ -35,6 +39,7 @@ function usage(): string {
     "       registry-cli validate-remotes [--root <dir>] [--timeout-ms <ms>] [--server-json <path>]",
     "       registry-cli bake --manifest <path> --image <oci-image> --digest <sha256:digest> [--root <dir>]",
     "       registry-cli codegen run --intent <json-file> [--root <dir>] [--clean]",
+    "       registry-cli codegen check [--root <dir>]",
     "       registry-cli config-schema --importer <engine>",
     "       registry-cli scaffold importer <name> [--description <text>] [--force]",
     "       registry-cli scaffold manifest <importer> --name <name> --source-type <http|file|git|oci>",
@@ -363,8 +368,20 @@ async function runScaffold(argv: string[], rootDir: string): Promise<void> {
 
 async function runCodegen(argv: string[], rootDir: string): Promise<void> {
   const [subcommand, ...rest] = argv;
+  if (subcommand === "check") {
+    const args = parseFlagArgs(rest, new Set());
+    const result = await validateGeneratedMcpReadiness({
+      rootDir: firstValue(args, "root") ?? rootDir,
+    });
+    process.stdout.write(formatGeneratedMcpReadinessResult(result));
+    if (!result.ok) {
+      throw new Error(`${result.violations.length} generated MCP readiness violation(s) found.`);
+    }
+    return;
+  }
+
   if (subcommand !== "run") {
-    throw new Error(`Unknown codegen subcommand: ${subcommand ?? "<none>"}. Use "run".`);
+    throw new Error(`Unknown codegen subcommand: ${subcommand ?? "<none>"}. Use "run" or "check".`);
   }
 
   const args = parseFlagArgs(rest, new Set(["clean"]));

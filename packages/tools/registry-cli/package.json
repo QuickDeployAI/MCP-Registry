@@ -23,6 +23,7 @@
     "start": "tsx src/cli.mts",
     "build:registry": "tsx src/cli.mts build",
     "check:generated": "tsx src/cli.mts build --check",
+    "codegen:check": "tsx src/cli.mts codegen check && vitest run --testTimeout=30000 test/generated",
     "validate": "tsx src/cli.mts validate",
     "registry:validate": "tsx src/cli.mts validate",
     "validate:remotes": "tsx src/cli.mts validate-remotes",
