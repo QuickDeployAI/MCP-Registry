@@ -39,7 +39,7 @@ Snowflake; any one of these can back a QuickDeploy-hosted instance.
    - `/mcp` — MCP endpoint (streamable HTTP) exposing the same capability as
      an `ask` tool.
 4. **Register the deployment.** Add (or update) the `nlweb` entry in
-   [`registry/remote-ref-seeds.json`](../../registry/remote-ref-seeds.json)
+   [`../registry/seeds/remote-ref-seeds.json`](../../docs/registry/seeds/remote-ref-seeds.json)
    with the deployed instance's `/mcp` URL once it's live. The seed entry
    checked in here is a `deploy-recipe` disposition (self-hosted, no fixed
    public endpoint) until a QuickDeploy-hosted instance exists, at which

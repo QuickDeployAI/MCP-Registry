@@ -28,7 +28,7 @@ const calls = [
 ];
 
 async function main() {
-  const manifest = await loadCommittedManifest("manifests/qdai-git-fixture.mcp.json");
+  const manifest = await loadCommittedManifest("registry/quickdeploy/qdai-git-fixture.mcp.json");
   const host = createMcpHost({
     manifest,
     userConfig: { packageRoot: fixturePackageRoot() },

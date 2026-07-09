@@ -241,7 +241,7 @@ describe("mcp-host runtime", () => {
   }, 30_000);
 
   it("hosts the committed qdai-git-fixture manifest with every lib method as a tool", async () => {
-    const manifest = await loadCommittedManifest("manifests/qdai-git-fixture.mcp.json");
+    const manifest = await loadCommittedManifest("registry/quickdeploy/qdai-git-fixture.mcp.json");
     const host = createMcpHost({
       manifest,
       userConfig: {
@@ -291,7 +291,7 @@ describe("mcp-host runtime", () => {
   it("serves committed root MCP manifest examples over streamable HTTP", async () => {
     const cases = [
       {
-        path: "manifests/petstore.mcp.json",
+        path: "registry/quickdeploy/petstore.mcp.json",
         env: { PETSTORE_API_TOKEN: "test-token" },
         userConfig: {},
         tools: ["get_pet", "create_pet"],
@@ -299,7 +299,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/grpc-greeter.mcp.json",
+        path: "registry/quickdeploy/grpc-greeter.mcp.json",
         env: {},
         userConfig: { endpoint: "127.0.0.1:50051" },
         tools: [
@@ -310,7 +310,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/wsdl-calculator.mcp.json",
+        path: "registry/quickdeploy/wsdl-calculator.mcp.json",
         env: {},
         userConfig: {},
         tools: ["calculator_add"],
@@ -318,14 +318,14 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/quickdeploy-skills.mcp.json",
+        path: "registry/quickdeploy/quickdeploy-skills.mcp.json",
         env: {},
         tools: ["browser_run"],
         resources: [],
         prompts: ["design_agentic_eval"],
       },
       {
-        path: "manifests/postman-petstore.mcp.json",
+        path: "registry/quickdeploy/postman-petstore.mcp.json",
         env: {
           PETSTORE_API_TOKEN: "test-token",
           PETSTORE_API_KEY: "test-key",
@@ -336,7 +336,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/har-petstore.mcp.json",
+        path: "registry/quickdeploy/har-petstore.mcp.json",
         env: {},
         userConfig: {},
         tools: ["har_get_pet", "har_create_pet"],
@@ -344,7 +344,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/product-feed.mcp.json",
+        path: "registry/quickdeploy/product-feed.mcp.json",
         env: {},
         userConfig: {},
         tools: ["search_product_feed"],
@@ -352,7 +352,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/agent-skills.mcp.json",
+        path: "registry/quickdeploy/agent-skills.mcp.json",
         env: {},
         userConfig: {},
         tools: ["browser_run"],

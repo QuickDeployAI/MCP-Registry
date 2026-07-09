@@ -36,8 +36,7 @@ function usage(): string {
     "                 [--grpc <service>:<method>] [--corpus-glob <glob>] [--auth <type>:<ENV_VAR>]",
     "                 [--transport <stdio|streamable-http|sse>] [--out <path>] [--force]",
     "",
-    "Builds servers.json from package server.json files, direct MCP manifests,",
-    "and remotes-only server.json documents.",
+    "Builds servers.json from registry/<provider> MCP manifests and server.json documents.",
     "",
     "scaffold importer/manifest prompt interactively for missing required values",
     "when stdin is a TTY; otherwise missing values are reported as errors.",
@@ -441,7 +440,7 @@ async function main(): Promise<void> {
   const artifacts = await buildRegistryArtifacts({ rootDir });
   await writeRegistryArtifacts({ rootDir }, artifacts);
   process.stdout.write(
-    `Wrote servers.json with ${artifacts.serversJson.servers.length} MCP entries.\n`,
+    `Wrote servers.json and generated registry/index.json with ${artifacts.serversJson.servers.length} MCP entries.\n`,
   );
 }
 

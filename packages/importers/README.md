@@ -98,14 +98,14 @@ pushes each package image to GHCR through `reusable-docker-build.yml`.
 `.github/workflows/importer-images.yml` is the digest-artifact workflow for the
 root `docker/importer-node22.Dockerfile` wrapper. It builds the executable
 importers listed in its own matrix, runs their smoke commands on PRs, and on
-`main` writes `registry/oci-image-digests.json` before rebuilding registry
+`main` writes `generated/oci-image-digests.json` before rebuilding registry
 artifacts. Use it when a registry entry needs the workflow's digest-pinned OCI
 write-back path; otherwise use the package-template workflow above.
 
 ## Known gaps (found while wiring up QUI-180)
 
 - `packages/importers/feed-2-mcp` does not exist in this repository. The
-  feed-shaped registry example (`manifests/product-feed.mcp.json`) runs through
+  feed-shaped registry example (`registry/quickdeploy/product-feed.mcp.json`) runs through
   `knowledge-2-mcp` (see `packages/knowledge-core` and
   `docs/adr/0016-knowledge-2-mcp-corpus-engine.md`), not a `feed-2-mcp`
   importer package. `Dockerfile.importer` builds any package under

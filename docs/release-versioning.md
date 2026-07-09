@@ -11,8 +11,9 @@ server or importer release must update the package version, `server.json` or
    `packages/runtime/*`, or `packages/tools/*`.
 2. Run `pnpm version:packages` to apply changesets and then validate registry
    version sync.
-3. Update the matching `server.json` in the same PR when a package version
-   changes.
+3. Update the matching `registry/<provider>/*.server.json` or
+   `registry/<provider>/*.mcp.*` source in the same PR when a published entry
+   version changes.
 4. Run `pnpm --filter @quickdeployai/registry-cli build:registry` so
    `servers.json` reflects the entry change.
 5. Run `pnpm check` before opening the PR.
@@ -26,10 +27,9 @@ the standalone repository to this registry repository. Keep version and registry
 validation in place, but do not let that legacy package permission block
 publishing new workspace-owned packages.
 
-Legacy servers under `servers/*` are not workspace packages yet, but they are
-still validated. Their local `package.json`, `server.json`, and generated
-`servers.json` versions must stay identical until those packages migrate to
-package workspaces.
+Only entries under `registry/<provider>/` are catalog sources. Package metadata
+under `packages/**` and local throwaway implementations are not published into
+the registry catalog.
 
 ## OCI Images
 

@@ -31,9 +31,31 @@ export interface RegistryBuildOptions {
 
 export interface RegistryBuildArtifacts {
   serversJson: ServersJsonEnvelope;
+  indexJson: RegistrySourceIndex;
   files: {
     "servers.json": string;
   };
+  generatedFiles: {
+    "registry/index.json": string;
+  };
+}
+
+export interface RegistrySourceIndex {
+  schemaVersion: "quickdeploy.mcp-registry/v1";
+  generatedBy: "@quickdeployai/registry-cli";
+  providers: RegistrySourceProvider[];
+}
+
+export interface RegistrySourceProvider {
+  id: string;
+  entries: RegistrySourceIndexEntry[];
+}
+
+export interface RegistrySourceIndexEntry {
+  path: string;
+  kind: "mcp-manifest" | "server-json";
+  name: string;
+  version?: string;
 }
 
 export interface BakedManifestServerJsonOptions {
@@ -61,12 +83,10 @@ type OciImageDigestMap = Map<string, string>;
 export async function buildRegistryArtifacts(
   options: RegistryBuildOptions,
 ): Promise<RegistryBuildArtifacts> {
-  const sourceServers = await discoverPackageServerJson(options.rootDir);
-  const remoteServers = await discoverRemoteServerJson(options.rootDir);
-  const manifestServers = await discoverManifestServerJson(options.rootDir);
+  const registrySources = await discoverRegistrySources(options.rootDir);
   const imageDigests = await readOciImageDigests(options.rootDir);
   const servers = applyOciDigestPins(
-    [...sourceServers, ...remoteServers, ...manifestServers],
+    registrySources.map((source) => source.document),
     imageDigests,
   ).sort((left, right) => left.name.localeCompare(right.name));
 
@@ -80,8 +100,12 @@ export async function buildRegistryArtifacts(
   });
   return {
     serversJson: parsed,
+    indexJson: registrySourceIndex(registrySources),
     files: {
       "servers.json": stableJson(parsed),
+    },
+    generatedFiles: {
+      "registry/index.json": stableJson(registrySourceIndex(registrySources)),
     },
   };
 }
@@ -92,6 +116,11 @@ export async function writeRegistryArtifacts(
 ): Promise<void> {
   const artifactsToWrite = artifacts ?? (await buildRegistryArtifacts(options));
   for (const [path, contents] of Object.entries(artifactsToWrite.files)) {
+    const target = join(options.rootDir, path);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, contents, "utf8");
+  }
+  for (const [path, contents] of Object.entries(artifactsToWrite.generatedFiles)) {
     const target = join(options.rootDir, path);
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, contents, "utf8");
@@ -113,17 +142,8 @@ export async function checkGeneratedRegistryArtifacts(options: RegistryBuildOpti
   return { ok: changed.length === 0, changed };
 }
 
-async function discoverPackageServerJson(rootDir: string): Promise<OfficialServerJsonDocument[]> {
-  const roots = [join(rootDir, "servers"), join(rootDir, "packages", "importers")];
-  const files = (
-    await Promise.all(roots.map((root) => findFiles(root, (name) => name === "server.json")))
-  ).flat();
-  const parsed = await Promise.all(files.map(readJson));
-  return parsed.map(({ value, path }) => parseServerJson(value, path));
-}
-
 async function readOciImageDigests(rootDir: string): Promise<OciImageDigestMap> {
-  const path = join(rootDir, "registry", "oci-image-digests.json");
+  const path = join(rootDir, "generated", "oci-image-digests.json");
   const raw = await readFile(path, "utf8").catch((error: NodeJS.ErrnoException) => {
     if (error.code === "ENOENT") return null;
     throw error;
@@ -163,29 +183,44 @@ function applyOciDigestPins(
   }));
 }
 
-async function discoverRemoteServerJson(rootDir: string): Promise<OfficialServerJsonDocument[]> {
-  const remoteDir = join(rootDir, "manifests", "remotes");
-  const files = await findFiles(
-    remoteDir,
-    (name) => !name.startsWith("_") && name.endsWith(".server.json"),
-  );
-  const parsed = await Promise.all(files.map(readJson));
-  return parsed.map(({ value, path }) => parseServerJson(value, path));
+interface RegistrySource {
+  provider: string;
+  path: string;
+  kind: RegistrySourceIndexEntry["kind"];
+  document: OfficialServerJsonDocument;
 }
 
-async function discoverManifestServerJson(
-  rootDir: string,
-): Promise<OfficialServerJsonDocument[]> {
-  const manifestDir = join(rootDir, "manifests");
-  const files = await findFiles(manifestDir, (name, path) => {
-    if (path.split(sep).includes("remotes")) return false;
-    return isMcpManifestFileName(name);
+async function discoverRegistrySources(rootDir: string): Promise<RegistrySource[]> {
+  const registryDir = join(rootDir, "registry");
+  const files = await findFiles(registryDir, (name, path) => {
+    const relativePath = normalizePath(relative(rootDir, path));
+    if (relativePath === "registry/index.json") return false;
+    return isMcpManifestFileName(name) || isServerManifestFileName(name);
   });
 
-  const manifests = await Promise.all(files.map((path) => readManifest(rootDir, path)));
-  return manifests.map(({ manifest, relativePath }) =>
-    compileManifestToServerJson(manifest, relativePath),
-  );
+  const sources = await Promise.all(files.map((path) => readRegistrySource(rootDir, path)));
+  return sources.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+async function readRegistrySource(rootDir: string, path: string): Promise<RegistrySource> {
+  const relativePath = normalizePath(relative(rootDir, path));
+  const provider = providerFromRegistryPath(relativePath);
+  if (isServerManifestFileName(path)) {
+    return {
+      provider,
+      path: relativePath,
+      kind: "server-json",
+      document: parseServerJson((await readJson(path)).value, relativePath),
+    };
+  }
+
+  const { manifest } = await readManifest(rootDir, path);
+  return {
+    provider,
+    path: relativePath,
+    kind: "mcp-manifest",
+    document: compileManifestToServerJson(manifest, relativePath),
+  };
 }
 
 export function compileManifestToServerJson(
@@ -410,6 +445,31 @@ function parseServerJson(value: unknown, path: string): OfficialServerJsonDocume
   return parsed.data;
 }
 
+function registrySourceIndex(sources: RegistrySource[]): RegistrySourceIndex {
+  const providers = new Map<string, RegistrySourceIndexEntry[]>();
+  for (const source of sources) {
+    const entries = providers.get(source.provider) ?? [];
+    entries.push({
+      path: source.path,
+      kind: source.kind,
+      name: source.document.name,
+      ...(source.document.version ? { version: source.document.version } : {}),
+    });
+    providers.set(source.provider, entries);
+  }
+
+  return {
+    schemaVersion: "quickdeploy.mcp-registry/v1",
+    generatedBy: "@quickdeployai/registry-cli",
+    providers: [...providers.entries()]
+      .map(([id, entries]) => ({
+        id,
+        entries: entries.sort((left, right) => left.path.localeCompare(right.path)),
+      }))
+      .sort((left, right) => left.id.localeCompare(right.id)),
+  };
+}
+
 async function readJson(path: string): Promise<DiscoveredJson> {
   return { path, value: JSON.parse(await readFile(path, "utf8")) };
 }
@@ -471,6 +531,18 @@ function normalizePath(path: string): string {
 
 function isMcpManifestFileName(name: string): boolean {
   return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
+}
+
+function isServerManifestFileName(name: string): boolean {
+  return name.endsWith(".server.json");
+}
+
+function providerFromRegistryPath(path: string): string {
+  const parts = path.split("/");
+  if (parts[0] !== "registry" || !parts[1] || parts.length < 3) {
+    throw new Error(`Registry source must live under registry/<provider>/: ${path}`);
+  }
+  return parts[1];
 }
 
 function stripOciDigest(identifier: string): string {

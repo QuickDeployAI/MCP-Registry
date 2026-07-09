@@ -2,12 +2,11 @@
 
 Remote refs describe externally hosted MCP servers without copying provider
 source or packaging a local runtime. Add them as remotes-only `server.json`
-documents under `manifests/remotes/`, then let `@quickdeployai/registry-cli`
+documents under `registry/<provider>/`, then let `@quickdeployai/registry-cli`
 publish them into the canonical `servers.json` catalog.
 
-Start from `manifests/remotes/_template.server.json`. Files whose names begin
-with `_` are authoring templates and are not included in generated registry
-artifacts.
+Start from `docs/registry/templates/remote.server.json`. Templates live outside
+`registry/` so they are never included in generated registry artifacts.
 
 ## When to Use Remote Refs
 
@@ -112,13 +111,13 @@ top level of the official server document.
 
 Before publishing a remote ref:
 
-1. Copy `manifests/remotes/_template.server.json` to
-   `manifests/remotes/<provider>-<surface>.server.json`.
+1. Copy `docs/registry/templates/remote.server.json` to
+   `registry/<provider>/<surface>.server.json`.
 2. Replace the namespace, endpoint, auth note, variables, category, and tags.
 3. Run `vp run test -F @quickdeployai/registry-cli -- remote-seed.test.ts`.
 4. Run `vp run @quickdeployai/registry-cli#check:generated`.
 5. Run the normal affected gate before opening a PR.
 
-The template itself is validated by the remote seed test. Because the file name
-starts with `_`, it remains available to authors without appearing in
+The template itself is validated by the remote seed test. Because it lives under
+`docs/registry/templates/`, it remains available to authors without appearing in
 `servers.json`.

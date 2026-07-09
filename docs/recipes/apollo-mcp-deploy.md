@@ -39,7 +39,7 @@ It supports three tool-definition modes:
    when QuickDeploy operates the deployment.
 4. **Register the deployment.** Add (or update) the `apollo-mcp-server`
    entry in
-   [`registry/remote-ref-seeds.json`](../../registry/remote-ref-seeds.json)
+   [`../registry/seeds/remote-ref-seeds.json`](../../docs/registry/seeds/remote-ref-seeds.json)
    once a concrete QuickDeploy-operated instance exists, promoting it from
    `deploy-recipe` to a server.json entry with the real endpoint.
 

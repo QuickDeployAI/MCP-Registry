@@ -244,7 +244,7 @@ export async function writeScaffoldManifest(
 
   const outPath = resolve(
     options.rootDir,
-    options.outPath ?? join("manifests", `${slugFromName(options.name)}.mcp.yaml`),
+    options.outPath ?? join("registry", "quickdeploy", `${slugFromName(options.name)}.mcp.yaml`),
   );
   const format = options.format ?? formatFromPath(outPath);
   const text = renderManifest(manifest, format);
@@ -476,7 +476,7 @@ Next steps:
    config validation both pick it up.
 3. Add an engine adapter in \`packages/runtime/mcp-host/src/runtime.ts\`'s
    \`defaultEngines\` once this importer is ready to run under \`mcp-host\`.
- 4. For committed registry publication, add this manifest under \`manifests/\`
+ 4. For committed registry publication, add this manifest under \`registry/<provider>/\`
     and run \`pnpm --filter @quickdeployai/registry-cli build:registry\`.
 `;
 

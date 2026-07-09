@@ -27,7 +27,7 @@ function example(name: string): unknown {
 function publicSchema(): AnySchema {
   return JSON.parse(
     readFileSync(
-      new URL("../../../../registry/schemas/mcp-manifest.v1.schema.json", import.meta.url),
+      new URL("../../../../schemas/mcp-manifest.v1.schema.json", import.meta.url),
       "utf8",
     ),
   ) as AnySchema;
