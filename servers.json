@@ -2105,6 +2105,212 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/ups",
+      "version": "0.1.0",
+      "description": "Generated wsdl-2-mcp MCP manifest for the UPS Tracking API SOAP/WSDL service.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/ups/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["UPS_TRACKING_ACCESS_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "UPS_TRACKING_ACCESS_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "manifest-backed",
+            "read-only",
+            "soap",
+            "tracking",
+            "ups",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/ups",
+            "version": "0.1.0",
+            "title": "UPS Tracking SOAP",
+            "description": "Generated wsdl-2-mcp MCP manifest for the UPS Tracking API SOAP/WSDL service.",
+            "labels": [
+              "generated",
+              "read-only",
+              "soap",
+              "tracking",
+              "ups",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+              "digest": "sha256:37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+              "ref": "ups-developer-kit-user-guide@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "TrackPort/ProcessTrack"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "UPS_TRACKING_ACCESS_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "UPS Tracking API SOAP endpoint."
+                  },
+                  "bindingName": {
+                    "type": "string",
+                    "description": "WSDL binding name for the Tracking service port."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://onlinetools.ups.com/webservices/Track",
+                "bindingName": "TrackBinding",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+                "type": "http",
+                "digest": "sha256:37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+                "ref": "ups-developer-kit-user-guide@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "ups-developer-kit-user-guide@2026-07-09",
+                "notes": [
+                  "Official first-party UPS Developer Kit User Guide PDF (ups.com/media/en/UPS_dev_kit_user_guide.pdf), describing the three UPS Developer Kit API types (XML, SOAP+WSDL, JSON) and the Tracking/Rating/Shipping SOAP services.",
+                  "UPS does not publish its per-service WSDL files (Track, Rate, Ship) through a public repository; WSDLs are bundled inside the UPS Developer Kit download after registration. This manifest pins the official Developer Kit User Guide document instead, matching the Salesforce/Airtable/Google Eventarc/Microsoft Dynamics precedent (QUI-351, QUI-366, QUI-372, QUI-384) for providers without a fetchable first-party machine-readable artifact.",
+                  "Canonical source URL: https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+                  "Verified source SHA-256 (of the downloaded PDF bytes, 5,446,416 bytes): 37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+                  "The committed manifest selects the read-only Tracking API SOAP operation only (TrackPort/ProcessTrack). Production endpoint https://onlinetools.ups.com/webservices/Track is a live, publicly reachable UPS SOAP endpoint (confirmed via HTTP 405 on GET, which is expected for a POST-only SOAP service)."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf for source retrieval",
+                  "SOAP POST https://onlinetools.ups.com/webservices/Track for selected upstream operation (TrackPort/ProcessTrack)"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/ups/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ups.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ups/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP TrackPort/ProcessTrack",
+                  "name": "soap_trackport_processtrack",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+              "type": "http",
+              "digest": "sha256:37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+              "ref": "ups-developer-kit-user-guide@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "ups-developer-kit-user-guide@2026-07-09",
+              "notes": [
+                "Official first-party UPS Developer Kit User Guide PDF (ups.com/media/en/UPS_dev_kit_user_guide.pdf), describing the three UPS Developer Kit API types (XML, SOAP+WSDL, JSON) and the Tracking/Rating/Shipping SOAP services.",
+                "UPS does not publish its per-service WSDL files (Track, Rate, Ship) through a public repository; WSDLs are bundled inside the UPS Developer Kit download after registration. This manifest pins the official Developer Kit User Guide document instead, matching the Salesforce/Airtable/Google Eventarc/Microsoft Dynamics precedent (QUI-351, QUI-366, QUI-372, QUI-384) for providers without a fetchable first-party machine-readable artifact.",
+                "Canonical source URL: https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+                "Verified source SHA-256 (of the downloaded PDF bytes, 5,446,416 bytes): 37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+                "The committed manifest selects the read-only Tracking API SOAP operation only (TrackPort/ProcessTrack). Production endpoint https://onlinetools.ups.com/webservices/Track is a live, publicly reachable UPS SOAP endpoint (confirmed via HTTP 405 on GET, which is expected for a POST-only SOAP service)."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf for source retrieval",
+                "SOAP POST https://onlinetools.ups.com/webservices/Track for selected upstream operation (TrackPort/ProcessTrack)"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/ups/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ups.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ups/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/wsdl-calculator",
       "version": "0.1.0",
       "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
@@ -2804,6 +3010,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 37
+    "ai.quickdeploy.registry/sourceCount": 38
   }
 }
