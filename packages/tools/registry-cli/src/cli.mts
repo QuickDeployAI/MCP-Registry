@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { getImporterConfigSchema } from "@quickdeployai/registry-schemas";
+import {
+  runGeneratedMcpCodegenFlow,
+  type GeneratedMcpCodegenFlowIntent,
+} from "./codegen/orchestrator";
 import {
   buildRegistryArtifacts,
   checkGeneratedRegistryArtifacts,
@@ -29,6 +34,7 @@ function usage(): string {
     "       registry-cli validate [--root <dir>]",
     "       registry-cli validate-remotes [--root <dir>] [--timeout-ms <ms>] [--server-json <path>]",
     "       registry-cli bake --manifest <path> --image <oci-image> --digest <sha256:digest> [--root <dir>]",
+    "       registry-cli codegen run --intent <json-file> [--root <dir>] [--clean]",
     "       registry-cli config-schema --importer <engine>",
     "       registry-cli scaffold importer <name> [--description <text>] [--force]",
     "       registry-cli scaffold manifest <importer> --name <name> --source-type <http|file|git|oci>",
@@ -355,10 +361,44 @@ async function runScaffold(argv: string[], rootDir: string): Promise<void> {
   );
 }
 
+async function runCodegen(argv: string[], rootDir: string): Promise<void> {
+  const [subcommand, ...rest] = argv;
+  if (subcommand !== "run") {
+    throw new Error(`Unknown codegen subcommand: ${subcommand ?? "<none>"}. Use "run".`);
+  }
+
+  const args = parseFlagArgs(rest, new Set(["clean"]));
+  const intentPath = firstValue(args, "intent");
+  if (!intentPath) throw new Error("codegen run requires --intent <json-file>.");
+  const intent = JSON.parse(await readFile(resolve(rootDir, intentPath), "utf8")) as
+    | GeneratedMcpCodegenFlowIntent
+    | unknown;
+
+  const result = await runGeneratedMcpCodegenFlow({
+    rootDir: firstValue(args, "root") ?? rootDir,
+    intent: intent as GeneratedMcpCodegenFlowIntent,
+    clean: args.flags.has("clean"),
+  });
+
+  process.stdout.write(
+    [
+      `Wrote manifest: ${result.manifest.manifestPath}`,
+      `Wrote generated test: ${result.generatedTest.path}`,
+      `Wrote generated project: ${result.project.projectPath}`,
+      "OpenShell/MXC build and test completed.",
+      "",
+    ].join("\n"),
+  );
+}
+
 async function main(): Promise<void> {
   const rawArgv = process.argv.slice(2);
   if (rawArgv[0] === "scaffold") {
     await runScaffold(rawArgv.slice(1), findWorkspaceRoot(process.cwd()));
+    return;
+  }
+  if (rawArgv[0] === "codegen") {
+    await runCodegen(rawArgv.slice(1), findWorkspaceRoot(process.cwd()));
     return;
   }
 
