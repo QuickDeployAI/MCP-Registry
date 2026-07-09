@@ -1,0 +1,151 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/dhl",
+    "version": "0.1.0",
+    "title": "DHL",
+    "description": "Generated wsdl-2-mcp MCP manifest for DHL Express shipment tracking.",
+    "labels": [
+      "dhl",
+      "generated",
+      "logistics",
+      "soap",
+      "wsdl"
+    ]
+  },
+  "spec": {
+    "importer": {
+      "engine": "wsdl-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack?WSDL",
+      "digest": "sha256:b10e25d039c3002947d855db1a61c82dc2ac15cb22a0229f40b313b4b769a86f"
+    },
+    "select": {
+      "requests": [
+        {
+          "method": "SOAP",
+          "uriTemplate": "gblDHLExpressTrack/trackShipmentRequest"
+        }
+      ],
+      "grpcMethods": [],
+      "pythonFunctions": [],
+      "skills": [],
+      "knowledgeSources": [],
+      "corpusGlobs": []
+    },
+    "auth": [
+      {
+        "type": "basic",
+        "usernameFrom": {
+          "env": "DHL_EXPRESS_SITE_ID"
+        },
+        "passwordFrom": {
+          "env": "DHL_EXPRESS_PASSWORD"
+        }
+      }
+    ],
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "format": "uri",
+            "description": "DHL Express Tracking SOAP endpoint."
+          },
+          "requestTimeoutMs": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Per-request SOAP upstream timeout in milliseconds."
+          }
+        }
+      },
+      "defaults": {
+        "endpoint": "https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack",
+        "requestTimeoutMs": 30000
+      },
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack?WSDL",
+        "type": "http",
+        "digest": "sha256:b10e25d039c3002947d855db1a61c82dc2ac15cb22a0229f40b313b4b769a86f",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "gblDHLExpressTrack",
+        "notes": [
+          "DHL does not publish one omnibus 'DHL WSDL'; each DHL Express XML-PI service (tracking, shipment, rating, etc.) has its own SOAP endpoint/WSDL.",
+          "This manifest pins the official DHL Express Tracking service WSDL, publicly fetchable without authentication at https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack?WSDL.",
+          "The endpoint URL is directly hyperlinked in DHL's official first-party 'MyDHL API - SOAP Developer Guide' PDF (v2.33), hosted at https://developer.dhl.com/sites/default/files/2025-04/DHL%20EXPRESS%20-%20MyDHL%20API%20-%20SOAP%20Developer%20Guide%20-%20v2.33.pdf.",
+          "Verified source SHA-256: b10e25d039c3002947d855db1a61c82dc2ac15cb22a0229f40b313b4b769a86f, confirmed byte-identical across two separate fetches.",
+          "Defines portType/service gblDHLExpressTrack with a single operation, trackShipmentRequest, at the fixed endpoint https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack.",
+          "Auth models DHL XML-PI's standard transport-level HTTP Basic Authentication (site ID / password); the SOAP request body itself carries only ServiceHeader/MessageReference fields, no credentials."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "SOAP gblDHLExpressTrack/trackShipmentRequest",
+          "name": "track_dhl_shipment",
+          "deny": false
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  },
+  "_meta": {
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack?WSDL",
+      "type": "http",
+      "digest": "sha256:b10e25d039c3002947d855db1a61c82dc2ac15cb22a0229f40b313b4b769a86f",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "gblDHLExpressTrack",
+      "notes": [
+        "DHL does not publish one omnibus 'DHL WSDL'; each DHL Express XML-PI service (tracking, shipment, rating, etc.) has its own SOAP endpoint/WSDL.",
+        "This manifest pins the official DHL Express Tracking service WSDL, publicly fetchable without authentication at https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack?WSDL.",
+        "The endpoint URL is directly hyperlinked in DHL's official first-party 'MyDHL API - SOAP Developer Guide' PDF (v2.33), hosted at https://developer.dhl.com/sites/default/files/2025-04/DHL%20EXPRESS%20-%20MyDHL%20API%20-%20SOAP%20Developer%20Guide%20-%20v2.33.pdf.",
+        "Verified source SHA-256: b10e25d039c3002947d855db1a61c82dc2ac15cb22a0229f40b313b4b769a86f, confirmed byte-identical across two separate fetches.",
+        "Defines portType/service gblDHLExpressTrack with a single operation, trackShipmentRequest, at the fixed endpoint https://wsbexpress.dhl.com/sndpt/glDHLExpressTrack.",
+        "Auth models DHL XML-PI's standard transport-level HTTP Basic Authentication (site ID / password); the SOAP request body itself carries only ServiceHeader/MessageReference fields, no credentials."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "source-uri",
+        "configured-upstream"
+      ],
+      "filesystem": [
+        "generated-project-readwrite"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  }
+}
