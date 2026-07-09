@@ -3,7 +3,7 @@ export const GENERATED_MCP_CODEGEN_ROOT = ".generated/mcp-codegen";
 export const REGISTRY_INDEX_OUTPUT_PATH = "registry/index.json";
 export const SERVERS_JSON_OUTPUT_PATH = "servers.json";
 
-const IMPORTER_FAMILY_BY_ENGINE = {
+export const GENERATED_MCP_IMPORTER_FAMILY_BY_ENGINE = {
   "openapi-2-mcp": "openapi",
   "asyncapi-2-mcp": "asyncapi",
   "grpc-2-mcp": "grpc",
@@ -11,10 +11,19 @@ const IMPORTER_FAMILY_BY_ENGINE = {
   "feed-2-mcp": "feed",
 } as const;
 
-const FAMILY_SLUGS = new Set<string>(Object.values(IMPORTER_FAMILY_BY_ENGINE));
+export const GENERATED_MCP_IMPORTER_ENGINE_BY_FAMILY = {
+  openapi: "openapi-2-mcp",
+  asyncapi: "asyncapi-2-mcp",
+  grpc: "grpc-2-mcp",
+  wsdl: "wsdl-2-mcp",
+  feed: "feed-2-mcp",
+} as const;
 
-export type GeneratedMcpImporterEngine = keyof typeof IMPORTER_FAMILY_BY_ENGINE;
-export type GeneratedMcpFamily = (typeof IMPORTER_FAMILY_BY_ENGINE)[GeneratedMcpImporterEngine];
+const FAMILY_SLUGS = new Set<string>(Object.values(GENERATED_MCP_IMPORTER_FAMILY_BY_ENGINE));
+
+export type GeneratedMcpImporterEngine = keyof typeof GENERATED_MCP_IMPORTER_FAMILY_BY_ENGINE;
+export type GeneratedMcpFamily =
+  (typeof GENERATED_MCP_IMPORTER_FAMILY_BY_ENGINE)[GeneratedMcpImporterEngine];
 
 export type GeneratedMcpWorkspaceInput = {
   readonly provider: string;
@@ -60,11 +69,18 @@ export function capabilitySlug(value: string): string {
 
 export function familySlug(value: string): GeneratedMcpFamily {
   const normalized = value.trim().toLowerCase();
-  const family = IMPORTER_FAMILY_BY_ENGINE[normalized as GeneratedMcpImporterEngine] ?? normalized;
+  const family =
+    GENERATED_MCP_IMPORTER_FAMILY_BY_ENGINE[normalized as GeneratedMcpImporterEngine] ??
+    normalized;
   if (FAMILY_SLUGS.has(family)) return family as GeneratedMcpFamily;
   throw new Error(
     `Unsupported generated MCP family "${value}". Expected one of ${[...FAMILY_SLUGS].join(", ")}.`,
   );
+}
+
+export function importerEngineForFamily(value: string): GeneratedMcpImporterEngine {
+  const family = familySlug(value);
+  return GENERATED_MCP_IMPORTER_ENGINE_BY_FAMILY[family];
 }
 
 function slugSegment(value: string, label: string): string {
