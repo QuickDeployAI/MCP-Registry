@@ -2770,6 +2770,240 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/twilio",
+      "version": "0.1.0",
+      "description": "Generated Twilio Programmable Messaging read-only OpenAPI MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/twilio/api.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": [
+            "QD_MANIFEST_BASE_URL",
+            "TWILIO_ACCOUNT_SID",
+            "TWILIO_AUTH_TOKEN"
+          ]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "QD_MANIFEST_BASE_URL",
+          "description": "Twilio REST API base URL, e.g. https://api.twilio.com.",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "TWILIO_ACCOUNT_SID",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TWILIO_AUTH_TOKEN",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "openapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "communications",
+            "generated",
+            "manifest-backed",
+            "openapi",
+            "read-only",
+            "twilio"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/twilio",
+            "version": "0.1.0",
+            "title": "Twilio",
+            "description": "Generated Twilio Programmable Messaging read-only OpenAPI MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "openapi",
+              "read-only",
+              "communications",
+              "twilio"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "openapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json",
+              "digest": "sha256:a6753266b8b05a201e8658734e332ee51d07a0913f2d419335d87bdb287643a2",
+              "ref": "twilio-oai@2.6.9"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/2010-04-01/Accounts/{AccountSid}/Messages.json"
+                },
+                {
+                  "method": "GET",
+                  "uriTemplate": "/2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "TWILIO_ACCOUNT_SID"
+                },
+                "passwordFrom": {
+                  "env": "TWILIO_AUTH_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Twilio REST API base URL, e.g. https://api.twilio.com."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request upstream timeout in milliseconds."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Importer execution profile."
+                  }
+                },
+                "required": ["baseUrl"]
+              },
+              "defaults": {
+                "requestTimeoutMs": 30000,
+                "mode": "read-only"
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json",
+                "type": "http",
+                "digest": "sha256:a6753266b8b05a201e8658734e332ee51d07a0913f2d419335d87bdb287643a2",
+                "ref": "twilio-oai@2.6.9",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "twilio-oai@2.6.9",
+                "notes": [
+                  "Official Twilio OpenAPI Specification repository (twilio/twilio-oai), core REST API document: https://github.com/twilio/twilio-oai",
+                  "Pinned to the twilio-oai GitHub release tag 2.6.9 (2026-05-07): https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json",
+                  "OpenAPI document info: title \"Twilio - Api\", version 1.0.0.",
+                  "Verified source SHA-256: a6753266b8b05a201e8658734e332ee51d07a0913f2d419335d87bdb287643a2",
+                  "The committed manifest selects read-only Twilio Programmable Messaging list/get operations only (ListMessage, FetchMessage)."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json for source retrieval",
+                  "GET https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages.json for selected upstream operation",
+                  "GET https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/twilio/api.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/openapi/twilio.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/openapi/twilio/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /2010-04-01/Accounts/{AccountSid}/Messages.json",
+                  "name": "list_twilio_messages",
+                  "deny": false
+                },
+                {
+                  "from": "GET /2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json",
+                  "name": "get_twilio_message",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json",
+              "type": "http",
+              "digest": "sha256:a6753266b8b05a201e8658734e332ee51d07a0913f2d419335d87bdb287643a2",
+              "ref": "twilio-oai@2.6.9",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "twilio-oai@2.6.9",
+              "notes": [
+                "Official Twilio OpenAPI Specification repository (twilio/twilio-oai), core REST API document: https://github.com/twilio/twilio-oai",
+                "Pinned to the twilio-oai GitHub release tag 2.6.9 (2026-05-07): https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json",
+                "OpenAPI document info: title \"Twilio - Api\", version 1.0.0.",
+                "Verified source SHA-256: a6753266b8b05a201e8658734e332ee51d07a0913f2d419335d87bdb287643a2",
+                "The committed manifest selects read-only Twilio Programmable Messaging list/get operations only (ListMessage, FetchMessage)."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://raw.githubusercontent.com/twilio/twilio-oai/2.6.9/spec/json/twilio_api_v2010.json for source retrieval",
+                "GET https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages.json for selected upstream operation",
+                "GET https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/twilio/api.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/openapi/twilio.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/openapi/twilio/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/wsdl-calculator",
       "version": "0.1.0",
       "description": "Document-literal SOAP calculator exposed through wsdl-2-mcp.",
