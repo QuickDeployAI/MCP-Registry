@@ -5,6 +5,7 @@ Builds the canonical MCP `servers.json` catalog.
 ```bash
 vp run @quickdeployai/registry-cli#build:registry
 vp run @quickdeployai/registry-cli#check:generated
+vp run @quickdeployai/registry-cli#codegen:check
 vp run @quickdeployai/registry-cli#registry:validate
 vp run @quickdeployai/registry-cli#validate:remotes
 vp exec -F @quickdeployai/registry-cli registry-cli config-schema --importer openapi-2-mcp
@@ -49,6 +50,33 @@ Generated provider code must never run directly on the host. Build and test
 steps for `.generated/mcp-codegen/<family>/<provider>/` must use the repo
 sandbox harness with NVIDIA OpenShell as the MXC-backed runtime and fail closed
 when MXC or OpenShell is unavailable.
+
+## Generated MCP Release Gate
+
+Run `vp run @quickdeployai/registry-cli#codegen:check` before opening or
+merging generated provider catalog PRs. The package script runs
+`registry-cli codegen check` and the committed generated-family Vitest suite.
+The CLI gate checks that:
+
+- `registry-cli validate` passes for committed registry sources.
+- `registry-cli build --check` / `check:generated` has no `servers.json` drift.
+- Every generated manifest has its committed family test at
+  `packages/tools/registry-cli/test/generated/<family>/<provider>.test.ts`.
+- `servers.json` and `registry/index.json` are derived only from committed
+  registry sources and never from `.generated/` project files.
+- `.generated/` project artifacts remain gitignored and untracked.
+- Shared codegen tooling does not contain direct host-execution bypasses such
+  as `child_process`, `spawn`, `exec`, or direct `tsx` entrypoints.
+
+Failures include the provider, family, manifest path, generated test path, and
+codegen project path when that context is available. The release checklist is:
+
+```bash
+vp run @quickdeployai/registry-cli#codegen:check
+vp run @quickdeployai/registry-cli#registry:validate
+vp run @quickdeployai/registry-cli#check:generated
+vp run @quickdeployai/registry-cli#test
+```
 
 Manifest-backed entries are compiled by applying the `McpManifest` selection,
 auth, config, expose, and deployment settings to the shared `mcp-host` runtime.
