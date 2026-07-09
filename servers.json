@@ -1970,6 +1970,191 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/fda-recalls",
+      "version": "0.1.0",
+      "description": "Generated FDA Recalls read-only feed MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/fda-recalls/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "fda-recalls",
+            "feed",
+            "generated",
+            "government",
+            "manifest-backed",
+            "read-only"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/fda-recalls",
+            "version": "0.1.0",
+            "title": "FDA Recalls",
+            "description": "Generated FDA Recalls read-only feed MCP catalog manifest.",
+            "labels": [
+              "fda-recalls",
+              "feed",
+              "generated",
+              "government",
+              "read-only"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+              "digest": "sha256:e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+              "ref": "fda-recalls-rss@2026-07-09"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/fda-recalls/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Refresh interval for feed polling and cache updates."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Maximum feed items retained in the MCP corpus."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether full feed content is exposed in resources."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 60,
+                "maxItems": 100,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+                "type": "http",
+                "digest": "sha256:e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+                "ref": "fda-recalls-rss@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "fda-recalls-rss@2026-07-09",
+                "notes": [
+                  "Official FDA \"Food and Drugs Administration--Recalls/Safety Alerts\" RSS feed.",
+                  "Canonical source URL: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+                  "Verified source SHA-256: e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+                  "Provides recently published FDA recalls, market withdrawals, and safety alerts."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml for source retrieval and periodic refresh"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/fda-recalls/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/fda-recalls.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/fda-recalls/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_fda_recalls_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "fda_recalls_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+              "type": "http",
+              "digest": "sha256:e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+              "ref": "fda-recalls-rss@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "fda-recalls-rss@2026-07-09",
+              "notes": [
+                "Official FDA \"Food and Drugs Administration--Recalls/Safety Alerts\" RSS feed.",
+                "Canonical source URL: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+                "Verified source SHA-256: e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+                "Provides recently published FDA recalls, market withdrawals, and safety alerts."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml for source retrieval and periodic refresh"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/fda-recalls/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/fda-recalls.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/fda-recalls/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/federal-register",
       "version": "0.1.0",
       "description": "Generated Federal Register read-only feed MCP catalog manifest.",
