@@ -150,6 +150,12 @@ describe("buildGeneratedMcpManifest", () => {
       generatedExecution: "openshell-mxc-only",
       unavailableRuntime: "fail-closed",
     });
+    expect(manifest._meta?.[GENERATED_MCP_SOURCE_META_KEY]).toEqual(
+      manifest.spec.config?.[GENERATED_MCP_SOURCE_META_KEY],
+    );
+    expect(manifest._meta?.[GENERATED_MCP_POLICY_META_KEY]).toEqual(
+      manifest.spec.config?.[GENERATED_MCP_POLICY_META_KEY],
+    );
 
     const server = compileManifestToServerJson(manifest, result.manifestPath);
     expect(server.name).toBe(manifest.metadata.name);

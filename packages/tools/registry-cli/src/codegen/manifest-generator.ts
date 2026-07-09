@@ -156,6 +156,10 @@ export function buildGeneratedMcpManifest(
       userConfig: intent.deployment?.userConfig ?? {},
       ...(intent.deployment?.configSchema ? { configSchema: intent.deployment.configSchema } : {}),
     },
+    _meta: {
+      [GENERATED_MCP_SOURCE_META_KEY]: config[GENERATED_MCP_SOURCE_META_KEY],
+      [GENERATED_MCP_POLICY_META_KEY]: config[GENERATED_MCP_POLICY_META_KEY],
+    },
   };
 
   return {
