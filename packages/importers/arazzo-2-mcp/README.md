@@ -7,4 +7,4 @@ The package is intentionally pure and runtime-agnostic: it validates Arazzo
 documents, emits one `workflow` capability per Arazzo workflow, maps steps to
 the existing workflow model (`triggers`, `steps`, `required_capabilities`), and
 preserves operation/source references so downstream registry and host adapters
-can connect workflow steps back to API-contract ARD entries.
+can connect workflow steps back to API-contract source entries.

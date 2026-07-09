@@ -2,7 +2,7 @@
   "name": "@quickdeployai/registry-cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Build QuickDeploy MCP servers.json and legacy registry/index.json artifacts.",
+  "description": "Build QuickDeploy MCP servers.json artifacts.",
   "bin": {
     "registry-cli": "./src/cli.mts"
   },

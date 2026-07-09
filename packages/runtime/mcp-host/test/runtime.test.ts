@@ -3,10 +3,7 @@ import { Readable, Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import {
-  ArdEntrySchema,
   McpManifestSchema,
-  McpProjectionConfigSchema,
-  sourceMediaTypeToImporterEngine,
   validateMcpManifestImporterConfig,
 } from "@quickdeployai/registry-schemas";
 import { describe, expect, it } from "vitest";
@@ -243,8 +240,8 @@ describe("mcp-host runtime", () => {
     });
   }, 30_000);
 
-  it("hosts the committed qdai-git-fixture projection with every lib method as a tool", async () => {
-    const manifest = await loadProjectedManifest("manifests/qdai-git-fixture.ard.json");
+  it("hosts the committed qdai-git-fixture manifest with every lib method as a tool", async () => {
+    const manifest = await loadCommittedManifest("manifests/qdai-git-fixture.mcp.json");
     const host = createMcpHost({
       manifest,
       userConfig: {
@@ -291,10 +288,10 @@ describe("mcp-host runtime", () => {
     expect(repeat).toMatchObject({ result: { content: [{ type: "text", text: "ababab" }] } });
   }, 30_000);
 
-  it("serves committed root ARD projection examples over streamable HTTP", async () => {
+  it("serves committed root MCP manifest examples over streamable HTTP", async () => {
     const cases = [
       {
-        path: "manifests/petstore.ard.json",
+        path: "manifests/petstore.mcp.json",
         env: { PETSTORE_API_TOKEN: "test-token" },
         userConfig: {},
         tools: ["get_pet", "create_pet"],
@@ -302,7 +299,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/grpc-greeter.ard.json",
+        path: "manifests/grpc-greeter.mcp.json",
         env: {},
         userConfig: { endpoint: "127.0.0.1:50051" },
         tools: [
@@ -313,7 +310,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/wsdl-calculator.ard.json",
+        path: "manifests/wsdl-calculator.mcp.json",
         env: {},
         userConfig: {},
         tools: ["calculator_add"],
@@ -321,14 +318,14 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/quickdeploy-skills.ard.json",
+        path: "manifests/quickdeploy-skills.mcp.json",
         env: {},
         tools: ["browser_run"],
         resources: [],
         prompts: ["design_agentic_eval"],
       },
       {
-        path: "manifests/postman-petstore.ard.json",
+        path: "manifests/postman-petstore.mcp.json",
         env: {
           PETSTORE_API_TOKEN: "test-token",
           PETSTORE_API_KEY: "test-key",
@@ -339,7 +336,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/har-petstore.ard.json",
+        path: "manifests/har-petstore.mcp.json",
         env: {},
         userConfig: {},
         tools: ["har_get_pet", "har_create_pet"],
@@ -347,7 +344,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/product-feed.ard.json",
+        path: "manifests/product-feed.mcp.json",
         env: {},
         userConfig: {},
         tools: ["search_product_feed"],
@@ -355,7 +352,7 @@ describe("mcp-host runtime", () => {
         prompts: [],
       },
       {
-        path: "manifests/agent-skills.ard.json",
+        path: "manifests/agent-skills.mcp.json",
         env: {},
         userConfig: {},
         tools: ["browser_run"],
@@ -365,7 +362,7 @@ describe("mcp-host runtime", () => {
     ];
 
     for (const example of cases) {
-      const manifest = await loadProjectedManifest(example.path);
+      const manifest = await loadCommittedManifest(example.path);
       const host = createMcpHost({
         manifest,
         userConfig: example.userConfig,
@@ -530,50 +527,9 @@ async function collectFrames(payload: string): Promise<any[]> {
   return frames;
 }
 
-async function loadProjectedManifest(entryPath: string) {
-  const absoluteEntryPath = resolve(rootDir, entryPath);
-  const projectionPath = absoluteEntryPath.replace(/\.ard\.json$/, ".projection.json");
-  const entry = ArdEntrySchema.parse(JSON.parse(await readFile(absoluteEntryPath, "utf8")));
-  const projection = McpProjectionConfigSchema.parse(
-    JSON.parse(await readFile(projectionPath, "utf8")),
+async function loadCommittedManifest(manifestPath: string) {
+  const absoluteManifestPath = resolve(rootDir, manifestPath);
+  return validateMcpManifestImporterConfig(
+    JSON.parse(await readFile(absoluteManifestPath, "utf8")),
   );
-  const engine = sourceMediaTypeToImporterEngine(entry.type);
-  if (!engine || !entry.url) {
-    throw new Error(`Cannot project ${entryPath}: missing importer engine or source URL.`);
-  }
-  if (projection.entryRef !== entry.identifier) {
-    throw new Error(`Projection ${projectionPath} references ${projection.entryRef}.`);
-  }
-  return validateMcpManifestImporterConfig({
-    apiVersion: "quickdeploy.ai/v1",
-    kind: "McpManifest",
-    metadata: {
-      name: `ai.quickdeploy/${entry.identifier.split(":").at(-1)}`,
-      version: entry.version ?? "0.1.0",
-      title: entry.displayName,
-      description: entry.description,
-      labels: entry.tags,
-    },
-    spec: {
-      importer: {
-        engine,
-        versionRange: projection.importerVersionRange,
-      },
-      source: sourceFromUrl(entry.url),
-      select: projection.select,
-      auth: projection.auth,
-      ...(projection.config ? { config: projection.config } : {}),
-      expose: projection.expose,
-    },
-    deployment: projection.deployment,
-  });
-}
-
-function sourceFromUrl(uri: string) {
-  if (uri.startsWith("git+https://") || uri.startsWith("ssh://")) {
-    return { type: "git", uri };
-  }
-  if (uri.startsWith("file://")) return { type: "file", uri };
-  if (uri.startsWith("oci://")) return { type: "oci", uri };
-  return { type: "http", uri };
 }

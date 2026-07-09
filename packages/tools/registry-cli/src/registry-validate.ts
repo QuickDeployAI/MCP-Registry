@@ -1,11 +1,12 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
+import { extname, join, relative, sep } from "node:path";
+import { parse as parseYaml } from "yaml";
 import {
   OfficialServerJsonDocumentSchema,
   type OfficialServerJsonDocument,
   type ServerJsonPackage,
 } from "@quickdeployai/registry-schemas";
-import { compileArdProjectionToServerJson } from "./registry-build";
+import { compileManifestToServerJson } from "./registry-build";
 
 /**
  * The generic mcp-host runtime image every projection-backed (unbaked) entry
@@ -60,7 +61,7 @@ interface DiscoveredEntry {
 
 /**
  * Validate every registry source (`servers/*`, `packages/importers/*`,
- * projection-backed `manifests/*.ard.json`, and `manifests/remotes/*.server.json`)
+ * direct `manifests/*.mcp.*`, and `manifests/remotes/*.server.json`)
  * against the rules the servers.json build doesn't already enforce by
  * construction: name format + namespace ownership, exact (non-range) versions,
  * cross-entry name duplicates, `fileSha256` on `mcpb` packages, and
@@ -76,7 +77,7 @@ export async function validateRegistryEntries(
   const violations: RegistryValidationViolation[] = [];
   const entries: DiscoveredEntry[] = [
     ...(await discoverPackageEntries(options.rootDir, violations)),
-    ...(await discoverProjectionEntries(options.rootDir, violations)),
+    ...(await discoverManifestEntries(options.rootDir, violations)),
     ...(await discoverRemoteEntries(options.rootDir, violations)),
   ];
 
@@ -290,38 +291,33 @@ async function safeParseServerJsonFiles(
   return entries;
 }
 
-async function discoverProjectionEntries(
+async function discoverManifestEntries(
   rootDir: string,
   violations: RegistryValidationViolation[],
 ): Promise<DiscoveredEntry[]> {
   const manifestDir = join(rootDir, "manifests");
   const files = await findFiles(manifestDir, (name, path) => {
     if (path.split(sep).includes("remotes")) return false;
-    return name.endsWith(".ard.json");
+    return isMcpManifestFileName(name);
   });
 
   const entries: DiscoveredEntry[] = [];
   for (const file of files) {
     const relativePath = normalizePath(relative(rootDir, file));
-    const projectionPath = relativePath.replace(/\.ard\.json$/, ".projection.json");
-    let entry: unknown;
-    let projection: unknown;
+    let manifest: unknown;
     try {
-      entry = JSON.parse(await readFile(file, "utf8"));
-      projection = JSON.parse(await readFile(join(rootDir, projectionPath), "utf8"));
+      const raw = await readFile(file, "utf8");
+      manifest = extname(file) === ".json" ? JSON.parse(raw) : parseYaml(raw);
     } catch (error) {
       violations.push({
         code: "invalid-manifest",
         path: relativePath,
-        message: `Failed to parse ARD/projection JSON: ${error instanceof Error ? error.message : String(error)}`,
+        message: `Failed to parse MCP manifest: ${error instanceof Error ? error.message : String(error)}`,
       });
       continue;
     }
     try {
-      const document = compileArdProjectionToServerJson(entry, projection, {
-        entryPath: relativePath,
-        projectionPath,
-      });
+      const document = compileManifestToServerJson(manifest, relativePath);
       entries.push({ path: relativePath, origin: "manifest", document });
     } catch (error) {
       violations.push({
@@ -359,4 +355,8 @@ async function findFiles(
 
 function normalizePath(path: string): string {
   return path.split(sep).join("/");
+}
+
+function isMcpManifestFileName(name: string): boolean {
+  return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
 }

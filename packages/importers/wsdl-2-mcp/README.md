@@ -37,10 +37,9 @@ const result = await execute({ left: 2, right: 3 });
 
 SOAP faults throw `SoapFaultError` with `faultCode`, `faultString`, and parsed `detail` so MCP callers receive structured tool errors instead of raw XML.
 
-## Registry projection
+## Registry manifest
 
-`manifests/wsdl-calculator.ard.json` and
-`manifests/wsdl-calculator.projection.json` publish the calculator fixture as
-`ai.quickdeploy/wsdl-calculator` through `mcp-host`. The projection selects
+`manifests/wsdl-calculator.mcp.json` publishes the calculator fixture as
+`ai.quickdeploy/wsdl-calculator` through `mcp-host`. The manifest selects
 `POST /soap/CalculatorService/Add`, exposes `calculator_add`, and keeps the
 SOAP endpoint as runtime configuration.

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
-import { ARAZZO_MEDIA_TYPE } from "@quickdeployai/registry-schemas";
 import { z } from "zod";
+
+export const ARAZZO_MEDIA_TYPE = "application/vnd.oai.arazzo+json";
 
 const JsonRecordSchema = z.object({}).catchall(z.unknown());
 
@@ -52,7 +53,7 @@ export type ArazzoSourceDescription = z.infer<typeof ArazzoSourceDescriptionSche
 export type ArazzoInlineInput = ArazzoDocument | Record<string, unknown> | string | Uint8Array;
 export type ArazzoInput = ArazzoInlineInput | URL;
 
-export type ArazzoSourceArdEntry = {
+export type ArazzoSourceEntry = {
   identifier: string;
   type: string;
   url?: string;
@@ -61,7 +62,7 @@ export type ArazzoSourceArdEntry = {
 
 export type ArazzoConversionOptions = {
   sourceUrl?: string;
-  sourceArdEntries?: readonly ArazzoSourceArdEntry[];
+  sourceEntries?: readonly ArazzoSourceEntry[];
 };
 
 export type WorkflowTrigger = {
@@ -88,7 +89,7 @@ export type WorkflowRequiredCapability = {
   optional: boolean;
   source_url?: string;
   source_type?: string;
-  ard_entry_identifier?: string;
+  source_entry_identifier?: string;
 };
 
 export type WorkflowCapability = {
@@ -152,7 +153,7 @@ export function arazzoToWorkflowCapabilities(
   options: ArazzoConversionOptions = {},
 ): ArazzoWorkflowCapability[] {
   const sourceReferences = document.sourceDescriptions.map((source) =>
-    sourceDescriptionToRequiredCapability(source, options.sourceArdEntries ?? []),
+    sourceDescriptionToRequiredCapability(source, options.sourceEntries ?? []),
   );
 
   return document.workflows.map((workflow) => {
@@ -245,9 +246,9 @@ function parseJson(text: string, source: string): unknown {
 
 function sourceDescriptionToRequiredCapability(
   source: ArazzoSourceDescription,
-  ardEntries: readonly ArazzoSourceArdEntry[],
+  sourceEntries: readonly ArazzoSourceEntry[],
 ): WorkflowRequiredCapability {
-  const ardEntry = findMatchingArdEntry(source, ardEntries);
+  const sourceEntry = findMatchingSourceEntry(source, sourceEntries);
   return {
     id: slug(source.name),
     type: "api-contract",
@@ -255,7 +256,7 @@ function sourceDescriptionToRequiredCapability(
     optional: false,
     source_url: source.url,
     source_type: source.type,
-    ard_entry_identifier: ardEntry?.identifier,
+    source_entry_identifier: sourceEntry?.identifier,
   };
 }
 
@@ -313,10 +314,10 @@ function inferStepSourceName(
   return undefined;
 }
 
-function findMatchingArdEntry(
+function findMatchingSourceEntry(
   source: ArazzoSourceDescription,
-  entries: readonly ArazzoSourceArdEntry[],
-): ArazzoSourceArdEntry | undefined {
+  entries: readonly ArazzoSourceEntry[],
+): ArazzoSourceEntry | undefined {
   return entries.find((entry) => {
     if (source.url && entry.url === source.url) return true;
     return slug(entry.displayName ?? entry.identifier) === slug(source.name);

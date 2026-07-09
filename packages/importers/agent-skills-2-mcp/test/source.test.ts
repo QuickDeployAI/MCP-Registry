@@ -38,9 +38,9 @@ void test("parseSkillSourceArg detects git, http, file, and bare paths", () => {
     uri: "git+https://github.com/example/repo.git",
     ref: "HEAD",
   });
-  assert.deepEqual(parseSkillSourceArg("https://example.com/registry/index.json"), {
+  assert.deepEqual(parseSkillSourceArg("https://example.com/skills/index.json"), {
     type: "http",
-    uri: "https://example.com/registry/index.json",
+    uri: "https://example.com/skills/index.json",
   });
   const filePathSpec = parseSkillSourceArg("./some/skills");
   assert.equal(filePathSpec.type, "file");
@@ -214,8 +214,8 @@ function fakeFetcher(
   };
 }
 
-void test("http registry source fetches the index and each skill's SKILL.md", async () => {
-  const indexUrl = "https://example.com/registry/index.json";
+void test("http skill source fetches the index and each skill's SKILL.md", async () => {
+  const indexUrl = "https://example.com/skills/index.json";
   const routes = new Map([
     [
       indexUrl,
@@ -228,7 +228,7 @@ void test("http registry source fetches the index and each skill's SKILL.md", as
       },
     ],
     [
-      "https://example.com/registry/playwright-cli/SKILL.md",
+      "https://example.com/skills/playwright-cli/SKILL.md",
       { status: 200, body: skillMarkdown("playwright-cli", "Run playwright") },
     ],
   ]);
@@ -247,8 +247,8 @@ void test("http registry source fetches the index and each skill's SKILL.md", as
   );
 });
 
-void test("http registry source short-circuits on a 304 without re-fetching skills", async () => {
-  const indexUrl = "https://example.com/registry/index.json";
+void test("http skill source short-circuits on a 304 without re-fetching skills", async () => {
+  const indexUrl = "https://example.com/skills/index.json";
   let skillFetches = 0;
   const routes = new Map([
     [
@@ -260,7 +260,7 @@ void test("http registry source short-circuits on a 304 without re-fetching skil
       },
     ],
     [
-      "https://example.com/registry/a/SKILL.md",
+      "https://example.com/skills/a/SKILL.md",
       { status: 200, body: skillMarkdown("skill-a", "A") },
     ],
   ]);

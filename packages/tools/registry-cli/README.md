@@ -1,11 +1,6 @@
 # @quickdeployai/registry-cli
 
-Builds the canonical MCP `servers.json` catalog and the legacy
-`registry/index.json` compatibility artifact consumed by the marketplace ARD
-git-catalog source.
-
-For the registry authoring flow before running these commands, see
-[`docs/registry/ard-projection-authoring-guide.md`](../../docs/registry/ard-projection-authoring-guide.md).
+Builds the canonical MCP `servers.json` catalog.
 
 ```bash
 vp run @quickdeployai/registry-cli#build:registry
@@ -20,27 +15,24 @@ Sources:
 
 - `servers/**/server.json`
 - `packages/importers/**/server.json`
-- `manifests/*.ard.json` plus sibling `manifests/*.projection.json`
+- `manifests/*.mcp.json`, `manifests/*.mcp.yaml`, and `manifests/*.mcp.yml`
 - `manifests/remotes/*.server.json` except underscore-prefixed authoring templates
 
-The legacy index intentionally preserves the `agents[].summary` shape expected
-by `apps/quick-deploy-marketplace/supabase/functions/_shared/ard-sources.ts`.
-
-Projection-backed entries are compiled by deriving the importer engine from the
-ARD entry media type, then applying the sibling `McpProjectionConfig` selection,
-auth, config, expose, and deployment settings. Projection config is validated
-against the referenced importer's registered `spec.config` JSON Schema before
-`servers.json` is generated. The `config-schema` command prints those
+Manifest-backed entries are compiled by applying the `McpManifest` selection,
+auth, config, expose, and deployment settings to the shared `mcp-host` runtime.
+Manifest config is validated against the referenced importer's registered
+`spec.config` JSON Schema before `servers.json` is generated. The
+`config-schema` command prints those
 importer-owned schemas; unknown fields and default type mismatches fail with
 errors naming the importer and config field.
 
 `registry-cli validate` checks committed registry inputs for supported
 `server.json` schema vintages, reverse-DNS server names, exact semantic versions,
-duplicate server names, MCPB `fileSha256` pins, OCI digest pins, and ARD
-entry/projection schema compliance before publication.
+duplicate server names, MCPB `fileSha256` pins, OCI digest pins, and MCP
+manifest schema compliance before publication.
 
 `registry-cli bake` prints a standalone official `server.json` entry for a
-legacy `McpManifest` that has been baked into an OCI image. The emitted package
+`McpManifest` that has been baked into an OCI image. The emitted package
 identifier is digest-pinned as `<image>@sha256:<digest>`, points `mcp-host` at
 the baked `/app/manifest.mcp.yaml`, preserves required environment variables,
 and records the source manifest path plus bake provenance under
@@ -73,8 +65,7 @@ pure-library convention every hardened importer uses (`openapi-2-mcp`,
 Dockerfile, and a README with next steps. `tsc --noEmit` and `vitest run` pass
 immediately on the generated package.
 
-`scaffold manifest <importer>` remains a legacy helper that writes a
-schema-valid `McpManifest`. New committed registry entries should use an ARD
-entry plus sibling projection config instead. Both subcommands prompt
-interactively for missing required values when stdin is a TTY, and otherwise
-fail fast with the missing flag name.
+`scaffold manifest <importer>` writes a schema-valid `McpManifest` suitable for
+committed entries under `manifests/`. Both subcommands prompt interactively for
+missing required values when stdin is a TTY, and otherwise fail fast with the
+missing flag name.

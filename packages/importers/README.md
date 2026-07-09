@@ -105,8 +105,7 @@ write-back path; otherwise use the package-template workflow above.
 ## Known gaps (found while wiring up QUI-180)
 
 - `packages/importers/feed-2-mcp` does not exist in this repository. The
-  feed-shaped registry example (`manifests/product-feed.ard.json` plus
-  `manifests/product-feed.projection.json`) projects through
+  feed-shaped registry example (`manifests/product-feed.mcp.json`) runs through
   `knowledge-2-mcp` (see `packages/knowledge-core` and
   `docs/adr/0016-knowledge-2-mcp-corpus-engine.md`), not a `feed-2-mcp`
   importer package. `Dockerfile.importer` builds any package under

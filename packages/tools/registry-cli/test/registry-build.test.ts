@@ -9,7 +9,6 @@ import { McpManifestSchema } from "@quickdeployai/registry-schemas";
 import {
   buildRegistryArtifacts,
   checkGeneratedRegistryArtifacts,
-  compileArdProjectionToServerJson,
   compileBakedManifestToServerJson,
   compileManifestToServerJson,
   extractManifestFromServerJson,
@@ -21,7 +20,7 @@ const REGISTRY_BUILD_TEST_TIMEOUT_MS = 30_000;
 
 describe("registry build artifacts", () => {
   it(
-    "generates canonical servers.json and legacy marketplace index entries",
+    "generates canonical servers.json entries",
     async () => {
       const rootDir = await fixtureRoot();
       await seedPackageServer(
@@ -46,7 +45,7 @@ describe("registry build artifacts", () => {
         "https://www.npmjs.com/package/@quickdeployai/mcp-docs",
       );
       await seedRemote(rootDir);
-      await seedArdProjection(rootDir);
+      await seedManifest(rootDir);
 
       const artifacts = await buildRegistryArtifacts({ rootDir });
       expect(artifacts.serversJson.servers.map((server) => server.name)).toEqual([
@@ -57,32 +56,35 @@ describe("registry build artifacts", () => {
         "com.linear/mcp",
       ]);
 
-      const summaries = artifacts.legacyIndex.agents.map((agent) => agent.summary);
-      expect(summaries).toContainEqual(
+      expect(artifacts.files).toEqual({
+        "servers.json": expect.any(String),
+      });
+      expect(artifacts.serversJson.servers).toContainEqual(
         expect.objectContaining({
-          agent_id: "ai.quickdeploy/admin",
           name: "ai.quickdeploy/admin",
           description: "QuickDeploy Admin MCP.",
-          endpoints: { mcp: "https://www.npmjs.com/package/@quickdeployai/mcp-admin" },
-          category: "quickdeploy",
-          is_official: true,
-          tags: ["admin"],
         }),
       );
-      expect(summaries).toContainEqual(
+      expect(artifacts.serversJson.servers).toContainEqual(
         expect.objectContaining({
-          agent_id: "com.linear/mcp",
-          endpoints: { mcp: "https://mcp.linear.app/mcp" },
-          category: "productivity",
-          tags: ["linear", "remote"],
+          name: "com.linear/mcp",
+          remotes: [{ type: "streamable-http", url: "https://mcp.linear.app/mcp" }],
         }),
       );
-      expect(summaries).toContainEqual(
+      expect(artifacts.serversJson.servers).toContainEqual(
         expect.objectContaining({
-          agent_id: "ai.quickdeploy/petstore",
-          endpoints: { mcp: "ghcr.io/quickdeployai/mcp-host" },
-          category: "openapi-2-mcp",
-          tags: ["ard-entry", "openapi", "petstore", "projection-backed"],
+          name: "ai.quickdeploy/petstore",
+          packages: [
+            expect.objectContaining({
+              identifier: "ghcr.io/quickdeployai/mcp-host",
+              runtimeArguments: [
+                "run",
+                "manifests/petstore.mcp.yaml",
+                "--transport",
+                "streamable-http",
+              ],
+            }),
+          ],
         }),
       );
     },
@@ -95,7 +97,7 @@ describe("registry build artifacts", () => {
 
     expect(await checkGeneratedRegistryArtifacts({ rootDir })).toEqual({
       ok: false,
-      changed: ["servers.json", "registry/index.json"],
+      changed: ["servers.json"],
     });
 
     const artifacts = await buildRegistryArtifacts({ rootDir });
@@ -293,55 +295,6 @@ describe("registry build artifacts", () => {
     ]);
     expect(extractManifestFromServerJson(serverJson)).toEqual(McpManifestSchema.parse(manifest));
     expect(serverJson).not.toHaveProperty("manifest");
-  });
-
-  it("compiles ARD entries plus MCP projection config to official server.json", () => {
-    const manifest = McpManifestSchema.parse(testManifest());
-    const entry = {
-      identifier: "urn:air:quickdeploy.ai:mcp:petstore",
-      displayName: "Petstore",
-      type: "application/vnd.oai.openapi+json",
-      description: "Selected Petstore operations exposed as MCP tools.",
-      tags: ["openapi", "petstore"],
-      version: "1.0.0",
-      url: "https://petstore3.swagger.io/api/v3/openapi.json",
-      metadata: {
-        importMode: "operation-level",
-        capabilityKinds: ["api-contract", "tool"],
-      },
-    };
-    const projection = {
-      kind: "McpProjectionConfig",
-      entryRef: entry.identifier,
-      importerVersionRange: "^0.1.0",
-      select: manifest.spec.select,
-      auth: manifest.spec.auth,
-      config: manifest.spec.config,
-      expose: manifest.spec.expose,
-      deployment: manifest.deployment,
-    };
-
-    const serverJson = compileArdProjectionToServerJson(entry, projection, {
-      entryPath: "manifests/petstore.ard.json",
-      projectionPath: "manifests/petstore.projection.json",
-    });
-
-    expect(serverJson.packages?.[0]).toMatchObject({
-      registryType: "oci",
-      identifier: "ghcr.io/quickdeployai/mcp-host",
-      runtimeArguments: [
-        "run",
-        "manifests/petstore.projection.json",
-        "--transport",
-        "streamable-http",
-      ],
-    });
-    expect(serverJson._meta?.["ai.quickdeploy.registry/ard-entry"]).toEqual(entry);
-    expect(serverJson._meta?.["ai.quickdeploy.registry/projection"]).toMatchObject({
-      kind: "McpProjectionConfig",
-      entryRef: "urn:air:quickdeploy.ai:mcp:petstore",
-    });
-    expect(serverJson._meta).not.toHaveProperty("ai.quickdeploy.registry/manifest");
   });
 
   it("compiles a baked manifest to a standalone digest-pinned OCI package entry", () => {
@@ -662,48 +615,5 @@ async function seedManifest(rootDir: string): Promise<void> {
       "    type: none",
       "",
     ].join("\n"),
-  );
-}
-
-async function seedArdProjection(rootDir: string): Promise<void> {
-  const targetDir = join(rootDir, "manifests");
-  await mkdir(targetDir, { recursive: true });
-  const manifest = McpManifestSchema.parse(testManifest());
-  await writeFile(
-    join(targetDir, "petstore.ard.json"),
-    JSON.stringify(
-      {
-        identifier: "urn:air:quickdeploy.ai:mcp:petstore",
-        displayName: "Petstore",
-        type: "application/vnd.oai.openapi+json",
-        description: "Selected Petstore operations exposed as MCP tools.",
-        tags: ["openapi", "petstore"],
-        version: "1.0.0",
-        url: "https://petstore3.swagger.io/api/v3/openapi.json",
-        metadata: {
-          importMode: "operation-level",
-          capabilityKinds: ["api-contract", "tool"],
-        },
-      },
-      null,
-      2,
-    ),
-  );
-  await writeFile(
-    join(targetDir, "petstore.projection.json"),
-    JSON.stringify(
-      {
-        kind: "McpProjectionConfig",
-        entryRef: "urn:air:quickdeploy.ai:mcp:petstore",
-        importerVersionRange: "^0.1.0",
-        select: manifest.spec.select,
-        auth: manifest.spec.auth,
-        config: manifest.spec.config,
-        expose: manifest.spec.expose,
-        deployment: manifest.deployment,
-      },
-      null,
-      2,
-    ),
   );
 }

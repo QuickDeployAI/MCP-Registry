@@ -6,24 +6,16 @@ import {
   credentialEnvironmentVariables,
 } from "@quickdeployai/importer-core";
 import {
-  type ArdEntry,
-  ArdEntrySchema,
   OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
-  QUICKDEPLOY_ARD_ENTRY_META_KEY,
-  QUICKDEPLOY_MCP_PROJECTION_META_KEY,
   QUICKDEPLOY_REGISTRY_CURATION_META_KEY,
   QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY,
   type McpManifest,
   McpManifestSchema,
-  type McpProjectionConfig,
-  McpProjectionConfigSchema,
   type ServersJsonEnvelope,
   ServersJsonEnvelopeSchema,
   OfficialServerJsonDocumentSchema,
   attachMcpManifestToServerJson,
-  quickDeployRegistryCuration,
   type OfficialServerJsonDocument,
-  sourceMediaTypeToImporterEngine,
   validateMcpManifestImporterConfig,
 } from "@quickdeployai/registry-schemas";
 
@@ -32,25 +24,15 @@ const MCP_HOST_IMAGE = "ghcr.io/quickdeployai/mcp-host";
 const MANIFEST_CONFIG_ENV_PREFIX = "QD_MANIFEST";
 const DEFAULT_BAKED_MANIFEST_PATH = "/app/manifest.mcp.yaml";
 const OCI_SHA256_DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/i;
-const ARD_ENTRY_EXTENSION = ".ard.json";
-const PROJECTION_CONFIG_EXTENSION = ".projection.json";
 
 export interface RegistryBuildOptions {
   rootDir: string;
 }
 
-export interface LegacyRegistryIndex {
-  schema_version: "quickdeploy.registry/v1";
-  generated_by: "@quickdeployai/registry-cli";
-  agents: Array<{ summary: Record<string, unknown> }>;
-}
-
 export interface RegistryBuildArtifacts {
   serversJson: ServersJsonEnvelope;
-  legacyIndex: LegacyRegistryIndex;
   files: {
     "servers.json": string;
-    "registry/index.json": string;
   };
 }
 
@@ -81,10 +63,10 @@ export async function buildRegistryArtifacts(
 ): Promise<RegistryBuildArtifacts> {
   const sourceServers = await discoverPackageServerJson(options.rootDir);
   const remoteServers = await discoverRemoteServerJson(options.rootDir);
-  const projectionServers = await discoverArdProjectionServerJson(options.rootDir);
+  const manifestServers = await discoverManifestServerJson(options.rootDir);
   const imageDigests = await readOciImageDigests(options.rootDir);
   const servers = applyOciDigestPins(
-    [...sourceServers, ...remoteServers, ...projectionServers],
+    [...sourceServers, ...remoteServers, ...manifestServers],
     imageDigests,
   ).sort((left, right) => left.name.localeCompare(right.name));
 
@@ -96,16 +78,10 @@ export async function buildRegistryArtifacts(
       "ai.quickdeploy.registry/sourceCount": servers.length,
     },
   });
-  const artifacts = {
-    serversJson: parsed,
-    legacyIndex: legacyRegistryIndex(parsed.servers),
-  } satisfies Omit<RegistryBuildArtifacts, "files">;
-
   return {
-    ...artifacts,
+    serversJson: parsed,
     files: {
-      "servers.json": stableJson(artifacts.serversJson),
-      "registry/index.json": stableJson(artifacts.legacyIndex),
+      "servers.json": stableJson(parsed),
     },
   };
 }
@@ -197,27 +173,19 @@ async function discoverRemoteServerJson(rootDir: string): Promise<OfficialServer
   return parsed.map(({ value, path }) => parseServerJson(value, path));
 }
 
-async function discoverArdProjectionServerJson(
+async function discoverManifestServerJson(
   rootDir: string,
 ): Promise<OfficialServerJsonDocument[]> {
   const manifestDir = join(rootDir, "manifests");
   const files = await findFiles(manifestDir, (name, path) => {
     if (path.split(sep).includes("remotes")) return false;
-    return name.endsWith(ARD_ENTRY_EXTENSION);
+    return isMcpManifestFileName(name);
   });
 
-  const projections = await Promise.all(files.map((path) => readArdProjection(rootDir, path)));
-  return projections.map(({ entry, projection, entryPath, projectionPath }) =>
-    compileArdProjectionToServerJson(entry, projection, {
-      entryPath,
-      projectionPath,
-    }),
+  const manifests = await Promise.all(files.map((path) => readManifest(rootDir, path)));
+  return manifests.map(({ manifest, relativePath }) =>
+    compileManifestToServerJson(manifest, relativePath),
   );
-}
-
-export interface ArdProjectionServerJsonOptions {
-  entryPath: string;
-  projectionPath: string;
 }
 
 export function compileManifestToServerJson(
@@ -232,28 +200,6 @@ export function compileManifestToServerJson(
     curationTags: ["manifest-backed", ...parsedManifest.metadata.labels],
     meta: {
       [QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY]: parsedManifest,
-    },
-  });
-}
-
-export function compileArdProjectionToServerJson(
-  entry: unknown,
-  projection: unknown,
-  options: ArdProjectionServerJsonOptions,
-): OfficialServerJsonDocument {
-  const entryPath = normalizePath(options.entryPath);
-  const projectionPath = normalizePath(options.projectionPath);
-  const parsedEntry = parseArdEntryForRegistry(entry, entryPath);
-  const parsedProjection = parseProjectionForRegistry(projection, projectionPath);
-  const manifest = projectionToMcpManifest(parsedEntry, parsedProjection, entryPath);
-
-  return compileMcpRuntimeServerJson(manifest, {
-    runtimeConfigPath: projectionPath,
-    sourcePath: entryPath,
-    curationTags: ["ard-entry", "projection-backed", ...(parsedEntry.tags ?? [])],
-    meta: {
-      [QUICKDEPLOY_ARD_ENTRY_META_KEY]: parsedEntry,
-      [QUICKDEPLOY_MCP_PROJECTION_META_KEY]: parsedProjection,
     },
   });
 }
@@ -456,48 +402,6 @@ function schemaPropertyIsSecret(schema: unknown): boolean {
   return schema.format === "password";
 }
 
-function legacyRegistryIndex(servers: OfficialServerJsonDocument[]): LegacyRegistryIndex {
-  return {
-    schema_version: "quickdeploy.registry/v1",
-    generated_by: "@quickdeployai/registry-cli",
-    agents: servers.map((server) => ({ summary: serverToLegacySummary(server) })),
-  };
-}
-
-function serverToLegacySummary(server: OfficialServerJsonDocument): Record<string, unknown> {
-  const curation = quickDeployRegistryCuration(server);
-  const endpoint = firstRemoteUrl(server) ?? firstPackageUrl(server);
-  return {
-    agent_id: server.name,
-    name: server.name,
-    description: server.description,
-    ...(endpoint ? { endpoints: { mcp: endpoint }, website_url: endpoint } : {}),
-    version: server.version,
-    category: curation?.category,
-    is_official: curation?.isOfficial === true,
-    tags: curation?.tags ?? [],
-  };
-}
-
-function firstRemoteUrl(server: OfficialServerJsonDocument): string | undefined {
-  for (const remote of server.remotes ?? []) {
-    if (typeof remote.url === "string" && remote.url.trim()) return remote.url;
-  }
-  return undefined;
-}
-
-function firstPackageUrl(server: OfficialServerJsonDocument): string | undefined {
-  for (const pkg of server.packages ?? []) {
-    const identifier = pkg.identifier;
-    if (!identifier) continue;
-    const registryType = pkg.registryType.toLowerCase();
-    if (registryType === "npm") return `https://www.npmjs.com/package/${identifier}`;
-    if (registryType === "pypi") return `https://pypi.org/project/${identifier}`;
-    if (registryType === "oci") return identifier;
-  }
-  return undefined;
-}
-
 function parseServerJson(value: unknown, path: string): OfficialServerJsonDocument {
   const parsed = OfficialServerJsonDocumentSchema.safeParse(value);
   if (!parsed.success) {
@@ -523,25 +427,6 @@ async function readManifest(
   };
 }
 
-async function readArdProjection(
-  rootDir: string,
-  path: string,
-): Promise<{
-  entry: ArdEntry;
-  projection: McpProjectionConfig;
-  entryPath: string;
-  projectionPath: string;
-}> {
-  const entryPath = normalizePath(relative(rootDir, path));
-  const projectionPath = projectionPathForEntryPath(entryPath);
-  const entry = parseArdEntryForRegistry((await readJson(path)).value, entryPath);
-  const projection = parseProjectionForRegistry(
-    (await readJson(join(rootDir, projectionPath))).value,
-    projectionPath,
-  );
-  return { entry, projection, entryPath, projectionPath };
-}
-
 function parseManifestForRegistry(manifest: unknown, relativePath: string): McpManifest {
   try {
     return validateMcpManifestImporterConfig(manifest);
@@ -549,101 +434,6 @@ function parseManifestForRegistry(manifest: unknown, relativePath: string): McpM
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Invalid importer config in ${relativePath}: ${message}`);
   }
-}
-
-function parseArdEntryForRegistry(entry: unknown, relativePath: string): ArdEntry {
-  try {
-    return ArdEntrySchema.parse(entry);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid ARD entry in ${relativePath}: ${message}`);
-  }
-}
-
-function parseProjectionForRegistry(
-  projection: unknown,
-  relativePath: string,
-): McpProjectionConfig {
-  try {
-    return McpProjectionConfigSchema.parse(projection);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Invalid MCP projection config in ${relativePath}: ${message}`);
-  }
-}
-
-function projectionToMcpManifest(
-  entry: ArdEntry,
-  projection: McpProjectionConfig,
-  entryPath: string,
-): McpManifest {
-  const engine = sourceMediaTypeToImporterEngine(entry.type);
-  if (!engine) {
-    throw new Error(`ARD entry ${entryPath} type "${entry.type}" has no importer engine mapping.`);
-  }
-  if (!entry.url) {
-    throw new Error(`ARD entry ${entryPath} must use url for MCP projection builds.`);
-  }
-  if (projection.entryRef !== entry.identifier) {
-    throw new Error(
-      `MCP projection for ${entryPath} references ${projection.entryRef}, expected ${entry.identifier}.`,
-    );
-  }
-
-  return parseManifestForRegistry(
-    {
-      apiVersion: "quickdeploy.ai/v1",
-      kind: "McpManifest",
-      metadata: mcpManifestMetadataFromArdEntry(entry),
-      spec: {
-        importer: {
-          engine,
-          versionRange: projection.importerVersionRange,
-        },
-        source: sourceFromArdEntryUrl(entry.url),
-        select: projection.select,
-        auth: projection.auth,
-        ...(projection.config ? { config: projection.config } : {}),
-        expose: projection.expose,
-      },
-      deployment: projection.deployment,
-    },
-    entryPath,
-  );
-}
-
-function mcpManifestMetadataFromArdEntry(entry: ArdEntry): McpManifest["metadata"] {
-  const slug = entry.identifier.split(":").at(-1);
-  if (!slug) {
-    throw new Error(`ARD entry ${entry.identifier} cannot be projected without a terminal slug.`);
-  }
-  return {
-    name: `ai.quickdeploy/${slug}`,
-    version: entry.version ?? "0.1.0",
-    title: entry.displayName,
-    description: entry.description,
-    labels: entry.tags ?? [],
-  };
-}
-
-function sourceFromArdEntryUrl(uri: string): McpManifest["spec"]["source"] {
-  if (uri.startsWith("git+https://") || uri.startsWith("ssh://")) {
-    return { type: "git", uri };
-  }
-  if (uri.startsWith("file://")) {
-    return { type: "file", uri };
-  }
-  if (uri.startsWith("oci://")) {
-    return { type: "oci", uri };
-  }
-  return { type: "http", uri };
-}
-
-function projectionPathForEntryPath(entryPath: string): string {
-  if (!entryPath.endsWith(ARD_ENTRY_EXTENSION)) {
-    throw new Error(`ARD entry path must end with ${ARD_ENTRY_EXTENSION}: ${entryPath}`);
-  }
-  return `${entryPath.slice(0, -ARD_ENTRY_EXTENSION.length)}${PROJECTION_CONFIG_EXTENSION}`;
 }
 
 async function findFiles(
@@ -677,6 +467,10 @@ function uniqueStrings(values: string[]): string[] {
 
 function normalizePath(path: string): string {
   return path.split(sep).join("/");
+}
+
+function isMcpManifestFileName(name: string): boolean {
+  return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
 }
 
 function stripOciDigest(identifier: string): string {
