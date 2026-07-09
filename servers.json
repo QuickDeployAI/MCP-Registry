@@ -2374,6 +2374,181 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/ftc-news",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for the FTC's official Press Release RSS feed.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/ftc-news/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "ftc-news",
+            "generated",
+            "government",
+            "manifest-backed",
+            "news",
+            "press-releases",
+            "rss"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/ftc-news",
+            "version": "0.1.0",
+            "title": "FTC News",
+            "description": "Generated feed-2-mcp MCP manifest for the FTC's official Press Release RSS feed.",
+            "labels": [
+              "feed",
+              "ftc-news",
+              "generated",
+              "government",
+              "news",
+              "press-releases",
+              "rss"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.ftc.gov/feeds/press-release.xml"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/press-releases/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "description": "Polling interval in minutes for refreshing the FTC press release feed."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "description": "Maximum number of retained feed items."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether to include full item content in query responses."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 30,
+                "maxItems": 200,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.ftc.gov/feeds/press-release.xml",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "Official FTC RSS feed directory: https://www.ftc.gov/news-events/stay-connected/ftc-rss-feeds (also linked from https://www.ftc.gov/stay-connected/rss).",
+                  "Selected feed: the general Press Release feed at https://www.ftc.gov/feeds/press-release.xml (confirmed via direct fetch: RSS 2.0, channel title \"Press Release Feed\", channel link https://www.ftc.gov/), covering all FTC enforcement actions and policy announcements rather than a narrower topic-only feed (e.g. Competition-only or Consumer-Protection-only press release feeds).",
+                  "Feed items expose standard RSS 2.0 fields (title, link, description, pubDate, dc:creator, guid).",
+                  "The feed is public; no authentication is required."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://www.ftc.gov/feeds/press-release.xml for source retrieval and periodic polling"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/ftc-news/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/ftc-news.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/ftc-news/"
+                ],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_ftc_news_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "ftc_news_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.ftc.gov/feeds/press-release.xml",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "Official FTC RSS feed directory: https://www.ftc.gov/news-events/stay-connected/ftc-rss-feeds (also linked from https://www.ftc.gov/stay-connected/rss).",
+                "Selected feed: the general Press Release feed at https://www.ftc.gov/feeds/press-release.xml (confirmed via direct fetch: RSS 2.0, channel title \"Press Release Feed\", channel link https://www.ftc.gov/), covering all FTC enforcement actions and policy announcements rather than a narrower topic-only feed (e.g. Competition-only or Consumer-Protection-only press release feeds).",
+                "Feed items expose standard RSS 2.0 fields (title, link, description, pubDate, dc:creator, guid).",
+                "The feed is public; no authentication is required."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://www.ftc.gov/feeds/press-release.xml for source retrieval and periodic polling"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/ftc-news/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/ftc-news.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/ftc-news/"
+              ],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/gitlab-events",
       "version": "0.1.0",
       "description": "Generated GitLab webhook events read-only AsyncAPI MCP catalog manifest.",
@@ -5819,6 +5994,393 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/sap",
+      "version": "0.1.0",
+      "description": "Generated wsdl-2-mcp MCP manifest for SAP SOAP Enterprise Services via SOAMANAGER.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/sap/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["QD_MANIFEST_ENDPOINT", "SAP_PASSWORD", "SAP_USERNAME"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "QD_MANIFEST_ENDPOINT",
+          "description": "SOAP endpoint override for the selected WSDL service port (customer-specific SAP SOAMANAGER-generated endpoint).",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "SAP_PASSWORD",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "SAP_USERNAME",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "enterprise-services",
+            "generated",
+            "manifest-backed",
+            "read-only",
+            "sap",
+            "soap",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/sap",
+            "version": "0.1.0",
+            "title": "SAP",
+            "description": "Generated wsdl-2-mcp MCP manifest for SAP SOAP Enterprise Services via SOAMANAGER.",
+            "labels": [
+              "enterprise-services",
+              "generated",
+              "read-only",
+              "sap",
+              "soap",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://api.sap.com",
+              "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+              "ref": "sap-business-accelerator-hub@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "SalesOrder/GetList"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "SalesOrder/GetStatus"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Customer/GetList"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "SAP_USERNAME"
+                },
+                "passwordFrom": {
+                  "env": "SAP_PASSWORD"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "SOAP endpoint override for the selected WSDL service port (customer-specific SAP SOAMANAGER-generated endpoint)."
+                  },
+                  "bindingName": {
+                    "type": "string",
+                    "description": "Optional WSDL binding name when a document exposes multiple SOAP bindings."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                },
+                "required": ["endpoint"]
+              },
+              "defaults": {
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://api.sap.com",
+                "type": "http",
+                "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+                "ref": "sap-business-accelerator-hub@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "sap-business-accelerator-hub@2026-07-09",
+                "notes": [
+                  "Official SAP Business Accelerator Hub (api.sap.com) — SAP's catalog for discovering and downloading SOAP/WSDL and OData API specifications.",
+                  "Individual per-API WSDL downloads on the hub require an authenticated SAP account; this manifest pins the public hub landing/catalog page as the canonical discovery source.",
+                  "Selected operations model SAP's standard, RFC-enabled BAPI function modules commonly exposed as SOAP web services via transaction SOAMANAGER (namespace convention urn:sap-com:document:sap:rfc:functions): BAPI_SALESORDER_GETLIST, BAPI_SALESORDER_GETSTATUS, BAPI_CUSTOMER_GETLIST.",
+                  "Canonical source URL: https://api.sap.com",
+                  "Verified source SHA-256: b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+                  "This manifest selects read-only sales order and customer master lookups only; no create/update BAPIs are exposed."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP SalesOrder/GetList",
+                  "name": "sap_sales_order_get_list",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP SalesOrder/GetStatus",
+                  "name": "sap_sales_order_get_status",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP Customer/GetList",
+                  "name": "sap_customer_get_list",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://api.sap.com",
+              "type": "http",
+              "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+              "ref": "sap-business-accelerator-hub@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "sap-business-accelerator-hub@2026-07-09",
+              "notes": [
+                "Official SAP Business Accelerator Hub (api.sap.com) — SAP's catalog for discovering and downloading SOAP/WSDL and OData API specifications.",
+                "Individual per-API WSDL downloads on the hub require an authenticated SAP account; this manifest pins the public hub landing/catalog page as the canonical discovery source.",
+                "Selected operations model SAP's standard, RFC-enabled BAPI function modules commonly exposed as SOAP web services via transaction SOAMANAGER (namespace convention urn:sap-com:document:sap:rfc:functions): BAPI_SALESORDER_GETLIST, BAPI_SALESORDER_GETSTATUS, BAPI_CUSTOMER_GETLIST.",
+                "Canonical source URL: https://api.sap.com",
+                "Verified source SHA-256: b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+                "This manifest selects read-only sales order and customer master lookups only; no create/update BAPIs are exposed."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/sec-edgar",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for SEC EDGAR filings feed.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/sec-edgar/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "filings",
+            "generated",
+            "manifest-backed",
+            "read-only",
+            "sec-edgar"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/sec-edgar",
+            "version": "0.1.0",
+            "title": "SEC EDGAR",
+            "description": "Generated feed-2-mcp MCP manifest for SEC EDGAR filings feed.",
+            "labels": [
+              "feed",
+              "filings",
+              "generated",
+              "read-only",
+              "sec-edgar"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+              "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+              "ref": "sec-edgar-current-filings-atom@2026-07-09"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/filings/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Refresh interval for feed polling and cache updates."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Maximum feed items retained in the MCP corpus."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether full feed content is exposed in resources."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 30,
+                "maxItems": 40,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+                "type": "http",
+                "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+                "ref": "sec-edgar-current-filings-atom@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "sec-edgar-current-filings-atom@2026-07-09",
+                "notes": [
+                  "Official SEC.gov RSS/Atom feeds documentation page (https://www.sec.gov/about/rss-feeds) links this canonical EDGAR current-filings Atom feed endpoint.",
+                  "This manifest selects the public, unauthenticated EDGAR current 10-K filings Atom feed; no API key or account is required.",
+                  "Canonical documentation URL: https://www.sec.gov/about/rss-feeds",
+                  "Verified documentation page SHA-256: aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290"
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_sec_edgar_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "sec_edgar_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+              "type": "http",
+              "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+              "ref": "sec-edgar-current-filings-atom@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "sec-edgar-current-filings-atom@2026-07-09",
+              "notes": [
+                "Official SEC.gov RSS/Atom feeds documentation page (https://www.sec.gov/about/rss-feeds) links this canonical EDGAR current-filings Atom feed endpoint.",
+                "This manifest selects the public, unauthenticated EDGAR current 10-K filings Atom feed; no API key or account is required.",
+                "Canonical documentation URL: https://www.sec.gov/about/rss-feeds",
+                "Verified documentation page SHA-256: aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290"
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/sentry",
       "version": "0.1.0",
       "description": "Generated asyncapi-2-mcp MCP manifest for Sentry issue alert webhook events.",
@@ -7461,6 +8023,181 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/usda-recalls",
+      "version": "0.1.0",
+      "description": "Generated feed-2-mcp MCP manifest for USDA FSIS recall and public health alerts.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/usda-recalls/feed.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "feed-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "feed",
+            "food-safety",
+            "generated",
+            "government",
+            "manifest-backed",
+            "recalls",
+            "rss",
+            "usda-recalls"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/usda-recalls",
+            "version": "0.1.0",
+            "title": "USDA Recalls",
+            "description": "Generated feed-2-mcp MCP manifest for USDA FSIS recall and public health alerts.",
+            "labels": [
+              "feed",
+              "food-safety",
+              "generated",
+              "government",
+              "recalls",
+              "rss",
+              "usda-recalls"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "feed-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "http://www.fsis.usda.gov/RSS/usdarss.xml"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": ["/recalls/**"]
+            },
+            "auth": [],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshMinutes": {
+                    "type": "number",
+                    "description": "Polling interval in minutes for refreshing the FSIS recall feed."
+                  },
+                  "maxItems": {
+                    "type": "number",
+                    "description": "Maximum number of retained feed items."
+                  },
+                  "includeContent": {
+                    "type": "boolean",
+                    "description": "Whether to include full item content in query responses."
+                  }
+                }
+              },
+              "defaults": {
+                "refreshMinutes": 30,
+                "maxItems": 200,
+                "includeContent": true
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "http://www.fsis.usda.gov/RSS/usdarss.xml",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "rss-2.0",
+                "notes": [
+                  "Official USDA Food Safety and Inspection Service (FSIS) recall/public-health-alert RSS feed, referenced from the FSIS recalls page https://www.fsis.usda.gov/recalls and the FSIS news feeds & subscriptions page https://www.fsis.usda.gov/news-events/news-feeds-subscriptions.",
+                  "fsis.usda.gov returns HTTP 403 to automated/unauthenticated fetches (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here - matches the eBay Trading (QUI-391) and HubSpot (QUI-352) precedent for sources that block unauthenticated automated retrieval.",
+                  "FSIS also launched a Recall and Public Health Alert API for structured access; the RSS feed remains the documented lightweight subscription channel and is used here for consistency with the other feed-2-mcp catalog entries.",
+                  "The feed is public; no authentication is required."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET http://www.fsis.usda.gov/RSS/usdarss.xml for source retrieval and periodic polling"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/usda-recalls/feed.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/feed/usda-recalls.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/feed/usda-recalls/"
+                ],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "feed.query",
+                  "name": "query_usda_recalls_feed",
+                  "deny": false
+                }
+              ],
+              "resources": [
+                {
+                  "from": "feed:item",
+                  "name": "usda_recalls_feed_item",
+                  "deny": false
+                }
+              ],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "http://www.fsis.usda.gov/RSS/usdarss.xml",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "rss-2.0",
+              "notes": [
+                "Official USDA Food Safety and Inspection Service (FSIS) recall/public-health-alert RSS feed, referenced from the FSIS recalls page https://www.fsis.usda.gov/recalls and the FSIS news feeds & subscriptions page https://www.fsis.usda.gov/news-events/news-feeds-subscriptions.",
+                "fsis.usda.gov returns HTTP 403 to automated/unauthenticated fetches (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here - matches the eBay Trading (QUI-391) and HubSpot (QUI-352) precedent for sources that block unauthenticated automated retrieval.",
+                "FSIS also launched a Recall and Public Health Alert API for structured access; the RSS feed remains the documented lightweight subscription channel and is used here for consistency with the other feed-2-mcp catalog entries.",
+                "The feed is public; no authentication is required."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET http://www.fsis.usda.gov/RSS/usdarss.xml for source retrieval and periodic polling"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/usda-recalls/feed.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/feed/usda-recalls.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/feed/usda-recalls/"
+              ],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/workday",
       "version": "0.1.0",
       "description": "Generated Workday Human Resources SOAP web service MCP catalog manifest.",
@@ -9059,6 +9796,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 67
+    "ai.quickdeploy.registry/sourceCount": 71
   }
 }
