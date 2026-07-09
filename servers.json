@@ -9436,6 +9436,211 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/usps",
+      "version": "0.1.0",
+      "description": "Generated USPS Track & Confirm read-only WSDL-family MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/usps/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["USPS_WEBTOOLS_USER_ID"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "USPS_WEBTOOLS_USER_ID",
+          "description": "Secret used by api-key upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "logistics",
+            "manifest-backed",
+            "read-only",
+            "shipping",
+            "soap",
+            "usps",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/usps",
+            "version": "0.1.0",
+            "title": "USPS",
+            "description": "Generated USPS Track & Confirm read-only WSDL-family MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "logistics",
+              "read-only",
+              "shipping",
+              "soap",
+              "usps",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://www.usps.com/business/web-tools-apis/documentation-updates.htm",
+              "digest": "sha256:a70ff87da166c1f05f56fa2a5e3c3db36976529f4d4bce842ef3e8f8c9b637e1",
+              "ref": "usps-web-tools-docs@2026-07-09"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "TrackConfirm/TrackV2"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "api-key",
+                "in": "query",
+                "name": "USERID",
+                "valueFrom": {
+                  "env": "USPS_WEBTOOLS_USER_ID"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "USPS Web Tools API base URL."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://production.shippingapis.com/ShippingAPI.dll",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://www.usps.com/business/web-tools-apis/documentation-updates.htm",
+                "type": "http",
+                "digest": "sha256:a70ff87da166c1f05f56fa2a5e3c3db36976529f4d4bce842ef3e8f8c9b637e1",
+                "ref": "usps-web-tools-docs@2026-07-09",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "usps-web-tools-docs@2026-07-09",
+                "notes": [
+                  "Official USPS Web Tools APIs documentation: https://www.usps.com/business/web-tools-apis/documentation-updates.htm",
+                  "USPS does not publish a first-party WSDL/SOAP document; its public Web Tools interface is an XML-over-HTTP GET API, catalogued here under the wsdl-2-mcp importer per this catalog's family assignment for legacy-style RPC operations, matching the precedent set by the Salesforce/Airtable OpenAPI manifests for providers without a first-party machine-readable spec.",
+                  "Verified source SHA-256: a70ff87da166c1f05f56fa2a5e3c3db36976529f4d4bce842ef3e8f8c9b637e1",
+                  "Selected operation is USPS's officially documented read-only Track & Confirm (TrackV2) package tracking request.",
+                  "USPS authenticates Web Tools requests via a registered USERID query parameter (Web Tools does not use a password); this manifest models it as an api-key env ref only, never a literal value."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://www.usps.com/business/web-tools-apis/documentation-updates.htm for source retrieval",
+                  "GET https://production.shippingapis.com/ShippingAPI.dll?API=TrackV2 for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/usps/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/usps.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/usps/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP TrackConfirm/TrackV2",
+                  "name": "soap_usps_track_v2",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://www.usps.com/business/web-tools-apis/documentation-updates.htm",
+              "type": "http",
+              "digest": "sha256:a70ff87da166c1f05f56fa2a5e3c3db36976529f4d4bce842ef3e8f8c9b637e1",
+              "ref": "usps-web-tools-docs@2026-07-09",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "usps-web-tools-docs@2026-07-09",
+              "notes": [
+                "Official USPS Web Tools APIs documentation: https://www.usps.com/business/web-tools-apis/documentation-updates.htm",
+                "USPS does not publish a first-party WSDL/SOAP document; its public Web Tools interface is an XML-over-HTTP GET API, catalogued here under the wsdl-2-mcp importer per this catalog's family assignment for legacy-style RPC operations, matching the precedent set by the Salesforce/Airtable OpenAPI manifests for providers without a first-party machine-readable spec.",
+                "Verified source SHA-256: a70ff87da166c1f05f56fa2a5e3c3db36976529f4d4bce842ef3e8f8c9b637e1",
+                "Selected operation is USPS's officially documented read-only Track & Confirm (TrackV2) package tracking request.",
+                "USPS authenticates Web Tools requests via a registered USERID query parameter (Web Tools does not use a password); this manifest models it as an api-key env ref only, never a literal value."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://www.usps.com/business/web-tools-apis/documentation-updates.htm for source retrieval",
+                "GET https://production.shippingapis.com/ShippingAPI.dll?API=TrackV2 for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/usps/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/usps.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/usps/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/workday",
       "version": "0.1.0",
       "description": "Generated Workday Human Resources SOAP web service MCP catalog manifest.",
