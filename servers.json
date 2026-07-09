@@ -2105,6 +2105,143 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/smb-agent-skills",
+      "version": "0.1.0",
+      "description": "SMB back-office skills served as MCP prompts and resources.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/quickdeploy/smb-agent-skills.mcp.json",
+            "--transport",
+            "streamable-http"
+          ]
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "agent-skills-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "accounting",
+            "agent",
+            "commerce",
+            "crm",
+            "manifest-backed",
+            "payments",
+            "skills",
+            "smb"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/smb-agent-skills",
+            "version": "0.1.0",
+            "title": "SMB Agent Skills",
+            "description": "SMB back-office skills served as MCP prompts and resources.",
+            "labels": [
+              "accounting",
+              "agent",
+              "commerce",
+              "crm",
+              "payments",
+              "skills",
+              "smb"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "agent-skills-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "git",
+              "uri": "git+https://github.com/QuickDeployAI/agent-skills-registry.git#main"
+            },
+            "select": {
+              "requests": [],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [
+                {
+                  "name": "stripe-payments-operator",
+                  "globs": ["skills/quickdeploy/stripe-payments-operator/**"]
+                },
+                {
+                  "name": "smb-cashflow-daily-pulse",
+                  "globs": ["skills/quickdeploy/smb-cashflow-daily-pulse/**"]
+                },
+                {
+                  "name": "smb-collections-followup",
+                  "globs": ["skills/quickdeploy/smb-collections-followup/**"]
+                },
+                {
+                  "name": "quickbooks-bookkeeping",
+                  "globs": ["skills/quickdeploy/quickbooks-bookkeeping/**"]
+                },
+                {
+                  "name": "hubspot-crm-followup",
+                  "globs": ["skills/quickdeploy/hubspot-crm-followup/**"]
+                },
+                {
+                  "name": "shopify-store-operator",
+                  "globs": ["skills/quickdeploy/shopify-store-operator/**"]
+                },
+                {
+                  "name": "square-pos-ops",
+                  "globs": ["skills/quickdeploy/square-pos-ops/**"]
+                },
+                {
+                  "name": "smb-month-end-close",
+                  "globs": ["skills/quickdeploy/smb-month-end-close/**"]
+                },
+                {
+                  "name": "skill-registry-author",
+                  "globs": ["skills/quickdeploy/skill-registry-author/**"]
+                }
+              ],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [],
+            "expose": {
+              "tools": [],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {
+              "workspaceRoot": {
+                "type": "string",
+                "description": "Workspace root passed to the skills runtime."
+              }
+            },
+            "configSchema": {
+              "type": "object",
+              "properties": {
+                "workspaceRoot": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/stripe",
       "version": "0.1.0",
       "description": "Generated Stripe Customers read-only OpenAPI MCP catalog manifest.",
@@ -3255,6 +3392,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 39
+    "ai.quickdeploy.registry/sourceCount": 40
   }
 }
