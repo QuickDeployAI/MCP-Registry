@@ -364,6 +364,194 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/amazon-eventbridge",
+      "version": "0.1.0",
+      "description": "Generated asyncapi-2-mcp MCP manifest for Amazon EventBridge PutEvents.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/amazon-eventbridge/events.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": [
+            "AMAZON_EVENTBRIDGE_ACCESS_KEY_ID",
+            "AMAZON_EVENTBRIDGE_SECRET_ACCESS_KEY"
+          ]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "AMAZON_EVENTBRIDGE_ACCESS_KEY_ID",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "AMAZON_EVENTBRIDGE_SECRET_ACCESS_KEY",
+          "description": "Secret used by basic upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "asyncapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "amazon-eventbridge",
+            "asyncapi",
+            "aws",
+            "eventbridge",
+            "events",
+            "generated",
+            "manifest-backed"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/amazon-eventbridge",
+            "version": "0.1.0",
+            "title": "Amazon EventBridge",
+            "description": "Generated asyncapi-2-mcp MCP manifest for Amazon EventBridge PutEvents.",
+            "labels": [
+              "amazon-eventbridge",
+              "asyncapi",
+              "aws",
+              "eventbridge",
+              "events",
+              "generated"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "asyncapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "PUBLISH",
+                  "uriTemplate": "channel://eventbridge.put-events"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "basic",
+                "usernameFrom": {
+                  "env": "AMAZON_EVENTBRIDGE_ACCESS_KEY_ID"
+                },
+                "passwordFrom": {
+                  "env": "AMAZON_EVENTBRIDGE_SECRET_ACCESS_KEY"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brokerProtocol": {
+                    "type": "string",
+                    "description": "Delivery protocol for generated publish tools. EventBridge PutEvents uses SigV4-signed HTTPS, not Kafka/MQTT."
+                  },
+                  "publishTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-publish timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "brokerProtocol": "https",
+                "publishTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html",
+                "type": "http",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "2015-10-07",
+                "notes": [
+                  "Official AWS EventBridge API Reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/Welcome.html",
+                  "Pinned operation reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html",
+                  "Pinned request entry reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html",
+                  "EventBridge API version 2015-10-07 (from the official AWS API Reference PDF title).",
+                  "AWS does not publish a first-party AsyncAPI document for EventBridge; this manifest models the PutEvents publish operation (Source, DetailType, Detail, Resources, EventBusName, Time, TraceHeader) directly from the official API Reference above.",
+                  "PutEvents requires AWS SigV4-signed HTTPS requests (Content-Type application/x-amz-json-1.1, X-Amz-Target: AWSEvents.PutEvents) rather than a Kafka/MQTT broker binding."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": ["source-uri", "configured-upstream"],
+                "filesystem": ["generated-project-readwrite"],
+                "process": ["none"],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "PUBLISH channel://eventbridge.put-events",
+                  "name": "publish_channel_eventbridge_put_events",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html",
+              "type": "http",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "2015-10-07",
+              "notes": [
+                "Official AWS EventBridge API Reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/Welcome.html",
+                "Pinned operation reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html",
+                "Pinned request entry reference: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html",
+                "EventBridge API version 2015-10-07 (from the official AWS API Reference PDF title).",
+                "AWS does not publish a first-party AsyncAPI document for EventBridge; this manifest models the PutEvents publish operation (Source, DetailType, Detail, Resources, EventBusName, Time, TraceHeader) directly from the official API Reference above.",
+                "PutEvents requires AWS SigV4-signed HTTPS requests (Content-Type application/x-amz-json-1.1, X-Amz-Target: AWSEvents.PutEvents) rather than a Kafka/MQTT broker binding."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": ["source-uri", "configured-upstream"],
+              "filesystem": ["generated-project-readwrite"],
+              "process": ["none"],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/box",
       "version": "0.1.0",
       "description": "Generated Box Platform folders read-only OpenAPI MCP catalog manifest.",
@@ -792,6 +980,213 @@
                 "Read committed manifest registry/docusign/api.mcp.json",
                 "Read committed generated test packages/tools/registry-cli/test/generated/openapi/docusign.test.ts",
                 "Read/write gitignored generated project .generated/mcp-codegen/openapi/docusign/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/ebay-trading",
+      "version": "0.1.0",
+      "description": "Generated eBay Trading API read-only WSDL/SOAP MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/ebay-trading/soap.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["EBAY_TRADING_AUTH_TOKEN"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "EBAY_TRADING_AUTH_TOKEN",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "wsdl-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "ebay",
+            "ebay-trading",
+            "generated",
+            "manifest-backed",
+            "read-only",
+            "wsdl"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/ebay-trading",
+            "version": "0.1.0",
+            "title": "eBay Trading",
+            "description": "Generated eBay Trading API read-only WSDL/SOAP MCP catalog manifest.",
+            "labels": [
+              "ebay",
+              "ebay-trading",
+              "generated",
+              "read-only",
+              "wsdl"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "wsdl-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+              "ref": "ebay-trading-wsdl-v1455"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Trading/GeteBayOfficialTime"
+                },
+                {
+                  "method": "SOAP",
+                  "uriTemplate": "Trading/GetUser"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "EBAY_TRADING_AUTH_TOKEN"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "eBay Trading API SOAP endpoint override."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request SOAP upstream timeout in milliseconds."
+                  }
+                }
+              },
+              "defaults": {
+                "endpoint": "https://api.ebay.com/wsapi",
+                "requestTimeoutMs": 30000
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+                "type": "http",
+                "ref": "ebay-trading-wsdl-v1455",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "ebay-trading-wsdl-v1455",
+                "notes": [
+                  "Official eBay Trading API WSDL, pinned to the numbered release version 1455 (confirmed via the `<!-- Version 1455 -->` comment near the top of the document) rather than the moving `latest` alias.",
+                  "eBay's edge/WAF returns HTTP 403 to automated/unauthenticated fetches of this WSDL (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here; matches the HubSpot precedent (QUI-352) for sources that block unauthenticated automated retrieval.",
+                  "Canonical source URL: https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+                  "GetCategories was considered but excluded: eBay deprecated it, decommissioned 2026-04-15, with migration guidance pointing to the Taxonomy/Metadata APIs.",
+                  "The committed manifest selects read-only GeteBayOfficialTime and GetUser Trading API operations only."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://developer.ebay.com/webservices/1455/ebaysvc.wsdl for source retrieval",
+                  "SOAP https://api.ebay.com/wsapi Trading/GeteBayOfficialTime for selected upstream operation",
+                  "SOAP https://api.ebay.com/wsapi Trading/GetUser for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/ebay-trading/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ebay-trading.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ebay-trading/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "SOAP Trading/GeteBayOfficialTime",
+                  "name": "get_ebay_official_time",
+                  "deny": false
+                },
+                {
+                  "from": "SOAP Trading/GetUser",
+                  "name": "get_ebay_trading_user",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+              "type": "http",
+              "ref": "ebay-trading-wsdl-v1455",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "ebay-trading-wsdl-v1455",
+              "notes": [
+                "Official eBay Trading API WSDL, pinned to the numbered release version 1455 (confirmed via the `<!-- Version 1455 -->` comment near the top of the document) rather than the moving `latest` alias.",
+                "eBay's edge/WAF returns HTTP 403 to automated/unauthenticated fetches of this WSDL (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here; matches the HubSpot precedent (QUI-352) for sources that block unauthenticated automated retrieval.",
+                "Canonical source URL: https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+                "GetCategories was considered but excluded: eBay deprecated it, decommissioned 2026-04-15, with migration guidance pointing to the Taxonomy/Metadata APIs.",
+                "The committed manifest selects read-only GeteBayOfficialTime and GetUser Trading API operations only."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://developer.ebay.com/webservices/1455/ebaysvc.wsdl for source retrieval",
+                "SOAP https://api.ebay.com/wsapi Trading/GeteBayOfficialTime for selected upstream operation",
+                "SOAP https://api.ebay.com/wsapi Trading/GetUser for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/ebay-trading/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ebay-trading.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ebay-trading/"
               ],
               "process": [
                 "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
@@ -6372,6 +6767,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 53
+    "ai.quickdeploy.registry/sourceCount": 55
   }
 }
