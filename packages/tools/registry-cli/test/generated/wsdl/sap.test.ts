@@ -1,0 +1,216 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "wsdl",
+  provider: "sap",
+  manifestPath: "registry/sap/soap.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/sap",
+      "version": "0.1.0",
+      "title": "SAP",
+      "description": "Generated wsdl-2-mcp MCP manifest for SAP SOAP Enterprise Services via SOAMANAGER.",
+      "labels": [
+        "enterprise-services",
+        "generated",
+        "read-only",
+        "sap",
+        "soap",
+        "wsdl"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "wsdl-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://api.sap.com",
+        "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+        "ref": "sap-business-accelerator-hub@2026-07-09"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "SOAP",
+            "uriTemplate": "SalesOrder/GetList"
+          },
+          {
+            "method": "SOAP",
+            "uriTemplate": "SalesOrder/GetStatus"
+          },
+          {
+            "method": "SOAP",
+            "uriTemplate": "Customer/GetList"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "basic",
+          "usernameFrom": {
+            "env": "SAP_USERNAME"
+          },
+          "passwordFrom": {
+            "env": "SAP_PASSWORD"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "SOAP endpoint override for the selected WSDL service port (customer-specific SAP SOAMANAGER-generated endpoint)."
+            },
+            "bindingName": {
+              "type": "string",
+              "description": "Optional WSDL binding name when a document exposes multiple SOAP bindings."
+            },
+            "requestTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-request SOAP upstream timeout in milliseconds."
+            }
+          },
+          "required": [
+            "endpoint"
+          ]
+        },
+        "defaults": {
+          "requestTimeoutMs": 30000
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://api.sap.com",
+          "type": "http",
+          "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+          "ref": "sap-business-accelerator-hub@2026-07-09",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "sap-business-accelerator-hub@2026-07-09",
+          "notes": [
+            "Official SAP Business Accelerator Hub (api.sap.com) — SAP's catalog for discovering and downloading SOAP/WSDL and OData API specifications.",
+            "Individual per-API WSDL downloads on the hub require an authenticated SAP account; this manifest pins the public hub landing/catalog page as the canonical discovery source.",
+            "Selected operations model SAP's standard, RFC-enabled BAPI function modules commonly exposed as SOAP web services via transaction SOAMANAGER (namespace convention urn:sap-com:document:sap:rfc:functions): BAPI_SALESORDER_GETLIST, BAPI_SALESORDER_GETSTATUS, BAPI_CUSTOMER_GETLIST.",
+            "Canonical source URL: https://api.sap.com",
+            "Verified source SHA-256: b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+            "This manifest selects read-only sales order and customer master lookups only; no create/update BAPIs are exposed."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "source-uri",
+            "configured-upstream"
+          ],
+          "filesystem": [
+            "generated-project-readwrite"
+          ],
+          "process": [
+            "none"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "SOAP SalesOrder/GetList",
+            "name": "sap_sales_order_get_list",
+            "deny": false
+          },
+          {
+            "from": "SOAP SalesOrder/GetStatus",
+            "name": "sap_sales_order_get_status",
+            "deny": false
+          },
+          {
+            "from": "SOAP Customer/GetList",
+            "name": "sap_customer_get_list",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://api.sap.com",
+        "type": "http",
+        "digest": "sha256:b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+        "ref": "sap-business-accelerator-hub@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "sap-business-accelerator-hub@2026-07-09",
+        "notes": [
+          "Official SAP Business Accelerator Hub (api.sap.com) — SAP's catalog for discovering and downloading SOAP/WSDL and OData API specifications.",
+          "Individual per-API WSDL downloads on the hub require an authenticated SAP account; this manifest pins the public hub landing/catalog page as the canonical discovery source.",
+          "Selected operations model SAP's standard, RFC-enabled BAPI function modules commonly exposed as SOAP web services via transaction SOAMANAGER (namespace convention urn:sap-com:document:sap:rfc:functions): BAPI_SALESORDER_GETLIST, BAPI_SALESORDER_GETSTATUS, BAPI_CUSTOMER_GETLIST.",
+          "Canonical source URL: https://api.sap.com",
+          "Verified source SHA-256: b46243fc9a4da3a4d01b8110c7765ba8b6257029c805b23f270293fdaea7f075",
+          "This manifest selects read-only sales order and customer master lookups only; no create/update BAPIs are exposed."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "SOAP SalesOrder/GetList",
+        "name": "sap_sales_order_get_list",
+        "deny": false
+      },
+      {
+        "from": "SOAP SalesOrder/GetStatus",
+        "name": "sap_sales_order_get_status",
+        "deny": false
+      },
+      {
+        "from": "SOAP Customer/GetList",
+        "name": "sap_customer_get_list",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "SAP_PASSWORD",
+      "SAP_USERNAME"
+    ],
+    "serverEnvVars": [
+      "QD_MANIFEST_ENDPOINT",
+      "SAP_PASSWORD",
+      "SAP_USERNAME"
+    ]
+  },
+});
