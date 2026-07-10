@@ -1,0 +1,192 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "wsdl",
+  provider: "ebay-trading",
+  manifestPath: "registry/ebay-trading/soap.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/ebay-trading",
+      "version": "0.1.0",
+      "title": "eBay Trading",
+      "description": "Generated eBay Trading API read-only WSDL/SOAP MCP catalog manifest.",
+      "labels": [
+        "ebay",
+        "ebay-trading",
+        "generated",
+        "read-only",
+        "wsdl"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "wsdl-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+        "ref": "ebay-trading-wsdl-v1455"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "SOAP",
+            "uriTemplate": "Trading/GeteBayOfficialTime"
+          },
+          {
+            "method": "SOAP",
+            "uriTemplate": "Trading/GetUser"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "bearer",
+          "valueFrom": {
+            "env": "EBAY_TRADING_AUTH_TOKEN"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "eBay Trading API SOAP endpoint override."
+            },
+            "requestTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-request SOAP upstream timeout in milliseconds."
+            }
+          }
+        },
+        "defaults": {
+          "endpoint": "https://api.ebay.com/wsapi",
+          "requestTimeoutMs": 30000
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+          "type": "http",
+          "ref": "ebay-trading-wsdl-v1455",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "ebay-trading-wsdl-v1455",
+          "notes": [
+            "Official eBay Trading API WSDL, pinned to the numbered release version 1455 (confirmed via the `<!-- Version 1455 -->` comment near the top of the document) rather than the moving `latest` alias.",
+            "eBay's edge/WAF returns HTTP 403 to automated/unauthenticated fetches of this WSDL (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here; matches the HubSpot precedent (QUI-352) for sources that block unauthenticated automated retrieval.",
+            "Canonical source URL: https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+            "GetCategories was considered but excluded: eBay deprecated it, decommissioned 2026-04-15, with migration guidance pointing to the Taxonomy/Metadata APIs.",
+            "The committed manifest selects read-only GeteBayOfficialTime and GetUser Trading API operations only."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://developer.ebay.com/webservices/1455/ebaysvc.wsdl for source retrieval",
+            "SOAP https://api.ebay.com/wsapi Trading/GeteBayOfficialTime for selected upstream operation",
+            "SOAP https://api.ebay.com/wsapi Trading/GetUser for selected upstream operation"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/ebay-trading/soap.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ebay-trading.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ebay-trading/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "SOAP Trading/GeteBayOfficialTime",
+            "name": "get_ebay_official_time",
+            "deny": false
+          },
+          {
+            "from": "SOAP Trading/GetUser",
+            "name": "get_ebay_trading_user",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+        "type": "http",
+        "ref": "ebay-trading-wsdl-v1455",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "ebay-trading-wsdl-v1455",
+        "notes": [
+          "Official eBay Trading API WSDL, pinned to the numbered release version 1455 (confirmed via the `<!-- Version 1455 -->` comment near the top of the document) rather than the moving `latest` alias.",
+          "eBay's edge/WAF returns HTTP 403 to automated/unauthenticated fetches of this WSDL (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here; matches the HubSpot precedent (QUI-352) for sources that block unauthenticated automated retrieval.",
+          "Canonical source URL: https://developer.ebay.com/webservices/1455/ebaysvc.wsdl",
+          "GetCategories was considered but excluded: eBay deprecated it, decommissioned 2026-04-15, with migration guidance pointing to the Taxonomy/Metadata APIs.",
+          "The committed manifest selects read-only GeteBayOfficialTime and GetUser Trading API operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://developer.ebay.com/webservices/1455/ebaysvc.wsdl for source retrieval",
+          "SOAP https://api.ebay.com/wsapi Trading/GeteBayOfficialTime for selected upstream operation",
+          "SOAP https://api.ebay.com/wsapi Trading/GetUser for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/ebay-trading/soap.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ebay-trading.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ebay-trading/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "SOAP Trading/GeteBayOfficialTime",
+        "name": "get_ebay_official_time",
+        "deny": false
+      },
+      {
+        "from": "SOAP Trading/GetUser",
+        "name": "get_ebay_trading_user",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "EBAY_TRADING_AUTH_TOKEN"
+    ],
+    "serverEnvVars": [
+      "EBAY_TRADING_AUTH_TOKEN"
+    ]
+  },
+});

@@ -1,0 +1,206 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "asyncapi",
+  provider: "chargebee",
+  manifestPath: "registry/chargebee/events.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/chargebee",
+      "version": "0.1.0",
+      "title": "Chargebee",
+      "description": "Generated Chargebee subscription billing events/webhooks MCP catalog manifest.",
+      "labels": [
+        "asyncapi",
+        "billing",
+        "chargebee",
+        "events",
+        "generated",
+        "read-only",
+        "subscriptions",
+        "webhooks"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "asyncapi-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://apidocs.chargebee.com/docs/api/events"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "PUBLISH",
+            "uriTemplate": "channel://subscription_created"
+          },
+          {
+            "method": "PUBLISH",
+            "uriTemplate": "channel://invoice_generated"
+          },
+          {
+            "method": "PUBLISH",
+            "uriTemplate": "channel://payment_succeeded"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "basic",
+          "usernameFrom": {
+            "env": "CHARGEBEE_API_KEY"
+          },
+          "passwordFrom": {
+            "env": "CHARGEBEE_API_PASSWORD"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "brokerProtocol": {
+              "type": "string",
+              "description": "AsyncAPI broker binding to use for generated tools, such as kafka or mqtt."
+            },
+            "publishTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-publish timeout in milliseconds."
+            }
+          }
+        },
+        "defaults": {
+          "brokerProtocol": "webhook",
+          "publishTimeoutMs": 30000
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://apidocs.chargebee.com/docs/api/events",
+          "type": "http",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "chargebee-api-v2-events",
+          "notes": [
+            "Official Chargebee Events & Webhooks API reference: https://apidocs.chargebee.com/docs/api/events",
+            "Webhook endpoint configuration reference: https://apidocs.chargebee.com/docs/api/webhook_endpoints",
+            "Chargebee does not publish a formal AsyncAPI document; this manifest models the documented event_type catalog as PUBLISH channels.",
+            "The committed manifest selects a read-only, representative subset of subscription/invoice/payment lifecycle event types.",
+            "Chargebee REST/event API authenticates with HTTP Basic auth using the site API key as the username and an empty password."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://apidocs.chargebee.com/docs/api/events for source retrieval",
+            "PUBLISH channel://subscription_created for selected upstream event",
+            "PUBLISH channel://invoice_generated for selected upstream event",
+            "PUBLISH channel://payment_succeeded for selected upstream event"
+          ],
+          "filesystem": [
+            "generated-project-readwrite"
+          ],
+          "process": [
+            "none"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "PUBLISH channel://subscription_created",
+            "name": "publish_channel_subscription_created",
+            "deny": false
+          },
+          {
+            "from": "PUBLISH channel://invoice_generated",
+            "name": "publish_channel_invoice_generated",
+            "deny": false
+          },
+          {
+            "from": "PUBLISH channel://payment_succeeded",
+            "name": "publish_channel_payment_succeeded",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://apidocs.chargebee.com/docs/api/events",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "chargebee-api-v2-events",
+        "notes": [
+          "Official Chargebee Events & Webhooks API reference: https://apidocs.chargebee.com/docs/api/events",
+          "Webhook endpoint configuration reference: https://apidocs.chargebee.com/docs/api/webhook_endpoints",
+          "Chargebee does not publish a formal AsyncAPI document; this manifest models the documented event_type catalog as PUBLISH channels.",
+          "The committed manifest selects a read-only, representative subset of subscription/invoice/payment lifecycle event types.",
+          "Chargebee REST/event API authenticates with HTTP Basic auth using the site API key as the username and an empty password."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://apidocs.chargebee.com/docs/api/events for source retrieval",
+          "PUBLISH channel://subscription_created for selected upstream event",
+          "PUBLISH channel://invoice_generated for selected upstream event",
+          "PUBLISH channel://payment_succeeded for selected upstream event"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "PUBLISH channel://subscription_created",
+        "name": "publish_channel_subscription_created",
+        "deny": false
+      },
+      {
+        "from": "PUBLISH channel://invoice_generated",
+        "name": "publish_channel_invoice_generated",
+        "deny": false
+      },
+      {
+        "from": "PUBLISH channel://payment_succeeded",
+        "name": "publish_channel_payment_succeeded",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "CHARGEBEE_API_KEY",
+      "CHARGEBEE_API_PASSWORD"
+    ],
+    "serverEnvVars": [
+      "CHARGEBEE_API_KEY",
+      "CHARGEBEE_API_PASSWORD"
+    ]
+  },
+});
