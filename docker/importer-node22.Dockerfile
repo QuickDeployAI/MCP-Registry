@@ -21,6 +21,8 @@ COPY docker/importer-entrypoint.sh /usr/local/bin/importer-entrypoint
 
 RUN chmod +x /usr/local/bin/importer-entrypoint
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+  pnpm install --frozen-lockfile --filter "${QDAI_PACKAGE_FILTER}..." && \
+  pnpm --filter "${QDAI_PACKAGE_FILTER}..." --if-present run build && \
   pnpm install --frozen-lockfile --prod --filter "${QDAI_PACKAGE_FILTER}..."
 
 ENTRYPOINT ["/usr/local/bin/importer-entrypoint"]
