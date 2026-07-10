@@ -222,6 +222,14 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "workflows": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "anyOf": [
@@ -261,6 +269,14 @@
           "required": ["corpusGlobs"],
           "properties": {
             "corpusGlobs": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": ["workflows"],
+          "properties": {
+            "workflows": {
               "minItems": 1
             }
           }

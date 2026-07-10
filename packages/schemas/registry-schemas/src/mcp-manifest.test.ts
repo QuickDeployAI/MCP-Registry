@@ -9,6 +9,7 @@ import {
   ApiManifestSchema,
   getImporterConfigSchema,
   MCP_MANIFEST_SCHEMA_ID,
+  McpManifestSelectSchema,
   McpManifestSchema,
   OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
   QUICKDEPLOY_MCP_MANIFEST_META_KEY,
@@ -34,6 +35,12 @@ function publicSchema(): AnySchema {
 }
 
 describe("McpManifestSchema", () => {
+  it("accepts Arazzo workflow selectors", () => {
+    expect(McpManifestSelectSchema.parse({ workflows: ["create-ticket"] })).toMatchObject({
+      workflows: ["create-ticket"],
+    });
+  });
+
   it("publishes a JSON Schema that validates the canonical examples", () => {
     const schema = publicSchema();
     const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);

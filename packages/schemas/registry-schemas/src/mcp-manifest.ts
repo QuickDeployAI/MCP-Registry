@@ -125,6 +125,7 @@ export const McpManifestSelectSchema = z
     skills: z.array(McpManifestSkillSelectSchema).default([]),
     knowledgeSources: z.array(McpManifestKnowledgeSourceSelectSchema).default([]),
     corpusGlobs: z.array(z.string().min(1)).default([]),
+    workflows: z.array(z.string().min(1)).default([]),
   })
   .strict()
   .refine(
@@ -134,8 +135,9 @@ export const McpManifestSelectSchema = z
       select.pythonFunctions.length > 0 ||
       select.skills.length > 0 ||
       select.knowledgeSources.length > 0 ||
-      select.corpusGlobs.length > 0,
-    "select must include at least one request, gRPC method, Python function, skill, knowledge source, or corpus glob",
+      select.corpusGlobs.length > 0 ||
+      select.workflows.length > 0,
+    "select must include at least one request, gRPC method, Python function, skill, knowledge source, corpus glob, or workflow",
   );
 export type McpManifestSelect = z.infer<typeof McpManifestSelectSchema>;
 

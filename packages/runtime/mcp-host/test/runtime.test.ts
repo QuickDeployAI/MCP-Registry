@@ -15,6 +15,48 @@ import { readStdioFrames, runStdioHost, writeStdioFrame } from "../src/stdio";
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 describe("mcp-host runtime", () => {
+  it("hosts Arazzo workflow tools and honors the workflow allowlist", async () => {
+    const source = new URL("./fixtures/ticket-workflows.arazzo.json", import.meta.url).href;
+    const manifest = McpManifestSchema.parse({
+      apiVersion: "quickdeploy.ai/v1",
+      kind: "McpManifest",
+      metadata: {
+        name: "ai.quickdeploy/ticket-workflows",
+        version: "1.0.0",
+      },
+      spec: {
+        importer: {
+          engine: "arazzo-2-mcp",
+          versionRange: "^0.1.0",
+        },
+        source: { type: "file", uri: source },
+        select: { workflows: ["close-ticket"] },
+      },
+      deployment: { transport: "stdio" },
+    });
+
+    const tools = await createMcpHost({ manifest }).handleJsonRpc({
+      jsonrpc: "2.0",
+      id: "tools",
+      method: "tools/list",
+    });
+
+    expect(tools).toMatchObject({
+      result: {
+        tools: [
+          {
+            name: "close-ticket",
+            inputSchema: {
+              type: "object",
+              properties: { ticketId: { type: "string" } },
+              required: ["ticketId"],
+            },
+          },
+        ],
+      },
+    });
+  });
+
   it("serves a manifest over streamable HTTP", async () => {
     const manifest = await loadManifestFile("examples/petstore.mcp.yaml");
     const host = createMcpHost({ manifest });
