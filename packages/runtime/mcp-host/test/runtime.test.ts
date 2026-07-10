@@ -11,12 +11,81 @@ import {
 import { describe, expect, it } from "vitest";
 import { fixturePackageRoot, type SandboxRunner, type PythonFunctionTool } from "@quickdeployai/git-2-mcp";
 import { loadManifestFile } from "../src/manifest-loader";
-import { createMcpHost, MCP_PROTOCOL_VERSION, startHttpHost } from "../src/runtime";
+import {
+  createArdSurface,
+  createMcpHost,
+  MCP_PROTOCOL_VERSION,
+  resolveParserByMediaType,
+  startHttpHost,
+  type HostSurface,
+  type HostTool,
+} from "../src/runtime";
+import { OPENAPI_MEDIA_TYPE } from "@quickdeployai/registry-schemas/ard";
 import { readStdioFrames, runStdioHost, writeStdioFrame } from "../src/stdio";
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 describe("mcp-host runtime", () => {
+  it("dispatches OpenAPI ARD entries by normalized media type with MCP tool parity", async () => {
+    const document = {
+      openapi: "3.0.0",
+      info: { title: "Petstore", version: "1.0.0" },
+      servers: [{ url: "https://petstore.example" }],
+      paths: {
+        "/pets/{petId}": {
+          get: {
+            operationId: "getPetById",
+            parameters: [
+              { name: "petId", in: "path", required: true, schema: { type: "string" } },
+            ],
+            responses: { "200": { description: "Pet" } },
+          },
+        },
+      },
+    };
+    const entry = {
+      identifier: "urn:air:example:petstore",
+      displayName: "Petstore",
+      type: "application/openapi+json",
+      url: "https://petstore.example/openapi.json",
+    };
+
+    expect(resolveParserByMediaType(entry.type)?.mediaTypes).toContain(OPENAPI_MEDIA_TYPE);
+    const result = await createArdSurface({
+      entry,
+      fetch: async () => new Response(JSON.stringify(document)),
+    });
+
+    expect(result.capabilities.map(({ kind, name }) => ({ kind, name }))).toEqual([
+      { kind: "api-contract", name: "Petstore" },
+      { kind: "tool", name: "getPetById" },
+    ]);
+    expect(await listArdSurfaceTools(result.surface)).toEqual([
+      expect.objectContaining({ name: "getPetById" }),
+    ]);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it("returns a diagnostic and empty surface for an unmapped ARD media type", async () => {
+    const result = await createArdSurface({
+      entry: {
+        identifier: "urn:air:example:unknown",
+        displayName: "Unknown artifact",
+        type: "application/vnd.example.unknown+json",
+        data: {},
+      },
+    });
+
+    expect(result.capabilities).toEqual([]);
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({
+        level: "warn",
+        message: expect.stringContaining("No ArtifactParser is installed"),
+      }),
+    ]);
+    expect(await listArdSurfaceTools(result.surface)).toEqual([]);
+  });
+
   it("executes the committed two-step Arazzo workflow and returns outputs", async () => {
     const calls: string[] = [];
     const upstream = createServer((request, response) => {
@@ -587,6 +656,10 @@ describe("mcp-host runtime", () => {
     );
   });
 });
+
+async function listArdSurfaceTools(surface: HostSurface): Promise<HostTool[]> {
+  return typeof surface.tools === "function" ? await surface.tools() : surface.tools;
+}
 
 async function postRpc(
   url: string,

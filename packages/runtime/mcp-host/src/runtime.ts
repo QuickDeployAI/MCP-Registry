@@ -1,8 +1,20 @@
 import { timingSafeEqual } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { buildArazzoTools, loadArazzoDocument } from "@quickdeployai/arazzo-2-mcp";
 import { resolveArazzoSources } from "@quickdeployai/arazzo-2-mcp/sources";
+import type {
+  ArtifactParseResult,
+  ArtifactParser,
+  ParserDiagnostic,
+} from "@quickdeployai/importer-core/parser";
+import { openApiArtifactParser } from "@quickdeployai/openapi-2-mcp";
+import {
+  normalizeArtifactMediaType,
+  sourceMediaTypeToImporterEngine,
+  type ArdEntry,
+} from "@quickdeployai/registry-schemas/ard";
 import {
   type McpManifest,
   validateMcpManifestImporterConfig,
@@ -18,6 +30,7 @@ import {
 import { EngineResolutionError } from "./errors";
 import { resolveHostConfig, type HostConfig } from "./config";
 import { assertVersionSatisfies } from "./version";
+import { z } from "zod";
 
 export const MCP_PROTOCOL_VERSION = "2025-11-25";
 
@@ -152,6 +165,138 @@ export const defaultEngines: HostEngine[] = [
     createSurface: createArazzoSurface,
   },
 ];
+
+type ArdArtifactParser = ArtifactParser<ArdEntry, string>;
+
+export const defaultArtifactParsers: ArdArtifactParser[] = [openApiArtifactParser];
+
+export type ArdSurfaceResult = ArtifactParseResult & {
+  surface: HostSurface;
+};
+
+export type CreateArdSurfaceOptions = {
+  entry: ArdEntry;
+  nativeArtifact?: unknown;
+  parsers?: readonly ArdArtifactParser[];
+  fetch?: typeof fetch;
+};
+
+export function createParserRegistry(
+  parsers: readonly ArdArtifactParser[] = defaultArtifactParsers,
+): Map<string, ArdArtifactParser> {
+  return new Map(
+    parsers.flatMap((parser) =>
+      parser.mediaTypes.map((mediaType) => [normalizeArtifactMediaType(mediaType), parser] as const),
+    ),
+  );
+}
+
+export function resolveParserByMediaType(
+  mediaType: string,
+  parsers: readonly ArdArtifactParser[] = defaultArtifactParsers,
+): ArdArtifactParser | undefined {
+  const normalized = normalizeArtifactMediaType(mediaType);
+  if (!sourceMediaTypeToImporterEngine(normalized)) return undefined;
+  return createParserRegistry(parsers).get(normalized);
+}
+
+export async function createArdSurface(options: CreateArdSurfaceOptions): Promise<ArdSurfaceResult> {
+  const parser = resolveParserByMediaType(options.entry.type, options.parsers);
+  if (!parser) {
+    return {
+      capabilities: [],
+      diagnostics: [unmappedMediaTypeDiagnostic(options.entry.type)],
+      surface: emptyHostSurface(),
+    };
+  }
+
+  const nativeArtifact =
+    options.nativeArtifact ?? (await loadArdNativeArtifact(options.entry, options.fetch));
+  const result = await parser.parse(nativeArtifact, options.entry);
+  return {
+    ...result,
+    surface: projectionToHostSurface(result.mcpProjection),
+  };
+}
+
+function unmappedMediaTypeDiagnostic(mediaType: string): ParserDiagnostic {
+  return {
+    level: "warn",
+    message: `No ArtifactParser is installed for media type ${normalizeArtifactMediaType(mediaType)}; entry skipped.`,
+  };
+}
+
+function emptyHostSurface(): HostSurface {
+  return { tools: [], resources: [], prompts: [] };
+}
+
+async function loadArdNativeArtifact(entry: ArdEntry, fetchImpl = globalThis.fetch): Promise<unknown> {
+  if (entry.data !== undefined) return entry.data;
+  if (!entry.url) throw new Error(`ARD entry ${entry.identifier} has no url or inline data.`);
+
+  const url = new URL(entry.url);
+  const text =
+    url.protocol === "file:"
+      ? await readFile(url, "utf8")
+      : await readHttpArtifact(url, fetchImpl);
+  return parseNativeArtifactText(text, entry.type);
+}
+
+async function readHttpArtifact(url: URL, fetchImpl: typeof fetch): Promise<string> {
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`Unsupported ARD source protocol ${url.protocol}`);
+  }
+  const response = await fetchImpl(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ARD source ${url.href}: ${response.status} ${response.statusText}`);
+  }
+  return await response.text();
+}
+
+function parseNativeArtifactText(text: string, mediaType: string): unknown {
+  if (normalizeArtifactMediaType(mediaType).endsWith("+json")) return JSON.parse(text);
+  return text;
+}
+
+type ProjectedTool = {
+  name: string;
+  description?: string;
+  inputSchema?: Record<string, unknown>;
+  parameters?: z.ZodType;
+  execute?: (args: unknown) => unknown;
+  call?: (args: unknown) => unknown;
+};
+
+function projectionToHostSurface(projection: ArtifactParseResult["mcpProjection"]): HostSurface {
+  if (!projection) return emptyHostSurface();
+  return {
+    tools: (projection.tools ?? []).flatMap((candidate) => {
+      const tool = asProjectedTool(candidate);
+      if (!tool) return [];
+      const call = tool.execute ?? tool.call;
+      if (!call) return [];
+      return [{
+        name: tool.name,
+        ...(tool.description ? { description: tool.description } : {}),
+        inputSchema: tool.inputSchema ?? projectedInputSchema(tool.parameters),
+        call,
+      }];
+    }),
+    resources: [],
+    prompts: [],
+  };
+}
+
+function asProjectedTool(value: unknown): ProjectedTool | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const candidate = value as Partial<ProjectedTool>;
+  return typeof candidate.name === "string" ? (candidate as ProjectedTool) : undefined;
+}
+
+function projectedInputSchema(parameters: z.ZodType | undefined): Record<string, unknown> {
+  if (!parameters) return { type: "object", additionalProperties: true };
+  return z.toJSONSchema(parameters) as Record<string, unknown>;
+}
 
 export function createMcpHost(options: CreateMcpHostOptions): McpHost {
   validateMcpManifestImporterConfig(options.manifest);
