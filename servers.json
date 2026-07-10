@@ -6652,9 +6652,19 @@
                 ]
               },
               "ai.quickdeploy.codegen/policy": {
-                "network": ["source-uri", "configured-upstream"],
-                "filesystem": ["generated-project-readwrite"],
-                "process": ["none"],
+                "network": [
+                  "GET https://webservices.netsuite.com/wsdl/v2025_2_0/netsuite.wsdl for source retrieval",
+                  "POST configured NetSuite SuiteTalk endpoint for NetSuitePortType/get and NetSuitePortType/search"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/netsuite/soap.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/netsuite.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/wsdl/netsuite/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
                 "generatedExecution": "openshell-mxc-only",
                 "unavailableRuntime": "fail-closed"
               }
@@ -6700,9 +6710,19 @@
               ]
             },
             "ai.quickdeploy.codegen/policy": {
-              "network": ["source-uri", "configured-upstream"],
-              "filesystem": ["generated-project-readwrite"],
-              "process": ["none"],
+              "network": [
+                "GET https://webservices.netsuite.com/wsdl/v2025_2_0/netsuite.wsdl for source retrieval",
+                "POST configured NetSuite SuiteTalk endpoint for NetSuitePortType/get and NetSuitePortType/search"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/netsuite/soap.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/netsuite.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/wsdl/netsuite/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
               "generatedExecution": "openshell-mxc-only",
               "unavailableRuntime": "fail-closed"
             }
