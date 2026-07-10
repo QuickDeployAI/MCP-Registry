@@ -195,8 +195,13 @@ describe("McpManifestSchema", () => {
     expect(getImporterConfigSchema("arazzo-2-mcp")).toMatchObject({
       type: "object",
       properties: {
-        sourceUrl: { type: "string", format: "uri" },
-        resolveSourceDescriptions: { type: "boolean" },
+        sourceOverrides: {
+          type: "object",
+          additionalProperties: { type: "string", format: "uri" },
+        },
+        workflowAllowlist: { type: "array", items: { type: "string" } },
+        stepTimeoutMs: { type: "integer", minimum: 1 },
+        maxSteps: { type: "integer", minimum: 1 },
       },
     });
   });

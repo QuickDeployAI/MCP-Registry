@@ -35,6 +35,11 @@
       "types": "./src/runner.ts",
       "import": "./src/runner.ts",
       "default": "./src/runner.ts"
+    },
+    "./tools": {
+      "types": "./src/tools.ts",
+      "import": "./src/tools.ts",
+      "default": "./src/tools.ts"
     }
   },
   "scripts": {
