@@ -39,6 +39,67 @@ jobs:
       - name: Build, typecheck, lint, test, and validate registry
         run: pnpm check
 
+      - name: Build registry catalog artifacts
+        run: pnpm --filter @quickdeployai/registry-cli build:registry
+
+      - name: Upload registry catalog artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-registry-catalog
+          path: |
+            servers.json
+            registry/index.json
+          if-no-files-found: error
+
+  deploy-catalog:
+    name: Deploy catalog to monorepo
+    needs: workspace-check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build registry catalog artifacts
+        run: pnpm --filter @quickdeployai/registry-cli build:registry
+
+      - name: Deploy servers.json to monorepo marketplace
+        env:
+          MONOREPO_DEPLOY_TOKEN: ${{ secrets.MONOREPO_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$MONOREPO_DEPLOY_TOKEN" ]; then
+            echo "::error::MONOREPO_DEPLOY_TOKEN secret is not configured; cannot deploy servers.json to the monorepo."
+            exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${MONOREPO_DEPLOY_TOKEN}@github.com/QuickDeployAI/monorepo.git" monorepo-deploy
+          mkdir -p monorepo-deploy/marketplace/mcp
+          cp servers.json monorepo-deploy/marketplace/mcp/servers.json
+          cd monorepo-deploy
+          git add marketplace/mcp/servers.json
+          if git diff --cached --quiet; then
+            echo "servers.json is already up to date in the monorepo."
+            exit 0
+          fi
+          git config user.name "mcp-registry-ci"
+          git config user.email "ci@quickdeploy.ai"
+          git commit -m "chore: sync marketplace/mcp/servers.json from MCP-Registry ${GITHUB_SHA}"
+          git push origin HEAD
+
   publish-packages:
     name: Publish packages
     needs: workspace-check

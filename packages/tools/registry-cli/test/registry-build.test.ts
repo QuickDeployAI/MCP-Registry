@@ -89,13 +89,13 @@ describe("registry build artifacts", () => {
     REGISTRY_BUILD_TEST_TIMEOUT_MS,
   );
 
-  it("checks committed generated artifacts for drift", async () => {
+  it("checks generated artifacts for drift", async () => {
     const rootDir = await fixtureRoot();
     await seedRemote(rootDir);
 
     expect(await checkGeneratedRegistryArtifacts({ rootDir })).toEqual({
-      ok: false,
-      changed: ["servers.json"],
+      ok: true,
+      changed: [],
     });
 
     const artifacts = await buildRegistryArtifacts({ rootDir });
@@ -107,6 +107,12 @@ describe("registry build artifacts", () => {
       artifacts.generatedFiles["registry/index.json"],
     );
     expect(await checkGeneratedRegistryArtifacts({ rootDir })).toEqual({ ok: true, changed: [] });
+
+    await writeFile(join(rootDir, "servers.json"), "{}\n", "utf8");
+    expect(await checkGeneratedRegistryArtifacts({ rootDir })).toEqual({
+      ok: false,
+      changed: ["servers.json"],
+    });
   }, 30_000);
 
   it("pins OCI package identifiers when image digests are available", async () => {
