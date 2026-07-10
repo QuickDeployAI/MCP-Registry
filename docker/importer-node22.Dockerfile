@@ -14,7 +14,7 @@ WORKDIR /workspace
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json vite.config.ts ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages ./packages
 COPY registry ./registry
 COPY docker/importer-entrypoint.sh /usr/local/bin/importer-entrypoint
