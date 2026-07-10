@@ -1,0 +1,144 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/ftc-news",
+    "version": "0.1.0",
+    "title": "FTC News",
+    "description": "Generated feed-2-mcp MCP manifest for the FTC's official Press Release RSS feed.",
+    "labels": [
+      "feed",
+      "ftc-news",
+      "generated",
+      "government",
+      "news",
+      "press-releases",
+      "rss"
+    ]
+  },
+  "spec": {
+    "importer": {
+      "engine": "feed-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://www.ftc.gov/feeds/press-release.xml"
+    },
+    "select": {
+      "requests": [],
+      "grpcMethods": [],
+      "pythonFunctions": [],
+      "skills": [],
+      "knowledgeSources": [],
+      "corpusGlobs": [
+        "/press-releases/**"
+      ]
+    },
+    "auth": [],
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refreshMinutes": {
+            "type": "number",
+            "description": "Polling interval in minutes for refreshing the FTC press release feed."
+          },
+          "maxItems": {
+            "type": "number",
+            "description": "Maximum number of retained feed items."
+          },
+          "includeContent": {
+            "type": "boolean",
+            "description": "Whether to include full item content in query responses."
+          }
+        }
+      },
+      "defaults": {
+        "refreshMinutes": 30,
+        "maxItems": 200,
+        "includeContent": true
+      },
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.ftc.gov/feeds/press-release.xml",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "Official FTC RSS feed directory: https://www.ftc.gov/news-events/stay-connected/ftc-rss-feeds (also linked from https://www.ftc.gov/stay-connected/rss).",
+          "Selected feed: the general Press Release feed at https://www.ftc.gov/feeds/press-release.xml (confirmed via direct fetch: RSS 2.0, channel title \"Press Release Feed\", channel link https://www.ftc.gov/), covering all FTC enforcement actions and policy announcements rather than a narrower topic-only feed (e.g. Competition-only or Consumer-Protection-only press release feeds).",
+          "Feed items expose standard RSS 2.0 fields (title, link, description, pubDate, dc:creator, guid).",
+          "The feed is public; no authentication is required."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://www.ftc.gov/feeds/press-release.xml for source retrieval and periodic polling"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/ftc-news/feed.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/feed/ftc-news.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/feed/ftc-news/"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "feed.query",
+          "name": "query_ftc_news_feed",
+          "deny": false
+        }
+      ],
+      "resources": [
+        {
+          "from": "feed:item",
+          "name": "ftc_news_feed_item",
+          "deny": false
+        }
+      ],
+      "prompts": []
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  },
+  "_meta": {
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://www.ftc.gov/feeds/press-release.xml",
+      "type": "http",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "rss-2.0",
+      "notes": [
+        "Official FTC RSS feed directory: https://www.ftc.gov/news-events/stay-connected/ftc-rss-feeds (also linked from https://www.ftc.gov/stay-connected/rss).",
+        "Selected feed: the general Press Release feed at https://www.ftc.gov/feeds/press-release.xml (confirmed via direct fetch: RSS 2.0, channel title \"Press Release Feed\", channel link https://www.ftc.gov/), covering all FTC enforcement actions and policy announcements rather than a narrower topic-only feed (e.g. Competition-only or Consumer-Protection-only press release feeds).",
+        "Feed items expose standard RSS 2.0 fields (title, link, description, pubDate, dc:creator, guid).",
+        "The feed is public; no authentication is required."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://www.ftc.gov/feeds/press-release.xml for source retrieval and periodic polling"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/ftc-news/feed.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/feed/ftc-news.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/feed/ftc-news/"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  }
+}

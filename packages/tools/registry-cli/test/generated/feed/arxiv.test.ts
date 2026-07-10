@@ -1,0 +1,160 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "feed",
+  provider: "arxiv",
+  manifestPath: "registry/arxiv/feed.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/arxiv",
+      "version": "0.1.0",
+      "title": "arXiv",
+      "description": "Generated feed-2-mcp MCP manifest for the arXiv cs.AI RSS feed.",
+      "labels": [
+        "arxiv",
+        "feed",
+        "generated",
+        "papers",
+        "research",
+        "rss"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "feed-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://rss.arxiv.org/rss/cs.AI"
+      },
+      "select": {
+        "requests": [],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": [
+          "/cs.AI/**"
+        ]
+      },
+      "auth": [],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "refreshMinutes": {
+              "type": "number"
+            },
+            "maxItems": {
+              "type": "number"
+            },
+            "includeContent": {
+              "type": "boolean"
+            }
+          }
+        },
+        "defaults": {
+          "refreshMinutes": 1440,
+          "maxItems": 50,
+          "includeContent": true
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://rss.arxiv.org/rss/cs.AI",
+          "type": "http",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "rss-2.0",
+          "notes": [
+            "arXiv publishes official RSS 2.0 and Atom news feeds for every active subject class, documented at https://info.arxiv.org/help/rss.html (byte-verified sha256:05e71cab8ab42d3aed374ce1ee6442019ff6f919df21acf0ad8a66c70a6bf7e5 across two fetches on 2026-07-09). Feed URLs are constructed as https://rss.arxiv.org/rss/<category> (or /atom/<category>); this manifest pins the cs.AI (Artificial Intelligence) category as a representative feed. Feeds are re-generated daily at midnight US Eastern time.",
+            "See also https://info.arxiv.org/help/rss_specifications.html for the RSS item field specification, and arXiv's API Terms of Use."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "source-uri",
+            "configured-upstream"
+          ],
+          "filesystem": [
+            "generated-project-readwrite"
+          ],
+          "process": [
+            "none"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "feed.query",
+            "name": "query_arxiv_feed",
+            "deny": false
+          }
+        ],
+        "resources": [
+          {
+            "from": "feed:item",
+            "name": "arxiv_feed_item",
+            "deny": false
+          }
+        ],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://rss.arxiv.org/rss/cs.AI",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "arXiv publishes official RSS 2.0 and Atom news feeds for every active subject class, documented at https://info.arxiv.org/help/rss.html (byte-verified sha256:05e71cab8ab42d3aed374ce1ee6442019ff6f919df21acf0ad8a66c70a6bf7e5 across two fetches on 2026-07-09). Feed URLs are constructed as https://rss.arxiv.org/rss/<category> (or /atom/<category>); this manifest pins the cs.AI (Artificial Intelligence) category as a representative feed. Feeds are re-generated daily at midnight US Eastern time.",
+          "See also https://info.arxiv.org/help/rss_specifications.html for the RSS item field specification, and arXiv's API Terms of Use."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "feed.query",
+        "name": "query_arxiv_feed",
+        "deny": false
+      }
+    ],
+    "resources": [
+      {
+        "from": "feed:item",
+        "name": "arxiv_feed_item",
+        "deny": false
+      }
+    ],
+    "prompts": [],
+    "authEnvVars": [],
+    "serverEnvVars": []
+  },
+});
