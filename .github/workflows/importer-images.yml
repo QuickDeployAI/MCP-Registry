@@ -5,9 +5,9 @@ on:
     paths:
       - .github/workflows/importer-images.yml
       - docker/importer-*
-      - packages/mcp-importers/**
-      - packages/registry-cli/**
-      - packages/registry-schemas/**
+      - packages/importers/**
+      - packages/tools/registry-cli/**
+      - packages/schemas/registry-schemas/**
       - registry/**
       - manifests/**
       - package.json
@@ -19,9 +19,9 @@ on:
     paths:
       - .github/workflows/importer-images.yml
       - docker/importer-*
-      - packages/mcp-importers/**
-      - packages/registry-cli/**
-      - packages/registry-schemas/**
+      - packages/importers/**
+      - packages/tools/registry-cli/**
+      - packages/schemas/registry-schemas/**
       - registry/**
       - manifests/**
       - package.json
@@ -36,7 +36,7 @@ permissions:
 jobs:
   build:
     name: build ${{ matrix.slug }}
-    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -107,7 +107,7 @@ jobs:
     name: digest-pinned registry artifacts
     if: github.event_name != 'pull_request'
     needs: build
-    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6.0.3
