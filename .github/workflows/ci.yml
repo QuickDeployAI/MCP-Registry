@@ -75,6 +75,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm build
+
       - name: Build registry catalog artifacts
         run: pnpm --filter @quickdeployai/registry-cli build:registry
 
