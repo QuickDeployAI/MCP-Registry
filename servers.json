@@ -13940,6 +13940,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 92
+    "ai.quickdeploy.registry/sourceCount": 93
   }
 }
