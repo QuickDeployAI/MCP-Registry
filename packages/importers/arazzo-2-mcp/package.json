@@ -20,6 +20,16 @@
       "types": "./src/sources.ts",
       "import": "./src/sources.ts",
       "default": "./src/sources.ts"
+    },
+    "./runtime-expressions": {
+      "types": "./src/runtime-expressions.ts",
+      "import": "./src/runtime-expressions.ts",
+      "default": "./src/runtime-expressions.ts"
+    },
+    "./success-criteria": {
+      "types": "./src/success-criteria.ts",
+      "import": "./src/success-criteria.ts",
+      "default": "./src/success-criteria.ts"
     }
   },
   "scripts": {
