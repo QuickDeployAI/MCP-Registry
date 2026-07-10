@@ -1,0 +1,142 @@
+name: Importer images
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/importer-images.yml
+      - docker/importer-*
+      - packages/mcp-importers/**
+      - packages/registry-cli/**
+      - packages/registry-schemas/**
+      - registry/**
+      - manifests/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/importer-images.yml
+      - docker/importer-*
+      - packages/mcp-importers/**
+      - packages/registry-cli/**
+      - packages/registry-schemas/**
+      - registry/**
+      - manifests/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: build ${{ matrix.slug }}
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slug: asyncapi-2-mcp
+            package: "@quickdeployai/asyncapi-2-mcp"
+            entrypoint: src/bin.mts
+            image: ghcr.io/quickdeployai/importers/asyncapi-2-mcp
+            smoke: --help
+          - slug: grpc-2-mcp
+            package: "@quickdeployai/grpc-2-mcp"
+            entrypoint: src/bin.mts
+            image: ghcr.io/quickdeployai/importers/grpc-2-mcp
+            smoke: catalog --fixture greeter --proto fixtures/greeter.proto --package quickdeploy.fixture --endpoint 127.0.0.1:50051
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build importer image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/importer-node22.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: |
+            ${{ matrix.image }}:${{ github.sha }}
+            ${{ matrix.image }}:0.1.0
+          build-args: |
+            PACKAGE_FILTER=${{ matrix.package }}
+            PACKAGE_ENTRYPOINT=${{ matrix.entrypoint }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=min,ignore-error=true
+
+      - name: Smoke importer image
+        if: github.event_name == 'pull_request'
+        run: docker run --rm ${{ matrix.image }}:${{ github.sha }} ${{ matrix.smoke }}
+
+      - name: Record image digest
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          mkdir -p registry/oci-image-digests
+          cat > "registry/oci-image-digests/${{ matrix.slug }}.json" <<JSON
+          {
+            "image": "${{ matrix.image }}:0.1.0",
+            "digest": "${{ steps.build.outputs.digest }}"
+          }
+          JSON
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: oci-image-digest-${{ matrix.slug }}
+          path: registry/oci-image-digests/${{ matrix.slug }}.json
+
+  registry-artifacts:
+    name: digest-pinned registry artifacts
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: oci-image-digest-*
+          path: registry/oci-image-digests
+          merge-multiple: true
+      - name: Write digest map
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { readdirSync, readFileSync, writeFileSync } = require("node:fs");
+          const { join } = require("node:path");
+          const dir = "registry/oci-image-digests";
+          const images = {};
+          for (const file of readdirSync(dir)) {
+            const entry = JSON.parse(readFileSync(join(dir, file), "utf8"));
+            if (entry.image && entry.digest) images[entry.image] = entry.digest;
+          }
+          writeFileSync("registry/oci-image-digests.json", `${JSON.stringify({ images }, null, 2)}\n`);
+          NODE
+      - name: Build digest-pinned registry artifacts
+        run: vp run @quickdeployai/registry-cli#build:registry
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-pinned-servers-json
+          path: |
+            servers.json
+            registry/index.json
+            registry/oci-image-digests.json

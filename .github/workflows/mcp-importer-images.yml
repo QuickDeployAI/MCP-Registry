@@ -1,0 +1,87 @@
+name: mcp importer images
+
+# Builds every packages/mcp-importers/* image on PRs (build-only, no push — a
+# compile/packaging check) and, on merge to main, builds and pushes each to
+# GHCR with a digest-pinned tag through reusable-docker-build.yml. See
+# packages/mcp-importers/README.md for the shared Dockerfile.importer
+# template these mostly build from, and how the pushed digest is meant to
+# feed a registry packages[] OCI entry.
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/mcp-importer-images.yml
+      - .github/workflows/reusable-docker-build.yml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - packages/core/**
+      - packages/registry-schemas/**
+      - packages/mcp-importers/**
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/mcp-importer-images.yml
+      - .github/workflows/reusable-docker-build.yml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - packages/core/**
+      - packages/registry-schemas/**
+      - packages/mcp-importers/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  build:
+    name: build image (${{ matrix.package }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # agent-skills-2-mcp has no workspace dependencies at all, so it
+          # keeps its own plain-npm Dockerfile (context = its own directory)
+          # rather than the shared, pnpm-workspace-aware template.
+          - package: agent-skills-2-mcp
+            context: packages/mcp-importers/agent-skills-2-mcp
+            dockerfile: packages/mcp-importers/agent-skills-2-mcp/Dockerfile
+            build-args: ""
+          - package: openapi-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=openapi-2-mcp
+          - package: grpc-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=grpc-2-mcp
+          - package: asyncapi-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=asyncapi-2-mcp
+          - package: arazzo-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=arazzo-2-mcp
+          - package: wsdl-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=wsdl-2-mcp
+          - package: postman-2-mcp
+            context: .
+            dockerfile: packages/mcp-importers/Dockerfile.importer
+            build-args: PACKAGE=postman-2-mcp
+    uses: ./.github/workflows/reusable-docker-build.yml
+    with:
+      image-name: quickdeployai/${{ matrix.package }}
+      context: ${{ matrix.context }}
+      dockerfile: ${{ matrix.dockerfile }}
+      build-args: ${{ matrix.build-args }}
+      extra-tags: sha-${{ github.sha }}
+      push: ${{ github.event_name == 'push' }}
+      depot-project: ${{ vars.DEPOT_ARTIFACT_PROJECT_ID }}
+    secrets: inherit

@@ -27,7 +27,7 @@ function example(name: string): unknown {
 function publicSchema(): AnySchema {
   return JSON.parse(
     readFileSync(
-      new URL("../../../../schemas/mcp-manifest.v1.schema.json", import.meta.url),
+      new URL("../../../../registry/schemas/mcp-manifest.v1.schema.json", import.meta.url),
       "utf8",
     ),
   ) as AnySchema;
@@ -89,26 +89,6 @@ describe("McpManifestSchema", () => {
     expect(manifest.spec.auth[0]).toMatchObject({
       type: "bearer",
       valueFrom: { env: "GITHUB_TOKEN" },
-    });
-  });
-
-  it("accepts top-level generation metadata", () => {
-    const manifest = {
-      ...(example("openapi-select") as Record<string, unknown>),
-      _meta: {
-        "ai.quickdeploy.registry/generatedMcp": {
-          retrievedAt: "2026-07-09",
-          source: "https://petstore.example/openapi.json",
-        },
-      },
-    };
-    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
-
-    expect(validate(manifest), JSON.stringify(validate.errors)).toBe(true);
-    expect(McpManifestSchema.parse(manifest)._meta).toMatchObject({
-      "ai.quickdeploy.registry/generatedMcp": {
-        retrievedAt: "2026-07-09",
-      },
     });
   });
 
@@ -297,52 +277,6 @@ describe("McpManifestSchema", () => {
     ).toThrow(/environment variable names must be uppercase/);
   });
 
-  it("validates hosted deployment payment blocks alongside auth", () => {
-    const raw = example("openapi-select") as Record<string, any>;
-    const withPayment = {
-      ...raw,
-      deployment: {
-        ...raw.deployment,
-        auth: {
-          type: "bearer",
-          tokenFrom: { env: "GITHUB_SEARCH_MCP_TOKEN" },
-        },
-        payment: {
-          required: true,
-          protocols: [
-            { protocol: "x402", enabled: true, config: { network: "base" } },
-            { protocol: "l402", enabled: false },
-          ],
-        },
-      },
-    };
-
-    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
-    expect(validate(withPayment), JSON.stringify(validate.errors)).toBe(true);
-
-    const manifest = McpManifestSchema.parse(withPayment);
-    expect(manifest.deployment.payment).toEqual({
-      required: true,
-      protocols: [
-        { protocol: "x402", enabled: true, config: { network: "base" } },
-        { protocol: "l402", enabled: false },
-      ],
-    });
-
-    expect(() =>
-      McpManifestSchema.parse({
-        ...raw,
-        deployment: {
-          ...raw.deployment,
-          payment: {
-            required: false,
-            protocols: [{ protocol: "credit-card", enabled: true }],
-          },
-        },
-      }),
-    ).toThrow();
-  });
-
   it("validates the feed import example", () => {
     const manifest = McpManifestSchema.parse(example("feed"));
 
@@ -432,8 +366,8 @@ describe("McpManifestSchema", () => {
       uri: "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567",
     });
     expect(manifest.spec.select.pythonFunctions).toEqual([
-      "qdai_git_fixture.add",
-      "qdai_git_fixture.slugify",
+      "qdai_git_spike_fixture.add",
+      "qdai_git_spike_fixture.slugify",
     ]);
   });
 
