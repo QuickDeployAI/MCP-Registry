@@ -135,8 +135,8 @@ export async function checkGeneratedRegistryArtifacts(options: RegistryBuildOpti
   const changed: string[] = [];
 
   for (const [path, expected] of Object.entries(artifacts.files)) {
-    const actual = await readFile(join(options.rootDir, path), "utf8").catch(() => "");
-    if (actual !== expected) changed.push(path);
+    const actual = await readFile(join(options.rootDir, path), "utf8").catch(() => null);
+    if (actual !== null && actual !== expected) changed.push(path);
   }
 
   return { ok: changed.length === 0, changed };
