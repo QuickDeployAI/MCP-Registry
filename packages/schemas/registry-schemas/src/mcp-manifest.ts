@@ -553,19 +553,26 @@ export const ARAZZO_2_MCP_CONFIG_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
-    sourceUrl: {
-      type: "string",
-      format: "uri",
-      description: "Canonical URL for the source Arazzo workflow document.",
+    sourceOverrides: {
+      type: "object",
+      description: "Base URL overrides keyed by Arazzo sourceDescription name.",
+      additionalProperties: { type: "string", format: "uri" },
     },
-    resolveSourceDescriptions: {
-      type: "boolean",
-      description: "Whether sourceDescriptions should be cross-referenced to ARD entries.",
+    workflowAllowlist: {
+      type: "array",
+      description: "Workflow IDs to expose as tools. Omit to expose all workflows.",
+      items: { type: "string", minLength: 1 },
+      uniqueItems: true,
     },
-    requestTimeoutMs: {
-      type: "number",
+    stepTimeoutMs: {
+      type: "integer",
       minimum: 1,
-      description: "Per-source lookup timeout in milliseconds.",
+      description: "Maximum execution time for one workflow step in milliseconds.",
+    },
+    maxSteps: {
+      type: "integer",
+      minimum: 1,
+      description: "Maximum number of workflow steps, including retries, per execution.",
     },
   },
 } as const satisfies ImporterConfigJsonSchema;
