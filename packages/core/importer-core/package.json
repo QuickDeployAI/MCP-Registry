@@ -20,6 +20,10 @@
     "./json-rpc": {
       "types": "./dist/json-rpc.d.ts",
       "default": "./dist/json-rpc.js"
+    },
+    "./parser": {
+      "types": "./dist/parser.d.ts",
+      "default": "./dist/parser.js"
     }
   },
   "scripts": {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CapabilityTypeSchema, type CapabilityType } from "./capability";
+import { CapabilityTypeSchema, type CapabilityType } from "./capability.js";
 import {
   badgeLabel,
   categoryToEvidenceLevel,
@@ -7,7 +7,7 @@ import {
   ValidationStatusSchema,
   type ValidationCheckCategory,
   type ValidationRun,
-} from "./validation";
+} from "./validation.js";
 
 /**
  * Agentic Resource Discovery (ARD) — shared contracts + pure mapping.
@@ -301,9 +301,10 @@ export function deriveCapabilityKinds(
   const kinds = [...mediaTypeToCapabilityKinds(mediaType)];
   const authoritativeKinds = new Set(kinds);
   const hints = entry.metadata?.capabilityKinds ?? [];
+  const engine = sourceMediaTypeToImporterEngine(mediaType);
   return {
     kinds,
-    engine: sourceMediaTypeToImporterEngine(mediaType),
+    ...(engine ? { engine } : {}),
     isSource: isSourceArtifactMediaType(mediaType),
     unrecognizedHints: hints.filter((kind) => !authoritativeKinds.has(kind)),
   };
