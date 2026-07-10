@@ -1,4 +1,6 @@
 import { readFile } from "node:fs/promises";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 import { Readable, Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -15,6 +17,56 @@ import { readStdioFrames, runStdioHost, writeStdioFrame } from "../src/stdio";
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 describe("mcp-host runtime", () => {
+  it("executes the committed two-step Arazzo workflow and returns outputs", async () => {
+    const calls: string[] = [];
+    const upstream = createServer((request, response) => {
+      calls.push(`${request.method} ${request.url}`);
+      response.setHeader("content-type", "application/json");
+      if (request.method === "POST" && request.url === "/tickets") {
+        response.writeHead(201).end(JSON.stringify({ id: "tick_42" }));
+        return;
+      }
+      if (request.method === "POST" && request.url === "/tickets/tick_42/assignee") {
+        response.writeHead(200).end(JSON.stringify({ assignee: "agent_7" }));
+        return;
+      }
+      response.writeHead(404).end("{}");
+    });
+    await new Promise<void>((resolve) => upstream.listen(0, "127.0.0.1", resolve));
+    const address = upstream.address() as AddressInfo;
+
+    try {
+      const manifest = await loadCommittedManifest("registry/quickdeploy/arazzo-adoption.mcp.json");
+      const host = createMcpHost({
+        manifest,
+        userConfig: {
+          sourceOverrides: { "support-api": `http://127.0.0.1:${address.port}` },
+        },
+      });
+
+      const result = await host.handleJsonRpc({
+        jsonrpc: "2.0",
+        id: "call",
+        method: "tools/call",
+        params: {
+          name: "create_and_assign_ticket",
+          arguments: { customerId: "cust_1", message: "Help" },
+        },
+      });
+      const text = (result as any).result.content[0].text as string;
+
+      expect(JSON.parse(text)).toMatchObject({
+        workflowId: "create-and-assign-ticket",
+        outputs: { ticketId: "tick_42", assignee: "agent_7" },
+      });
+      expect(calls).toEqual(["POST /tickets", "POST /tickets/tick_42/assignee"]);
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        upstream.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  });
+
   it("hosts Arazzo workflow tools and honors the workflow allowlist", async () => {
     const source = new URL("./fixtures/ticket-workflows.arazzo.json", import.meta.url).href;
     const manifest = McpManifestSchema.parse({

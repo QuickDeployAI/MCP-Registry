@@ -1,0 +1,59 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Support ticket adoption workflow",
+    "version": "1.0.0",
+    "description": "Creates a support ticket and assigns it to an agent."
+  },
+  "sourceDescriptions": [
+    {
+      "name": "support-api",
+      "type": "openapi3",
+      "url": "./support-api.openapi.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "create-and-assign-ticket",
+      "summary": "Create and assign a support ticket",
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "customerId": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "required": ["customerId", "message"]
+      },
+      "steps": [
+        {
+          "stepId": "create-ticket",
+          "operationId": "createTicket",
+          "requestBody": {
+            "contentType": "application/json",
+            "payload": {
+              "customerId": "$inputs.customerId",
+              "message": "$inputs.message"
+            }
+          },
+          "outputs": { "ticketId": "$response.body#/id" }
+        },
+        {
+          "stepId": "assign-ticket",
+          "operationId": "assignTicket",
+          "parameters": [
+            {
+              "name": "ticketId",
+              "in": "path",
+              "value": "$steps.create-ticket.outputs.ticketId"
+            }
+          ],
+          "outputs": { "assignee": "$response.body#/assignee" }
+        }
+      ],
+      "outputs": {
+        "ticketId": "$steps.create-ticket.outputs.ticketId",
+        "assignee": "$steps.assign-ticket.outputs.assignee"
+      }
+    }
+  ]
+}

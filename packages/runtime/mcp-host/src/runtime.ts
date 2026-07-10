@@ -588,9 +588,10 @@ async function createArazzoTools(
   manifest: McpManifest,
   config: HostConfig,
 ): Promise<HostTool[]> {
-  const document = await loadArazzoDocument(manifest.spec.source.uri);
+  const sourceUri = resolveManifestSourceUri(manifest.spec.source.uri);
+  const document = await loadArazzoDocument(sourceUri);
   const sources = await resolveArazzoSources(document, {
-    baseUrl: manifest.spec.source.uri,
+    baseUrl: sourceUri,
   });
   const configuredAllowlist = readStringArray(config.values.workflowAllowlist);
   const manifestAllowlist = manifest.spec.select.workflows;
@@ -620,6 +621,15 @@ async function createArazzoTools(
       inputSchema: tool.inputSchema,
       call: tool.execute,
     }));
+}
+
+function resolveManifestSourceUri(sourceUri: string): string {
+  const workspaceFilePrefix = "file://";
+  if (!sourceUri.startsWith(workspaceFilePrefix)) return sourceUri;
+
+  const location = sourceUri.slice(workspaceFilePrefix.length);
+  if (location.startsWith("/") || location.startsWith("localhost/")) return sourceUri;
+  return new URL(`../../../../${location}`, import.meta.url).href;
 }
 
 async function executeHttpRequest(request: {
