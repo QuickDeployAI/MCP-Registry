@@ -10,7 +10,7 @@
   "ignore": [
     "@quickdeployai/mcp-registry-workspace-config",
     "@quickdeployai/mcp-registry-workspace-smoke",
-    "@quickdeployai/mcp-registry-cli",
+    "@quickdeployai/registry-cli",
     "@quickdeployai/openapi-2-mcp"
   ]
 }
