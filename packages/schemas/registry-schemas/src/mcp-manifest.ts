@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ServerJsonPackageSchema } from "./servers-json.js";
 
 export const MCP_MANIFEST_API_VERSION = "quickdeploy.ai/v1" as const;
 export const MCP_MANIFEST_KIND = "McpManifest" as const;
@@ -717,6 +718,28 @@ export const McpManifestDeploymentSchema = z
   .strict();
 export type McpManifestDeployment = z.infer<typeof McpManifestDeploymentSchema>;
 
+export const McpManifestServerRemoteSchema = z
+  .object({
+    type: z.enum(["streamable-http", "sse", "stdio"]).or(z.string().min(1)),
+    url: z.string().url(),
+    headers: z.array(z.record(z.string(), z.unknown())).optional(),
+    variables: z.record(z.string(), z.unknown()).optional(),
+  })
+  .catchall(z.unknown());
+export type McpManifestServerRemote = z.infer<typeof McpManifestServerRemoteSchema>;
+
+export const McpManifestServerSchema = z
+  .object({
+    packages: z.array(ServerJsonPackageSchema).default([]),
+    remotes: z.array(McpManifestServerRemoteSchema).default([]),
+  })
+  .strict()
+  .refine(
+    (server) => server.packages.length > 0 || server.remotes.length > 0,
+    "server must include at least one package or remote declaration",
+  );
+export type McpManifestServer = z.infer<typeof McpManifestServerSchema>;
+
 export const McpManifestSpecSchema = z
   .object({
     importer: McpManifestImporterSchema,
@@ -767,6 +790,7 @@ export const McpManifestSchema = z
     metadata: McpManifestMetadataSchema,
     spec: McpManifestSpecSchema,
     deployment: McpManifestDeploymentSchema,
+    server: McpManifestServerSchema.optional(),
     _meta: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
