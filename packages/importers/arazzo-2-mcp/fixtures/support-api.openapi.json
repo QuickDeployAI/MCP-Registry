@@ -1,0 +1,41 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Support API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tickets": {
+      "post": {
+        "operationId": "createTicket",
+        "summary": "Create a support ticket",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/tickets/{ticketId}/assignee": {
+      "post": {
+        "operationId": "assignTicket",
+        "summary": "Assign a support ticket",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assigned"
+          }
+        }
+      }
+    }
+  }
+}
