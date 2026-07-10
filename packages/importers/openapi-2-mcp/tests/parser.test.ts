@@ -10,6 +10,11 @@ import {
   openApiToMcpTools,
   authForOperation,
 } from "../src/parser.js";
+import {
+  mediaTypeToCapabilityKinds,
+  OPENAPI_MEDIA_TYPE,
+} from "@quickdeployai/registry-schemas/ard";
+import { openApiArtifactParser } from "../src/index.js";
 
 // ── schemaToZod ───────────────────────────────────────────────────────────────
 
@@ -664,5 +669,37 @@ describe("normalizeOpenApiDocument", () => {
     const normalized = await normalizeOpenApiDocument(swagger2PetstoreDoc);
 
     expect(normalized.warnings).toContain("Converted Swagger 2.0 document to OpenAPI 3.0.");
+  });
+});
+
+describe("openApiArtifactParser", () => {
+  it("emits the authoritative api-contract and tool capabilities", async () => {
+    const result = await openApiArtifactParser.parse(petstoreOpenApi3Doc, {
+      identifier: "urn:air:example:petstore",
+      displayName: "Petstore",
+      type: OPENAPI_MEDIA_TYPE,
+      url: "https://petstore.example/openapi.json",
+    });
+
+    expect(openApiArtifactParser.mediaTypes).toEqual([OPENAPI_MEDIA_TYPE]);
+    expect(result.capabilities[0]).toMatchObject({
+      kind: "api-contract",
+      name: "Petstore",
+    });
+    expect(result.capabilities.filter(({ kind }) => kind === "tool").map(({ name }) => name))
+      .toEqual(expect.arrayContaining(["getPetById", "findPetsByStatus", "addPet"]));
+    expect(new Set(result.capabilities.map(({ kind }) => kind)))
+      .toEqual(new Set(mediaTypeToCapabilityKinds(OPENAPI_MEDIA_TYPE)));
+    expect(result.mcpProjection?.tools).toHaveLength(3);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it("rejects non-OpenAPI input with a clear importer diagnostic", async () => {
+    await expect(openApiArtifactParser.parse({}, {
+      identifier: "urn:air:example:invalid",
+      displayName: "Invalid",
+      type: OPENAPI_MEDIA_TYPE,
+      data: {},
+    })).rejects.toThrow("expected an OpenAPI document object");
   });
 });

@@ -400,6 +400,9 @@ importers:
       '@quickdeployai/proxy-core':
         specifier: workspace:*
         version: link:../../core/proxy-core
+      '@quickdeployai/registry-schemas':
+        specifier: workspace:*
+        version: link:../../schemas/registry-schemas
       '@readme/openapi-parser':
         specifier: ^6.0.0
         version: 6.2.1(openapi-types@12.1.3)

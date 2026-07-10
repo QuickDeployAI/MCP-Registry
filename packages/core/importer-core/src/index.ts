@@ -93,3 +93,11 @@ export {
   type MxcSandboxRequest,
   type MxcSandboxResult,
 } from "./mxc.js";
+export type {
+  ArtifactParseResult,
+  ArtifactParser,
+  ArtifactSourceEntry,
+  McpProjection,
+  ParsedCapability,
+  ParserDiagnostic,
+} from "./parser.js";

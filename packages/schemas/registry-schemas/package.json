@@ -14,6 +14,11 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./ard": {
+      "types": "./src/ard.ts",
+      "import": "./src/ard.ts",
+      "default": "./src/ard.ts"
+    },
     "./inference": {
       "types": "./src/inference.ts",
       "import": "./src/inference.ts",
