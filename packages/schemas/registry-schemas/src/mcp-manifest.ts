@@ -5,6 +5,8 @@ export const MCP_MANIFEST_KIND = "McpManifest" as const;
 export const MCP_MANIFEST_SCHEMA_ID =
   "https://schemas.quickdeploy.ai/mcp-manifest.v1.schema.json" as const;
 export const QUICKDEPLOY_MCP_MANIFEST_META_KEY = "ai.quickdeploy.registry/manifest" as const;
+export const QUICKDEPLOY_MCP_PROJECTION_META_KEY = "ai.quickdeploy.registry/projection" as const;
+export const QUICKDEPLOY_ARD_ENTRY_META_KEY = "ai.quickdeploy.registry/ard-entry" as const;
 export const OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11 =
   "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json" as const;
 
@@ -219,27 +221,6 @@ export const McpManifestDeploymentAuthSchema = z.discriminatedUnion("type", [
     .strict(),
 ]);
 export type McpManifestDeploymentAuth = z.infer<typeof McpManifestDeploymentAuthSchema>;
-
-/**
- * Payment enforcement advertised for the hosted deployment. Payment is
- * orthogonal to deployment.auth: a capability can require both an identity
- * (auth) and settlement over an agentic payment protocol (payment).
- */
-export const McpManifestDeploymentPaymentSchema = z
-  .object({
-    required: z.boolean(),
-    protocols: z
-      .array(
-        z.object({
-          protocol: z.enum(["a2h", "x402", "l402", "mpp", "ap2", "acp", "ucp"]),
-          enabled: z.boolean(),
-          config: z.record(z.string(), z.unknown()).optional(),
-        }),
-      )
-      .default([]),
-  })
-  .strict();
-export type McpManifestDeploymentPayment = z.infer<typeof McpManifestDeploymentPaymentSchema>;
 
 const ApiManifestExtensionSchema = z
   .object({
@@ -579,7 +560,7 @@ export const ARAZZO_2_MCP_CONFIG_SCHEMA = {
     },
     resolveSourceDescriptions: {
       type: "boolean",
-      description: "Whether sourceDescriptions should be cross-referenced to known source documents.",
+      description: "Whether sourceDescriptions should be cross-referenced to ARD entries.",
     },
     requestTimeoutMs: {
       type: "number",
@@ -714,7 +695,6 @@ export const McpManifestDeploymentSchema = z
   .object({
     transport: z.enum(["stdio", "streamable-http", "sse"]),
     auth: McpManifestDeploymentAuthSchema.optional(),
-    payment: McpManifestDeploymentPaymentSchema.optional(),
     userConfig: z.record(z.string(), JsonSchemaLikeSchema).default({}),
     configSchema: JsonSchemaLikeSchema.optional(),
     refresh: z
@@ -743,7 +723,7 @@ export const McpManifestSpecSchema = z
   })
   .strict()
   .superRefine((spec, context) => {
-    if (spec.importer.engine !== "git-2-mcp") return;
+    if (spec.importer.engine !== "git-2-mcp-spike") return;
     if (spec.source.type !== "git") {
       context.addIssue({
         code: "custom",

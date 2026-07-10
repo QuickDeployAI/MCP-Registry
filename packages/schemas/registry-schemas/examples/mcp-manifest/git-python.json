@@ -10,7 +10,7 @@
   },
   "spec": {
     "importer": {
-      "engine": "git-2-mcp",
+      "engine": "git-2-mcp-spike",
       "versionRange": "^0.1.0"
     },
     "source": {
@@ -18,7 +18,7 @@
       "uri": "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567"
     },
     "select": {
-      "pythonFunctions": ["qdai_git_fixture.add", "qdai_git_fixture.slugify"]
+      "pythonFunctions": ["qdai_git_spike_fixture.add", "qdai_git_spike_fixture.slugify"]
     },
     "config": {
       "schema": {
@@ -34,11 +34,11 @@
     "expose": {
       "tools": [
         {
-          "from": "qdai_git_fixture.add",
+          "from": "qdai_git_spike_fixture.add",
           "name": "fixture_add"
         },
         {
-          "from": "qdai_git_fixture.slugify",
+          "from": "qdai_git_spike_fixture.slugify",
           "name": "fixture_slugify"
         }
       ]

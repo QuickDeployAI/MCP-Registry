@@ -1,0 +1,633 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quickdeploy.ai/mcp-manifest.v1.schema.json",
+  "title": "QuickDeploy MCP Manifest v1",
+  "description": "Declarative source-to-MCP manifest consumed by QuickDeploy importers, mcp-host, and registry tooling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec", "deployment"],
+  "properties": {
+    "apiVersion": {
+      "const": "quickdeploy.ai/v1"
+    },
+    "kind": {
+      "const": "McpManifest"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "spec": {
+      "$ref": "#/$defs/spec"
+    },
+    "deployment": {
+      "$ref": "#/$defs/deployment"
+    },
+    "_meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200,
+          "pattern": "^ai\\.quickdeploy/[a-zA-Z0-9._-]+$"
+        },
+        "version": {
+          "$ref": "#/$defs/exactVersion"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "labels": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["importer", "source", "select"],
+      "properties": {
+        "importer": {
+          "$ref": "#/$defs/importer"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "select": {
+          "$ref": "#/$defs/select"
+        },
+        "auth": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/auth"
+          }
+        },
+        "config": {
+          "$ref": "#/$defs/config"
+        },
+        "expose": {
+          "$ref": "#/$defs/expose"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "importer": {
+                "properties": {
+                  "engine": {
+                    "const": "git-2-mcp-spike"
+                  }
+                },
+                "required": ["engine"]
+              }
+            },
+            "required": ["importer"]
+          },
+          "then": {
+            "properties": {
+              "source": {
+                "required": ["type", "uri"],
+                "properties": {
+                  "type": {
+                    "const": "git"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": ["ref"],
+                    "properties": {
+                      "ref": {
+                        "$ref": "#/$defs/immutableGitRef"
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "uri": {
+                        "pattern": "@[a-fA-F0-9]{40}([a-fA-F0-9]{24})?$"
+                      }
+                    }
+                  }
+                ]
+              },
+              "select": {
+                "required": ["pythonFunctions"],
+                "properties": {
+                  "pythonFunctions": {
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "importer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "versionRange"],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versionRange": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "uri"],
+      "properties": {
+        "type": {
+          "enum": ["http", "file", "git", "oci"]
+        },
+        "uri": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(https?://|file://|git\\+https://|ssh://|oci://)\\S+$"
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "select": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/requestSelect"
+          }
+        },
+        "grpcMethods": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/grpcMethodSelect"
+          }
+        },
+        "pythonFunctions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/pythonFunctionSelect"
+          }
+        },
+        "skills": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/skillSelect"
+          }
+        },
+        "corpusGlobs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": ["requests"],
+          "properties": {
+            "requests": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": ["grpcMethods"],
+          "properties": {
+            "grpcMethods": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": ["pythonFunctions"],
+          "properties": {
+            "pythonFunctions": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": ["skills"],
+          "properties": {
+            "skills": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "required": ["corpusGlobs"],
+          "properties": {
+            "corpusGlobs": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "requestSelect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "uriTemplate"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uriTemplate": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "grpcMethodSelect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["service", "method"],
+      "properties": {
+        "service": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "pythonFunctionSelect": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\.(?:[A-Za-z_][A-Za-z0-9_]*|\\*)$"
+    },
+    "skillSelect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "globs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "auth": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "valueFrom"],
+          "properties": {
+            "type": {
+              "const": "bearer"
+            },
+            "valueFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "valueFrom"],
+          "properties": {
+            "type": {
+              "const": "api-key"
+            },
+            "in": {
+              "enum": ["header", "query"],
+              "default": "header"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "default": "x-api-key"
+            },
+            "valueFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "usernameFrom", "passwordFrom"],
+          "properties": {
+            "type": {
+              "const": "basic"
+            },
+            "usernameFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            },
+            "passwordFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "const": "oauth2"
+            },
+            "valueFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            },
+            "tokenUrl": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^https?://\\S+$"
+            },
+            "clientIdFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            },
+            "clientSecretFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            },
+            "scopes": {
+              "type": "array",
+              "default": [],
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "anyOf": [
+            {
+              "required": ["valueFrom"]
+            },
+            {
+              "required": ["tokenUrl", "clientIdFrom", "clientSecretFrom"]
+            }
+          ]
+        }
+      ]
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema"],
+      "properties": {
+        "schema": {
+          "$ref": "#/$defs/jsonSchemaLike"
+        },
+        "defaults": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": true
+        }
+      }
+    },
+    "expose": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tools": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/exposeItem"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/exposeItem"
+          }
+        },
+        "prompts": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/exposeItem"
+          }
+        }
+      }
+    },
+    "exposeItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deny": {
+          "type": "boolean",
+          "default": false
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport"],
+      "properties": {
+        "transport": {
+          "enum": ["stdio", "streamable-http", "sse"]
+        },
+        "auth": {
+          "$ref": "#/$defs/deploymentAuth"
+        },
+        "userConfig": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonSchemaLike"
+          }
+        },
+        "configSchema": {
+          "$ref": "#/$defs/jsonSchemaLike"
+        }
+      }
+    },
+    "deploymentAuth": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "const": "none"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "const": "gateway"
+            },
+            "authenticatedHeader": {
+              "$ref": "#/$defs/inboundAuthHeader"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "tokenFrom"],
+          "properties": {
+            "type": {
+              "const": "bearer"
+            },
+            "tokenFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "resourceMetadataUrl"],
+          "properties": {
+            "type": {
+              "const": "oauth2-resource"
+            },
+            "resourceMetadataUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "audience": {
+              "type": "string",
+              "minLength": 1
+            },
+            "requiredScopes": {
+              "type": "array",
+              "default": [],
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "tokenFrom": {
+              "$ref": "#/$defs/envValueFrom"
+            }
+          }
+        }
+      ]
+    },
+    "inboundAuthHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "jsonSchemaLike": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "envName": {
+      "type": "string",
+      "pattern": "^[A-Z_][A-Z0-9_]*$"
+    },
+    "envValueFrom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["env"],
+      "properties": {
+        "env": {
+          "$ref": "#/$defs/envName"
+        }
+      }
+    },
+    "immutableGitRef": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{40}([a-fA-F0-9]{24})?$"
+    },
+    "exactVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    }
+  }
+}

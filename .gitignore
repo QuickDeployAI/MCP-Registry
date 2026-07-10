@@ -4,6 +4,9 @@ node_modules/
 # Package-manager output
 .pnpm-store/
 
+# Separate canonical implementation checkout (local only)
+monorepo/
+
 # Build output
 dist/
 coverage/
