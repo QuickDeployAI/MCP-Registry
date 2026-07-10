@@ -195,7 +195,7 @@ describe("registry-cli validate", () => {
       packages: [
         {
           registryType: "oci",
-          identifier: "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
+          identifier: "ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp:0.1.0",
           runtimeHint: "node22-importer",
         },
       ],

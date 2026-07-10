@@ -45,12 +45,12 @@ jobs:
           - slug: asyncapi-2-mcp
             package: "@quickdeployai/asyncapi-2-mcp"
             entrypoint: src/bin.mts
-            image: ghcr.io/quickdeployai/importers/asyncapi-2-mcp
+            image: ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp
             smoke: --help
           - slug: grpc-2-mcp
             package: "@quickdeployai/grpc-2-mcp"
             entrypoint: src/bin.mts
-            image: ghcr.io/quickdeployai/importers/grpc-2-mcp
+            image: ghcr.io/quickdeployai/mcp-registry-grpc-2-mcp
             smoke: catalog --fixture greeter --proto fixtures/greeter.proto --package quickdeploy.fixture --endpoint 127.0.0.1:50051
     steps:
       - uses: actions/checkout@v6.0.3

@@ -16,7 +16,7 @@ import { compileManifestToServerJson } from "./registry-build";
  */
 const UNPINNED_RUNTIME_OCI_IDENTIFIER = "ghcr.io/quickdeployai/mcp-host";
 const UNPINNED_IMPORTER_OCI_IDENTIFIER_PATTERN =
-  /^ghcr\.io\/quickdeployai\/importers\/[a-z0-9._-]+:\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/;
+  /^ghcr\.io\/quickdeployai\/mcp-registry-[a-z0-9._-]+:\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/;
 
 const NAME_PATTERN = /^[a-zA-Z0-9.-]+\/[a-zA-Z0-9._-]+$/;
 const QUICKDEPLOY_NAME_PREFIX = "ai.quickdeploy/";

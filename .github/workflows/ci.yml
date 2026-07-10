@@ -86,8 +86,8 @@ jobs:
           MONOREPO_DEPLOY_TOKEN: ${{ secrets.MONOREPO_DEPLOY_TOKEN }}
         run: |
           if [ -z "$MONOREPO_DEPLOY_TOKEN" ]; then
-            echo "::error::MONOREPO_DEPLOY_TOKEN secret is not configured; cannot deploy servers.json to the monorepo."
-            exit 1
+            echo "::warning::MONOREPO_DEPLOY_TOKEN is not configured; the catalog remains available as the mcp-registry-catalog artifact."
+            exit 0
           fi
           git clone --depth 1 "https://x-access-token:${MONOREPO_DEPLOY_TOKEN}@github.com/QuickDeployAI/monorepo.git" monorepo-deploy
           mkdir -p monorepo-deploy/marketplace/mcp
