@@ -7,7 +7,7 @@ import {
   validateMcpManifestImporterConfig,
 } from "@quickdeployai/registry-schemas";
 import { describe, expect, it } from "vitest";
-import { fixturePackageRoot } from "@quickdeployai/git-2-mcp";
+import { fixturePackageRoot, type SandboxRunner, type PythonFunctionTool } from "@quickdeployai/git-2-mcp";
 import { loadManifestFile } from "../src/manifest-loader";
 import { createMcpHost, MCP_PROTOCOL_VERSION, startHttpHost } from "../src/runtime";
 import { readStdioFrames, runStdioHost, writeStdioFrame } from "../src/stdio";
@@ -222,6 +222,7 @@ describe("mcp-host runtime", () => {
       userConfig: {
         packageRoot: fixturePackageRoot(),
       },
+      gitSandboxRunner: fixtureGitRunner(),
     });
 
     const tools = await host.handleJsonRpc({
@@ -289,6 +290,7 @@ describe("mcp-host runtime", () => {
       userConfig: {
         packageRoot: fixturePackageRoot(),
       },
+      gitSandboxRunner: fixtureGitRunner(),
     });
 
     const tools = await host.handleJsonRpc({
@@ -574,4 +576,68 @@ async function loadCommittedManifest(manifestPath: string) {
   return validateMcpManifestImporterConfig(
     JSON.parse(await readFile(absoluteManifestPath, "utf8")),
   );
+}
+
+function fixtureGitRunner(): SandboxRunner {
+  const tools: PythonFunctionTool[] = [
+    pythonTool("python_add", "add", ["left", "right"]),
+    pythonTool("python_slugify", "slugify", ["value"]),
+    pythonTool("python_summarize", "summarize", ["items"]),
+    pythonTool("python_guess_kind", "guess_kind", ["value"]),
+    pythonTool("python_texttools_initials", "TextTools.initials", ["value"]),
+    pythonTool("python_texttools_repeat", "TextTools.repeat", ["value", "count"]),
+  ];
+
+  return {
+    async inspect(request) {
+      return tools
+        .filter((tool) => tool.module === request.module)
+        .slice(0, request.maxTools);
+    },
+    async call(request) {
+      switch (request.functionName) {
+        case "add":
+          return Number(request.args[0]) + Number(request.args[1]);
+        case "slugify":
+          return String(request.args[0]).toLowerCase().replace(/\s+/g, "-");
+        case "summarize":
+          return {
+            count: (request.args[0] as unknown[]).length,
+            characters: (request.args[0] as string[]).join("").length,
+          };
+        case "guess_kind":
+          return typeof request.args[0];
+        case "TextTools.initials":
+          return String(request.args[0])
+            .split(/\s+/)
+            .map((part) => part[0]?.toUpperCase() ?? "")
+            .join("");
+        case "TextTools.repeat":
+          return String(request.args[0]).repeat(Number(request.args[1]));
+        default:
+          throw new Error(`Unexpected fixture function: ${request.functionName}`);
+      }
+    },
+    async runCode() {
+      throw new Error("mcp-host tests should not expose run_code");
+    },
+  };
+}
+
+function pythonTool(
+  name: string,
+  functionName: string,
+  required: readonly string[],
+): PythonFunctionTool {
+  return {
+    name,
+    module: "qdai_git_fixture",
+    functionName,
+    description: `Call ${functionName}.`,
+    inputSchema: {
+      type: "object",
+      properties: Object.fromEntries(required.map((key) => [key, {}])),
+      required,
+    },
+  };
 }

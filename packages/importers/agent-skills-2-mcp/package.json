@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@quickdeployai/importer-core": "workspace:*",
     "yaml": "^2.7.0"
   },
   "devDependencies": {

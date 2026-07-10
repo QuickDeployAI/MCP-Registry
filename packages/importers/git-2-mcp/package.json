@@ -21,6 +21,7 @@
     "test": "vitest run --testTimeout=30000"
   },
   "dependencies": {
+    "@quickdeployai/importer-core": "workspace:*",
     "typescript": "^5.8.3"
   },
   "devDependencies": {
