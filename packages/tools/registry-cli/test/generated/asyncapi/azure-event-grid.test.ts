@@ -1,0 +1,182 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "asyncapi",
+  provider: "azure-event-grid",
+  manifestPath: "registry/azure-event-grid/events.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/azure-event-grid",
+      "version": "0.1.0",
+      "title": "Azure Event Grid",
+      "description": "Generated Azure Event Grid custom topic publish AsyncAPI MCP catalog manifest.",
+      "labels": [
+        "generated",
+        "asyncapi",
+        "events",
+        "azure",
+        "azure-event-grid"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "asyncapi-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic",
+        "digest": "sha256:225ba6732cc556fd9af87c68161f6efb6a60536e77096d68e253cdf61a606b18",
+        "ref": "azure-event-grid-post-to-custom-topic-docs@2026-07-09"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "PUBLISH",
+            "uriTemplate": "channel://azure-event-grid.custom-topic.events"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "api-key",
+          "in": "header",
+          "name": "aeg-sas-key",
+          "valueFrom": {
+            "env": "AZURE_EVENT_GRID_ACCESS_KEY"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "brokerProtocol": {
+              "type": "string",
+              "description": "Wire protocol used to publish events."
+            },
+            "publishTimeoutMs": {
+              "type": "number",
+              "minimum": 1,
+              "description": "Per-publish timeout in milliseconds."
+            }
+          }
+        },
+        "defaults": {
+          "brokerProtocol": "https",
+          "publishTimeoutMs": 30000
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic",
+          "type": "http",
+          "digest": "sha256:225ba6732cc556fd9af87c68161f6efb6a60536e77096d68e253cdf61a606b18",
+          "ref": "azure-event-grid-post-to-custom-topic-docs@2026-07-09",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "azure-event-grid-post-to-custom-topic-docs@2026-07-09",
+          "notes": [
+            "Official Microsoft Learn documentation for publishing events to Azure Event Grid custom topics: https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic",
+            "Azure Event Grid does not publish a first-party AsyncAPI document; this manifest pins the official documentation source used for the catalog entry, following the same non-git-hosted-source precedent as the Salesforce/Shopify OpenAPI entries in this catalog.",
+            "Documented endpoint format: POST https://<topic-endpoint>?api-version=2018-01-01, authenticated via the aeg-sas-key access-key header.",
+            "Verified byte-identical (same SHA-256) across two separate fetches of the source page.",
+            "Verified source SHA-256: 225ba6732cc556fd9af87c68161f6efb6a60536e77096d68e253cdf61a606b18",
+            "The committed manifest selects a single publish operation representing posting an event to an Event Grid custom topic endpoint."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic for source retrieval",
+            "POST https://<event-grid-topic-endpoint>?api-version=2018-01-01 for selected publish operation"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/azure-event-grid/events.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/azure-event-grid.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/azure-event-grid/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "PUBLISH channel://azure-event-grid.custom-topic.events",
+            "name": "publish_azure_event_grid_custom_topic_event",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic",
+        "type": "http",
+        "digest": "sha256:225ba6732cc556fd9af87c68161f6efb6a60536e77096d68e253cdf61a606b18",
+        "ref": "azure-event-grid-post-to-custom-topic-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "azure-event-grid-post-to-custom-topic-docs@2026-07-09",
+        "notes": [
+          "Official Microsoft Learn documentation for publishing events to Azure Event Grid custom topics: https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic",
+          "Azure Event Grid does not publish a first-party AsyncAPI document; this manifest pins the official documentation source used for the catalog entry, following the same non-git-hosted-source precedent as the Salesforce/Shopify OpenAPI entries in this catalog.",
+          "Documented endpoint format: POST https://<topic-endpoint>?api-version=2018-01-01, authenticated via the aeg-sas-key access-key header.",
+          "Verified byte-identical (same SHA-256) across two separate fetches of the source page.",
+          "Verified source SHA-256: 225ba6732cc556fd9af87c68161f6efb6a60536e77096d68e253cdf61a606b18",
+          "The committed manifest selects a single publish operation representing posting an event to an Event Grid custom topic endpoint."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://learn.microsoft.com/en-us/azure/event-grid/post-to-custom-topic for source retrieval",
+          "POST https://<event-grid-topic-endpoint>?api-version=2018-01-01 for selected publish operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/azure-event-grid/events.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/azure-event-grid.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/azure-event-grid/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "PUBLISH channel://azure-event-grid.custom-topic.events",
+        "name": "publish_azure_event_grid_custom_topic_event",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "AZURE_EVENT_GRID_ACCESS_KEY"
+    ],
+    "serverEnvVars": [
+      "AZURE_EVENT_GRID_ACCESS_KEY"
+    ]
+  },
+});
