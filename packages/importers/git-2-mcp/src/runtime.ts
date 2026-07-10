@@ -1,9 +1,8 @@
-import { spawn } from "node:child_process";
 import { access, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
+import { createMxcSandboxRunner, type MxcCommandRunner } from "@quickdeployai/importer-core";
 import ts from "typescript";
 
 export type SandboxPolicy = {
@@ -603,12 +602,50 @@ else:
     raise SystemExit(f"unsupported op: {request['op']}")
 `;
 
+const typeScriptBridge = String.raw`
+const chunks = [];
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => chunks.push(chunk));
+process.stdin.on("end", async () => {
+  try {
+    const request = JSON.parse(chunks.join(""));
+    const exportsObject = {};
+    const moduleObject = { exports: exportsObject };
+    const guardedRequire = () => {
+      throw new Error("sandbox denied module import");
+    };
+    const load = new Function("exports", "module", "require", request.source);
+    load(exportsObject, moduleObject, guardedRequire);
+    const fn = moduleObject.exports[request.exportName] ?? exportsObject[request.exportName];
+    if (typeof fn !== "function") {
+      throw new Error("Unknown TypeScript export: " + request.exportName);
+    }
+    const encoded = JSON.stringify(await fn(...request.args));
+    if (encoded.length > request.outputLimitBytes) {
+      throw new Error("sandbox result exceeded " + request.outputLimitBytes + " bytes");
+    }
+    process.stdout.write(encoded);
+  } catch (error) {
+    process.stderr.write(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
+});
+`;
+
+function quoteCommandArg(value: string): string {
+  if (process.platform === "win32") {
+    return `"${value.replace(/(["\\])/g, "\\$1")}"`;
+  }
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
 export class SubprocessPythonSandboxRunner implements SandboxRunner {
   constructor(
     private readonly options: {
       readonly pythonBin?: string;
       readonly timeoutMs?: number;
       readonly policy?: Partial<SandboxPolicy>;
+      readonly mxcRunner?: MxcCommandRunner;
     } = {},
   ) {}
 
@@ -633,68 +670,19 @@ export class SubprocessPythonSandboxRunner implements SandboxRunner {
     const sandboxRoot = await mkdtemp(path.join(tmpdir(), "qdai-git2mcp-"));
 
     try {
-      return await new Promise((resolve, reject) => {
-        const child = spawn(pythonBin, ["-c", pythonBridge], {
-          env: {
-            PATH: process.env.PATH ?? "",
-            PYTHONIOENCODING: "utf-8",
-            SystemRoot: process.env.SystemRoot ?? "",
-            TEMP: sandboxRoot,
-            TMP: sandboxRoot,
-            TMPDIR: sandboxRoot,
-          },
-          cwd: sandboxRoot,
-          stdio: ["pipe", "pipe", "pipe"],
-          windowsHide: true,
-        });
-        let settled = false;
-        const fail = (error: Error) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          reject(error);
-        };
-        const timer = setTimeout(() => {
-          child.kill();
-          fail(new Error(`sandbox timed out after ${timeoutMs}ms`));
-        }, timeoutMs);
-        let stdout = "";
-        let stderr = "";
-        child.stdout.setEncoding("utf8");
-        child.stderr.setEncoding("utf8");
-        child.stdout.on("data", (chunk) => {
-          stdout += chunk;
-          if (stdout.length > policy.outputLimitBytes) {
-            child.kill();
-            fail(new Error(`sandbox stdout exceeded ${policy.outputLimitBytes} bytes`));
-          }
-        });
-        child.stderr.on("data", (chunk) => {
-          stderr += chunk;
-          if (stderr.length > policy.outputLimitBytes) {
-            child.kill();
-            fail(new Error(`sandbox stderr exceeded ${policy.outputLimitBytes} bytes`));
-          }
-        });
-        child.on("error", (error) => {
-          fail(error);
-        });
-        child.on("close", (code) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          if (code !== 0) {
-            reject(new Error(stderr.trim() || `sandbox exited with code ${code}`));
-            return;
-          }
-          try {
-            resolve(JSON.parse(stdout));
-          } catch (error) {
-            reject(error);
-          }
-        });
-        child.stdin.end(JSON.stringify({ ...request, policy, sandboxRoot }));
+      const result = await (this.options.mxcRunner ?? createMxcSandboxRunner()).run({
+        commandLine: `${quoteCommandArg(pythonBin)} -c ${quoteCommandArg(pythonBridge)}`,
+        input: JSON.stringify({ ...request, policy, sandboxRoot }),
+        readonlyPaths: [String(request.packageRoot ?? fixturePackageRoot())],
+        readwritePaths: [sandboxRoot],
+        allowOutbound: policy.network !== "disabled",
+        timeoutMs,
+        outputLimitBytes: policy.outputLimitBytes,
       });
+      if (result.exitCode !== 0) {
+        throw new Error(result.stderr.trim() || `MXC sandbox exited with code ${result.exitCode}`);
+      }
+      return JSON.parse(result.stdout);
     } finally {
       await rm(sandboxRoot, { force: true, recursive: true }).catch(() => undefined);
     }
@@ -706,6 +694,7 @@ export class TypeScriptSandboxRunner implements TypeScriptRunner {
     private readonly options: {
       readonly timeoutMs?: number;
       readonly policy?: Partial<SandboxPolicy>;
+      readonly mxcRunner?: MxcCommandRunner;
     } = {},
   ) {}
 
@@ -745,35 +734,23 @@ export class TypeScriptSandboxRunner implements TypeScriptRunner {
       },
       fileName: entrypoint,
     }).outputText;
-    const exportsObject: Record<string, unknown> = {};
-    const moduleObject = { exports: exportsObject };
-    const context = vm.createContext({
-      exports: exportsObject,
-      module: moduleObject,
-      require: () => {
-        throw new Error("sandbox denied module import");
-      },
-      __args: request.args,
-      __name: request.exportName,
-      __result: undefined,
+    const result = await (this.options.mxcRunner ?? createMxcSandboxRunner()).run({
+      commandLine: `${quoteCommandArg(process.execPath)} -e ${quoteCommandArg(typeScriptBridge)}`,
+      input: JSON.stringify({
+        args: request.args,
+        exportName: request.exportName,
+        outputLimitBytes: policy.outputLimitBytes,
+        source: transpiled,
+      }),
+      readonlyPaths: [request.packageRoot],
+      allowOutbound: policy.network !== "disabled",
+      timeoutMs,
+      outputLimitBytes: policy.outputLimitBytes,
     });
-
-    vm.runInContext(transpiled, context, { filename: entrypoint, timeout: timeoutMs });
-    vm.runInContext(
-      `
-const fn = module.exports[__name] ?? exports[__name];
-if (typeof fn !== "function") throw new Error("Unknown TypeScript export: " + __name);
-__result = fn(...__args);
-`,
-      context,
-      { timeout: timeoutMs },
-    );
-    const result = context.__result;
-    const encoded = JSON.stringify(result);
-    if (encoded && encoded.length > policy.outputLimitBytes) {
-      throw new Error(`sandbox result exceeded ${policy.outputLimitBytes} bytes`);
+    if (result.exitCode !== 0) {
+      throw new Error(result.stderr.trim() || `MXC sandbox exited with code ${result.exitCode}`);
     }
-    return result;
+    return JSON.parse(result.stdout);
   }
 }
 

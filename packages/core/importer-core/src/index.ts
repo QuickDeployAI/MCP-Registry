@@ -86,3 +86,10 @@ export {
   type ServerTransport,
   startServer,
 } from "./server.js";
+export {
+  createMxcSandboxRunner,
+  type CreateMxcSandboxRunnerOptions,
+  type MxcCommandRunner,
+  type MxcSandboxRequest,
+  type MxcSandboxResult,
+} from "./mxc.js";

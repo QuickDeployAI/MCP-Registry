@@ -10,6 +10,7 @@ import {
   QUICKDEPLOY_REGISTRY_CURATION_META_KEY,
   QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY,
   type McpManifest,
+  type McpManifestServerRemote,
   McpManifestSchema,
   type ServersJsonEnvelope,
   ServersJsonEnvelopeSchema,
@@ -21,6 +22,7 @@ import {
 
 const SERVERS_JSON_SCHEMA = "https://quickdeploy.ai/schemas/servers-json.schema.json";
 const MCP_HOST_IMAGE = "ghcr.io/quickdeployai/mcp-host";
+const QUICKDEPLOY_PROXY_GATEWAY_BASE_URL = "https://mcp.quickdeploy.ai/proxy";
 const MANIFEST_CONFIG_ENV_PREFIX = "QD_MANIFEST";
 const DEFAULT_BAKED_MANIFEST_PATH = "/app/manifest.mcp.yaml";
 const OCI_SHA256_DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/i;
@@ -249,39 +251,47 @@ function compileMcpRuntimeServerJson(
   },
 ): OfficialServerJsonDocument {
   const envVars = manifestEnvironmentVariables(parsedManifest);
-  const server = {
-    $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
-    name: parsedManifest.metadata.name,
-    version: parsedManifest.metadata.version,
-    description: parsedManifest.metadata.description ?? parsedManifest.metadata.title,
-    packages: [
-      {
-        registryType: "oci",
-        identifier: MCP_HOST_IMAGE,
-        runtimeHint: "mcp-host",
-        transport: parsedManifest.deployment.transport,
-        runtimeArguments: [
-          "run",
-          options.runtimeConfigPath,
-          "--transport",
-          parsedManifest.deployment.transport,
-        ],
-        ...(envVars.length > 0
-          ? { environmentVariables: envVars.map((variable) => variable.name) }
-          : {}),
+  const manifestServer = parsedManifest.server;
+  const server = attachMcpManifestToServerJson(
+    {
+      $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
+      name: parsedManifest.metadata.name,
+      version: parsedManifest.metadata.version,
+      description: parsedManifest.metadata.description ?? parsedManifest.metadata.title,
+      packages: [
+        {
+          registryType: "oci",
+          identifier: MCP_HOST_IMAGE,
+          runtimeHint: "mcp-host",
+          transport: parsedManifest.deployment.transport,
+          runtimeArguments: [
+            "run",
+            options.runtimeConfigPath,
+            "--transport",
+            parsedManifest.deployment.transport,
+          ],
+          ...(envVars.length > 0
+            ? { environmentVariables: envVars.map((variable) => variable.name) }
+            : {}),
+        },
+        ...(manifestServer?.packages ?? []),
+      ],
+      ...(manifestServer?.remotes.length
+        ? { remotes: proxyGatewayRemotes(parsedManifest, options.sourcePath) }
+        : {}),
+      ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
+      _meta: {
+        [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
+          verifiedStatus: "review",
+          category: parsedManifest.spec.importer.engine,
+          isOfficial: true,
+          tags: uniqueStrings(options.curationTags),
+        },
+        ...options.meta,
       },
-    ],
-    ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
-    _meta: {
-      [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
-        verifiedStatus: "review",
-        category: parsedManifest.spec.importer.engine,
-        isOfficial: true,
-        tags: uniqueStrings(options.curationTags),
-      },
-      ...options.meta,
     },
-  };
+    parsedManifest,
+  );
 
   return parseServerJson(server, options.sourcePath);
 }
@@ -405,6 +415,39 @@ function manifestEnvironmentVariables(
   }
 
   return [...variables.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function proxyGatewayRemotes(
+  manifest: McpManifest,
+  sourceManifestPath: string,
+): OfficialServerJsonDocument["remotes"] {
+  return (manifest.server?.remotes ?? []).map((remote, index) => ({
+    type: remote.type,
+    url: quickDeployProxyGatewayUrl(manifest.metadata.name, index),
+    ...(remote.variables ? { variables: remote.variables } : {}),
+    _meta: {
+      "ai.quickdeploy.registry/proxy": {
+        sourceManifestPath,
+        remoteIndex: index,
+        upstream: remoteForProxyMeta(remote),
+      },
+    },
+  }));
+}
+
+function quickDeployProxyGatewayUrl(serverName: string, remoteIndex: number): string {
+  return `${QUICKDEPLOY_PROXY_GATEWAY_BASE_URL}/${encodeURIComponent(serverName)}/${remoteIndex}/mcp`;
+}
+
+function remoteForProxyMeta(remote: McpManifestServerRemote): Record<string, unknown> {
+  const { type, url, headers, variables, ...rest } = remote;
+  return {
+    type,
+    url,
+    ...(headers ? { headers } : {}),
+    ...(variables ? { variables } : {}),
+    ...rest,
+  };
 }
 
 function configSchemaEnvironmentVariables(

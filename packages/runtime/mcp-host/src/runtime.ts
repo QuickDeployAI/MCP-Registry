@@ -13,6 +13,7 @@ import {
   fixturePackageRoot,
   type Git2McpManifest,
   type PythonFunctionTool,
+  type SandboxRunner,
 } from "@quickdeployai/git-2-mcp";
 import { EngineResolutionError } from "./errors";
 import { resolveHostConfig, type HostConfig } from "./config";
@@ -68,10 +69,14 @@ export type HostSurface = {
 export type HostEngine = {
   name: string;
   version: string;
-  createSurface: (manifest: McpManifest, config: HostConfig) => HostSurface;
+  createSurface: (manifest: McpManifest, config: HostConfig, runtime: HostRuntime) => HostSurface;
 };
 
 export type ResolvedEngine = HostEngine;
+
+export type HostRuntime = {
+  readonly gitSandboxRunner?: SandboxRunner;
+};
 
 export type HostReadyState = {
   ok: boolean;
@@ -97,6 +102,7 @@ export type CreateMcpHostOptions = {
   userConfig?: Record<string, unknown>;
   env?: NodeJS.ProcessEnv;
   engines?: HostEngine[];
+  gitSandboxRunner?: SandboxRunner;
 };
 
 export const defaultEngines: HostEngine[] = [
@@ -152,7 +158,8 @@ export function createMcpHost(options: CreateMcpHostOptions): McpHost {
   const engines = options.engines ?? defaultEngines;
   const engine = resolveEngine(options.manifest, engines);
   const config = resolveHostConfig(options.manifest, options.userConfig ?? {}, options.env);
-  const surface = engine.createSurface(options.manifest, config);
+  const runtime: HostRuntime = { gitSandboxRunner: options.gitSandboxRunner };
+  const surface = engine.createSurface(options.manifest, config, runtime);
 
   return {
     manifest: options.manifest,
@@ -654,7 +661,11 @@ function readPositiveInteger(value: unknown): number | undefined {
   return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : undefined;
 }
 
-function createGit2McpSurface(manifest: McpManifest, config: HostConfig): HostSurface {
+function createGit2McpSurface(
+  manifest: McpManifest,
+  config: HostConfig,
+  runtime: HostRuntime,
+): HostSurface {
   if (manifest.spec.source.type !== "git") {
     throw new EngineResolutionError("git-2-mcp manifests require spec.source.type=git.");
   }
@@ -669,7 +680,7 @@ function createGit2McpSurface(manifest: McpManifest, config: HostConfig): HostSu
 
   return {
     tools: () => {
-      cached ??= createGit2McpTools(manifest, config, selectors, exposeNames);
+      cached ??= createGit2McpTools(manifest, config, selectors, exposeNames, runtime);
       return cached;
     },
     resources: [],
@@ -682,6 +693,7 @@ async function createGit2McpTools(
   config: HostConfig,
   selectors: readonly string[],
   exposeNames: ReadonlyMap<string, string>,
+  runtime: HostRuntime,
 ): Promise<HostTool[]> {
   const packageRoot =
     typeof config.values.packageRoot === "string"
@@ -696,6 +708,7 @@ async function createGit2McpTools(
         packageRoot,
         maxTools: 100,
         packageName: manifest.metadata.name,
+        runner: runtime.gitSandboxRunner,
         sandbox: {
           timeoutMs: sandboxTimeoutMs,
         },
@@ -719,6 +732,7 @@ async function createGit2McpTools(
       callGit2McpTool({
         manifest: gitManifest,
         packageRoot,
+        runner: runtime.gitSandboxRunner,
         toolName: tool.name,
         args: pythonArgs(params, tool),
       }),

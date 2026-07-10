@@ -298,6 +298,91 @@ describe("registry build artifacts", () => {
     expect(serverJson).not.toHaveProperty("manifest");
   });
 
+  it("compiles manifest server packages and remotes through the QuickDeploy proxy gateway", () => {
+    const manifest = testManifest({
+      server: {
+        packages: [
+          {
+            registryType: "npm",
+            identifier: "@quickdeployai/petstore-mcp",
+            version: "1.0.0",
+          },
+          {
+            registryType: "docker",
+            identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0",
+          },
+        ],
+        remotes: [
+          {
+            type: "streamable-http",
+            url: "https://vendor.example.test/mcp",
+            variables: {
+              tenant: { description: "Vendor tenant slug." },
+            },
+          },
+        ],
+      },
+      deployment: {
+        auth: {
+          type: "bearer",
+          tokenFrom: {
+            env: "PETSTORE_PROXY_TOKEN",
+          },
+        },
+      },
+    });
+
+    const serverJson = compileManifestToServerJson(
+      manifest,
+      "registry/quickdeploy/petstore.mcp.yaml",
+    );
+
+    expect(serverJson.packages).toEqual([
+      expect.objectContaining({
+        registryType: "oci",
+        identifier: "ghcr.io/quickdeployai/mcp-host",
+      }),
+      expect.objectContaining({
+        registryType: "npm",
+        identifier: "@quickdeployai/petstore-mcp",
+      }),
+      expect.objectContaining({
+        registryType: "docker",
+        identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0",
+      }),
+    ]);
+    expect(serverJson.remotes).toEqual([
+      expect.objectContaining({
+        type: "streamable-http",
+        url: "https://mcp.quickdeploy.ai/proxy/ai.quickdeploy%2Fpetstore/0/mcp",
+        variables: {
+          tenant: { description: "Vendor tenant slug." },
+        },
+        headers: [
+          {
+            name: "Authorization",
+            description: "Bearer token sourced from PETSTORE_PROXY_TOKEN.",
+            required: true,
+            value: "Bearer ${PETSTORE_PROXY_TOKEN}",
+          },
+        ],
+        _meta: {
+          "ai.quickdeploy.registry/proxy": {
+            sourceManifestPath: "registry/quickdeploy/petstore.mcp.yaml",
+            remoteIndex: 0,
+            upstream: {
+              type: "streamable-http",
+              url: "https://vendor.example.test/mcp",
+              variables: {
+                tenant: { description: "Vendor tenant slug." },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+  });
+
   it("compiles a baked manifest to a standalone digest-pinned OCI package entry", () => {
     const manifest = testManifest({
       deployment: {
@@ -408,9 +493,10 @@ function testManifest(
   overrides: {
     spec?: Record<string, unknown>;
     deployment?: Record<string, unknown>;
+    server?: Record<string, unknown>;
   } = {},
 ): Record<string, unknown> {
-  return {
+  const manifest: Record<string, unknown> = {
     apiVersion: "quickdeploy.ai/v1",
     kind: "McpManifest",
     metadata: {
@@ -455,6 +541,8 @@ function testManifest(
       ...overrides.deployment,
     },
   };
+  if (overrides.server) manifest.server = overrides.server;
+  return manifest;
 }
 
 async function fixtureRoot(): Promise<string> {

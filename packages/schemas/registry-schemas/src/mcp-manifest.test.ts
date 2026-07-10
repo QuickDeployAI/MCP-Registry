@@ -70,6 +70,44 @@ describe("McpManifestSchema", () => {
     ]);
   });
 
+  it("accepts manifest server package and remote declarations", () => {
+    const manifest = {
+      ...(example("openapi-select") as Record<string, unknown>),
+      server: {
+        packages: [
+          {
+            registryType: "npm",
+            identifier: "@quickdeployai/petstore-mcp",
+            version: "1.0.0",
+          },
+          {
+            registryType: "docker",
+            identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0",
+          },
+        ],
+        remotes: [
+          {
+            type: "streamable-http",
+            url: "https://remote.example.test/mcp",
+            variables: {
+              tenant: { description: "Tenant slug." },
+            },
+          },
+        ],
+      },
+    };
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
+
+    expect(validate(manifest), JSON.stringify(validate.errors)).toBe(true);
+    expect(McpManifestSchema.parse(manifest).server).toMatchObject({
+      packages: [
+        { registryType: "npm", identifier: "@quickdeployai/petstore-mcp" },
+        { registryType: "docker", identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0" },
+      ],
+      remotes: [{ type: "streamable-http", url: "https://remote.example.test/mcp" }],
+    });
+  });
+
   it("maps API Manifest authorization requirements to env-backed OAuth config", () => {
     const apiManifest = ApiManifestSchema.parse(example("api-manifest-petstore"));
     const dependency = apiManifest.apiDependencies.petstore;
