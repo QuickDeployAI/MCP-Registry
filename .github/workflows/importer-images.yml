@@ -140,7 +140,7 @@ jobs:
           writeFileSync("registry/oci-image-digests.json", `${JSON.stringify({ images }, null, 2)}\n`);
           NODE
       - name: Build digest-pinned registry artifacts
-        run: vp run @quickdeployai/registry-cli#build:registry
+        run: pnpm --filter @quickdeployai/registry-cli build:registry
       - uses: actions/upload-artifact@v4
         with:
           name: digest-pinned-servers-json
