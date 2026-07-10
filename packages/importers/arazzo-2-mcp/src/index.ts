@@ -304,7 +304,7 @@ function stepToToolReference(
   };
 }
 
-function inferStepSourceName(
+export function inferStepSourceName(
   step: ArazzoWorkflowStep,
   sources: readonly ArazzoSourceDescription[],
 ): string | undefined {

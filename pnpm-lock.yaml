@@ -197,6 +197,9 @@ importers:
       '@quickdeployai/importer-core':
         specifier: workspace:*
         version: link:../../core/importer-core
+      '@quickdeployai/proxy-core':
+        specifier: workspace:*
+        version: link:../../core/proxy-core
       '@quickdeployai/registry-schemas':
         specifier: workspace:*
         version: link:../../schemas/registry-schemas
