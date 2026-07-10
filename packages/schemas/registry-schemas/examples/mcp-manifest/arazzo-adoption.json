@@ -1,0 +1,28 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/arazzo-adoption",
+    "version": "0.1.0"
+  },
+  "spec": {
+    "importer": { "engine": "arazzo-2-mcp", "versionRange": "^0.1.0" },
+    "source": {
+      "type": "file",
+      "uri": "file://packages/importers/arazzo-2-mcp/fixtures/adoption-workflow.arazzo.json"
+    },
+    "select": { "workflows": ["create-and-assign-ticket"] },
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sourceOverrides": { "type": "object" },
+          "stepTimeoutMs": { "type": "integer" },
+          "maxSteps": { "type": "integer" }
+        }
+      },
+      "defaults": { "stepTimeoutMs": 30000, "maxSteps": 50 }
+    }
+  },
+  "deployment": { "transport": "stdio", "auth": { "type": "none" } }
+}

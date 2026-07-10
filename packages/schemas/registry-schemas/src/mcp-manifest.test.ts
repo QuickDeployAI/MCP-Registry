@@ -50,7 +50,7 @@ describe("McpManifestSchema", () => {
       $schema: "https://json-schema.org/draft/2020-12/schema",
     });
 
-    for (const name of ["openapi-select", "feed", "skills", "git-python"]) {
+    for (const name of ["openapi-select", "feed", "skills", "git-python", "arazzo-adoption"]) {
       const manifest = example(name);
       expect(validate(manifest), `${name}: ${JSON.stringify(validate.errors)}`).toBe(true);
       expect(() => McpManifestSchema.parse(manifest)).not.toThrow();

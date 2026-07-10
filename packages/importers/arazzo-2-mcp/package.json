@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "Arazzo workflow artifact importer utilities for QuickDeployAI derived workflow capabilities.",
+  "bin": {
+    "arazzo-2-mcp": "./src/bin.mts"
+  },
   "files": [
     "src",
     "fixtures",
@@ -43,6 +46,7 @@
     }
   },
   "scripts": {
+    "start": "tsx src/bin.mts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc --noEmit"
@@ -52,6 +56,7 @@
     "@quickdeployai/proxy-core": "workspace:*",
     "@quickdeployai/registry-schemas": "workspace:*",
     "openapi-types": "^12.1.3",
+    "tsx": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
