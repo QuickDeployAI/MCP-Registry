@@ -1,0 +1,26 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Close Ticket Workflow",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "support-api",
+      "type": "openapi3",
+      "url": "./support-api.openapi.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "close-ticket",
+      "summary": "Close ticket",
+      "steps": [
+        {
+          "stepId": "close-ticket",
+          "operationId": "createTicket"
+        }
+      ]
+    }
+  ]
+}
