@@ -297,6 +297,52 @@ describe("McpManifestSchema", () => {
     ).toThrow(/environment variable names must be uppercase/);
   });
 
+  it("validates hosted deployment payment blocks alongside auth", () => {
+    const raw = example("openapi-select") as Record<string, any>;
+    const withPayment = {
+      ...raw,
+      deployment: {
+        ...raw.deployment,
+        auth: {
+          type: "bearer",
+          tokenFrom: { env: "GITHUB_SEARCH_MCP_TOKEN" },
+        },
+        payment: {
+          required: true,
+          protocols: [
+            { protocol: "x402", enabled: true, config: { network: "base" } },
+            { protocol: "l402", enabled: false },
+          ],
+        },
+      },
+    };
+
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
+    expect(validate(withPayment), JSON.stringify(validate.errors)).toBe(true);
+
+    const manifest = McpManifestSchema.parse(withPayment);
+    expect(manifest.deployment.payment).toEqual({
+      required: true,
+      protocols: [
+        { protocol: "x402", enabled: true, config: { network: "base" } },
+        { protocol: "l402", enabled: false },
+      ],
+    });
+
+    expect(() =>
+      McpManifestSchema.parse({
+        ...raw,
+        deployment: {
+          ...raw.deployment,
+          payment: {
+            required: false,
+            protocols: [{ protocol: "credit-card", enabled: true }],
+          },
+        },
+      }),
+    ).toThrow();
+  });
+
   it("validates the feed import example", () => {
     const manifest = McpManifestSchema.parse(example("feed"));
 

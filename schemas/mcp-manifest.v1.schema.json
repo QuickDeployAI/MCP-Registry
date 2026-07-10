@@ -492,6 +492,9 @@
         "auth": {
           "$ref": "#/$defs/deploymentAuth"
         },
+        "payment": {
+          "$ref": "#/$defs/deploymentPayment"
+        },
         "userConfig": {
           "type": "object",
           "default": {},
@@ -572,6 +575,36 @@
           }
         }
       ]
+    },
+    "deploymentPayment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "protocols": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["protocol", "enabled"],
+            "properties": {
+              "protocol": {
+                "enum": ["a2h", "x402", "l402", "mpp", "ap2", "acp", "ucp"]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "config": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
     },
     "inboundAuthHeader": {
       "type": "object",

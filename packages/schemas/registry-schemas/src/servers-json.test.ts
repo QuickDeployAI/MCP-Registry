@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   QUICKDEPLOY_REGISTRY_CURATION_META_KEY,
   QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY,
+  QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY,
   ServersJsonSchema,
   extractOfficialServerJsonSchemaVintage,
   quickDeployRegistryCuration,
+  quickDeployRegistryMonetization,
   serverJsonEntries,
   serverJsonEntryKinds,
 } from "./servers-json";
@@ -100,6 +102,83 @@ describe("ServersJsonSchema", () => {
     ]);
 
     expect(serverJsonEntries(doc)[0].name).toBe("com.context7.remote");
+  });
+
+  it("accepts QuickDeploy monetization under the reverse-DNS meta key", () => {
+    const doc = ServersJsonSchema.parse({
+      servers: [
+        {
+          $schema: schema2025_12_11,
+          name: "ai.quickdeploy.paid-search",
+          version: "0.1.0",
+          remotes: [{ type: "streamable-http", url: "https://mcp.quickdeploy.ai/paid-search" }],
+          _meta: {
+            [QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY]: {
+              pricing: { model: "per-request", price: "0.01" },
+              acceptedProtocols: ["x402", "l402"],
+              x402: {
+                networks: ["base"],
+                payTo: "0x1111111111111111111111111111111111111111",
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    expect(quickDeployRegistryMonetization(serverJsonEntries(doc)[0])).toMatchObject({
+      pricing: { model: "per-request", price: "0.01", currency: "USD" },
+      acceptedProtocols: ["x402", "l402"],
+      x402: {
+        networks: ["base"],
+        asset: "USDC",
+        payTo: "0x1111111111111111111111111111111111111111",
+      },
+    });
+  });
+
+  it("rejects monetization payloads with unknown payment protocols", () => {
+    const result = ServersJsonSchema.safeParse({
+      servers: [
+        {
+          name: "ai.quickdeploy.bad-protocol",
+          _meta: {
+            [QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY]: {
+              pricing: { model: "per-request", price: "0.01" },
+              acceptedProtocols: ["visa"],
+            },
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual([
+      "servers",
+      0,
+      "_meta",
+      QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY,
+      "acceptedProtocols",
+      0,
+    ]);
+  });
+
+  it("rejects QuickDeploy monetization at the server document top level", () => {
+    const result = ServersJsonSchema.safeParse({
+      servers: [
+        {
+          name: "com.example.bad-monetization",
+          monetization: { pricing: { model: "per-request", price: "0.01" } },
+          pricing: { model: "per-request" },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path.join("."))).toEqual([
+      "servers.0.monetization",
+      "servers.0.pricing",
+    ]);
   });
 
   it("rejects QuickDeploy curation at the server document top level", () => {

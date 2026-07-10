@@ -220,6 +220,27 @@ export const McpManifestDeploymentAuthSchema = z.discriminatedUnion("type", [
 ]);
 export type McpManifestDeploymentAuth = z.infer<typeof McpManifestDeploymentAuthSchema>;
 
+/**
+ * Payment enforcement advertised for the hosted deployment. Payment is
+ * orthogonal to deployment.auth: a capability can require both an identity
+ * (auth) and settlement over an agentic payment protocol (payment).
+ */
+export const McpManifestDeploymentPaymentSchema = z
+  .object({
+    required: z.boolean(),
+    protocols: z
+      .array(
+        z.object({
+          protocol: z.enum(["a2h", "x402", "l402", "mpp", "ap2", "acp", "ucp"]),
+          enabled: z.boolean(),
+          config: z.record(z.string(), z.unknown()).optional(),
+        }),
+      )
+      .default([]),
+  })
+  .strict();
+export type McpManifestDeploymentPayment = z.infer<typeof McpManifestDeploymentPaymentSchema>;
+
 const ApiManifestExtensionSchema = z
   .object({
     extensions: z.record(z.string(), z.unknown()).optional(),
@@ -693,6 +714,7 @@ export const McpManifestDeploymentSchema = z
   .object({
     transport: z.enum(["stdio", "streamable-http", "sse"]),
     auth: McpManifestDeploymentAuthSchema.optional(),
+    payment: McpManifestDeploymentPaymentSchema.optional(),
     userConfig: z.record(z.string(), JsonSchemaLikeSchema).default({}),
     configSchema: JsonSchemaLikeSchema.optional(),
     refresh: z
