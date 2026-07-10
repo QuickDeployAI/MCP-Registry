@@ -1,0 +1,176 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "feed",
+  provider: "github-releases",
+  manifestPath: "registry/github-releases/feed.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/github-releases",
+      "version": "0.1.0",
+      "title": "GitHub Releases",
+      "description": "Generated GitHub Releases Atom feed MCP catalog manifest.",
+      "labels": [
+        "dev-tools",
+        "feed",
+        "generated",
+        "github",
+        "releases",
+        "rss"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "feed-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://github.com/nodejs/node/releases.atom",
+        "ref": "github-releases-atom@2026-07-09"
+      },
+      "select": {
+        "requests": [],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": [
+          "/releases/**"
+        ]
+      },
+      "auth": [],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "refreshMinutes": {
+              "type": "number",
+              "description": "Refresh interval for feed polling and cache updates."
+            },
+            "maxItems": {
+              "type": "number",
+              "description": "Maximum feed items retained in the MCP corpus."
+            },
+            "includeContent": {
+              "type": "boolean",
+              "description": "Whether full release notes are exposed in resources."
+            }
+          }
+        },
+        "defaults": {
+          "refreshMinutes": 15,
+          "maxItems": 50,
+          "includeContent": true
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://github.com/nodejs/node/releases.atom",
+          "type": "http",
+          "ref": "github-releases-atom@2026-07-09",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "github-releases-atom",
+          "notes": [
+            "GitHub serves an Atom feed for every repository's Releases page by appending .atom to the releases URL: https://github.com/{owner}/{repo}/releases.atom.",
+            "This is a long-standing, officially-served GitHub platform capability (served directly by github.com, not a third-party aggregator), though it is not yet covered in docs.github.com's formal documentation (tracked publicly at https://github.com/github/docs/issues/38439).",
+            "The committed source pins a representative, well-known public repository (nodejs/node) as the illustrative feed instance; this manifest's URL is parameterizable per-repository by substituting {owner}/{repo}.",
+            "No content digest is pinned: per the feed-2-mcp family convention (see the committed acme-feed fixture), feed sources are live/mutable data streams, not static spec documents, so only the stable URL pattern and retrieval date are recorded.",
+            "This environment's network policy restricts github.com fetches to the MCP-authorized repository only, so the feed URL could not be directly curled from this session to inspect live content; the URL pattern itself is corroborated by extensive public documentation and long-standing community usage."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "GET https://github.com/{owner}/{repo}/releases.atom for feed retrieval (configured upstream)"
+          ],
+          "filesystem": [
+            "Read committed manifest registry/github-releases/feed.mcp.json",
+            "Read committed generated test packages/tools/registry-cli/test/generated/feed/github-releases.test.ts",
+            "Read/write gitignored generated project .generated/mcp-codegen/feed/github-releases/"
+          ],
+          "process": [
+            "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+            "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "feed.query",
+            "name": "query_github_releases_feed",
+            "deny": false
+          }
+        ],
+        "resources": [
+          {
+            "from": "feed:item",
+            "name": "github_releases_feed_item",
+            "deny": false
+          }
+        ],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://github.com/nodejs/node/releases.atom",
+        "type": "http",
+        "ref": "github-releases-atom@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "github-releases-atom",
+        "notes": [
+          "GitHub serves an Atom feed for every repository's Releases page by appending .atom to the releases URL: https://github.com/{owner}/{repo}/releases.atom.",
+          "This is a long-standing, officially-served GitHub platform capability (served directly by github.com, not a third-party aggregator), though it is not yet covered in docs.github.com's formal documentation (tracked publicly at https://github.com/github/docs/issues/38439).",
+          "The committed source pins a representative, well-known public repository (nodejs/node) as the illustrative feed instance; this manifest's URL is parameterizable per-repository by substituting {owner}/{repo}.",
+          "No content digest is pinned: per the feed-2-mcp family convention (see the committed acme-feed fixture), feed sources are live/mutable data streams, not static spec documents, so only the stable URL pattern and retrieval date are recorded.",
+          "This environment's network policy restricts github.com fetches to the MCP-authorized repository only, so the feed URL could not be directly curled from this session to inspect live content; the URL pattern itself is corroborated by extensive public documentation and long-standing community usage."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://github.com/{owner}/{repo}/releases.atom for feed retrieval (configured upstream)"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/github-releases/feed.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/feed/github-releases.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/feed/github-releases/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "feed.query",
+        "name": "query_github_releases_feed",
+        "deny": false
+      }
+    ],
+    "resources": [
+      {
+        "from": "feed:item",
+        "name": "github_releases_feed_item",
+        "deny": false
+      }
+    ],
+    "prompts": [],
+    "authEnvVars": [],
+    "serverEnvVars": []
+  },
+});
