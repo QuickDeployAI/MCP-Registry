@@ -19,8 +19,10 @@ Sources:
 - `registry/<provider>/*.server.json`
 
 Package descriptors under `packages/**` and throwaway implementations are not
-catalog sources. `registry/index.json` is generated as a local source index and
-ignored by Git; `servers.json` is the committed generated MCP catalog.
+catalog sources. `registry/index.json` and `servers.json` are generated
+outputs and ignored by Git. CI builds `servers.json` as a workflow artifact and
+deploys it to the monorepo at `marketplace/mcp/servers.json` on merges to
+`main`.
 
 ## Generated MCP workspace
 
@@ -59,7 +61,9 @@ merging generated provider catalog PRs. The package script runs
 The CLI gate checks that:
 
 - `registry-cli validate` passes for committed registry sources.
-- `registry-cli build --check` / `check:generated` has no `servers.json` drift.
+- `registry-cli build --check` / `check:generated` has no stale `servers.json`
+  on disk (the file is gitignored and built on demand; a missing file is not
+  drift).
 - Every generated manifest has its committed family test at
   `packages/tools/registry-cli/test/generated/<family>/<provider>.test.ts`.
 - `servers.json` and `registry/index.json` are derived only from committed

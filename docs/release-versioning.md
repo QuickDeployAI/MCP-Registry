@@ -2,8 +2,10 @@
 
 The registry publishes exact package versions. Do not publish a registry entry
 that points at `latest`, a semver range, or an npm dist-tag. Every public MCP
-server or importer release must update the package version, `server.json` or
-`McpManifest`, and regenerated `servers.json` in the same pull request.
+server or importer release must update the package version and its
+`server.json` or `McpManifest` source in the same pull request; the
+`servers.json` catalog is generated from those sources in CI and deployed to
+the monorepo at `marketplace/mcp/servers.json`.
 
 ## Release Flow
 
@@ -14,8 +16,9 @@ server or importer release must update the package version, `server.json` or
 3. Update the matching `registry/<provider>/*.server.json` or
    `registry/<provider>/*.mcp.*` source in the same PR when a published entry
    version changes.
-4. Run `pnpm --filter @quickdeployai/registry-cli build:registry` so
-   `servers.json` reflects the entry change.
+4. Run `pnpm --filter @quickdeployai/registry-cli build:registry` locally to
+   confirm the entry change compiles into `servers.json` (the file itself is
+   gitignored; CI builds and deploys the canonical artifact).
 5. Run `pnpm check` before opening the PR.
 6. Merge only after the PR `Workspace check` job passes.
 7. Main branch CI publishes the validated release commit with

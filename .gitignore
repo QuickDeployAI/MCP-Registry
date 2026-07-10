@@ -14,6 +14,7 @@ test-results/
 .vitest/
 
 # Generated registry outputs
+servers.json
 registry/index.json
 .generated/
 
