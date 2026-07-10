@@ -52,6 +52,11 @@ jobs:
             entrypoint: src/bin.mts
             image: ghcr.io/quickdeployai/mcp-registry-grpc-2-mcp
             smoke: catalog --fixture greeter --proto fixtures/greeter.proto --package quickdeploy.fixture --endpoint 127.0.0.1:50051
+          - slug: arazzo-2-mcp
+            package: "@quickdeployai/arazzo-2-mcp"
+            entrypoint: src/bin.mts
+            image: ghcr.io/quickdeployai/mcp-registry-arazzo-2-mcp
+            smoke: --help
     steps:
       - uses: actions/checkout@v6.0.3
       - uses: docker/setup-buildx-action@v3
