@@ -111,7 +111,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6.0.3
-      - uses: ./.github/actions/setup
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - uses: actions/download-artifact@v4
         with:
           pattern: oci-image-digest-*
