@@ -6,7 +6,6 @@ export type OfficialServerJsonSchemaVintage = (typeof OFFICIAL_SERVER_JSON_SCHEM
 export const QUICKDEPLOY_REGISTRY_META_PREFIX = "ai.quickdeploy.registry/";
 export const QUICKDEPLOY_REGISTRY_CURATION_META_KEY = "ai.quickdeploy.registry/curation";
 export const QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY = "ai.quickdeploy.registry/manifest";
-export const QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY = "ai.quickdeploy.registry/monetization";
 
 export const QuickDeployRegistryCurationSchema = z.object({
   verifiedStatus: z
@@ -19,34 +18,6 @@ export const QuickDeployRegistryCurationSchema = z.object({
 });
 export type QuickDeployRegistryCuration = z.infer<typeof QuickDeployRegistryCurationSchema>;
 
-export const QuickDeployRegistryMonetizationSchema = z
-  .object({
-    pricing: z.object({
-      model: z.enum(["per-request", "metered", "subscription", "one-time"]),
-      /** Decimal USD string, e.g. "0.01". Omitted for metered (rate-card) pricing. */
-      price: z
-        .string()
-        .regex(/^\d+(\.\d+)?$/)
-        .optional(),
-      currency: z.literal("USD").default("USD"),
-    }),
-    /** Agentic payment protocols the capability accepts (enforced by the capability gateway). */
-    acceptedProtocols: z
-      .array(z.enum(["a2h", "x402", "l402", "mpp", "ap2", "acp", "ucp"]))
-      .default([]),
-    /** x402-specific advertisement (public, non-secret). */
-    x402: z
-      .object({
-        networks: z.array(z.enum(["base", "base-sepolia"])).default(["base"]),
-        asset: z.literal("USDC").default("USDC"),
-        /** Public receiving wallet address (NOT a secret). */
-        payTo: z.string().optional(),
-      })
-      .optional(),
-  })
-  .strict();
-export type QuickDeployRegistryMonetization = z.infer<typeof QuickDeployRegistryMonetizationSchema>;
-
 export const ServerJsonRemoteSchema = z
   .object({
     type: z.enum(["streamable-http", "sse", "stdio"]).or(z.string().min(1)),
@@ -56,6 +27,19 @@ export const ServerJsonRemoteSchema = z
   })
   .catchall(z.unknown());
 export type ServerJsonRemote = z.infer<typeof ServerJsonRemoteSchema>;
+
+export const ServerJsonPackageSchema = z
+  .object({
+    registryType: z.string().min(1),
+    identifier: z.string().min(1).optional(),
+    version: z.string().min(1).optional(),
+    runtimeHint: z.string().min(1).optional(),
+    transport: z.string().min(1).optional(),
+    runtimeArguments: z.array(z.string()).optional(),
+    environmentVariables: z.array(z.string()).optional(),
+  })
+  .catchall(z.unknown());
+export type ServerJsonPackage = z.infer<typeof ServerJsonPackageSchema>;
 
 export const ServerJsonEnvironmentVariableSchema = z
   .object({
@@ -67,21 +51,6 @@ export const ServerJsonEnvironmentVariableSchema = z
   })
   .catchall(z.unknown());
 export type ServerJsonEnvironmentVariable = z.infer<typeof ServerJsonEnvironmentVariableSchema>;
-
-export const ServerJsonPackageSchema = z
-  .object({
-    registryType: z.string().min(1),
-    identifier: z.string().min(1).optional(),
-    version: z.string().min(1).optional(),
-    runtimeHint: z.string().min(1).optional(),
-    transport: z.union([z.string().min(1), ServerJsonRemoteSchema]).optional(),
-    runtimeArguments: z.array(z.string()).optional(),
-    environmentVariables: z
-      .array(z.union([z.string().min(1), ServerJsonEnvironmentVariableSchema]))
-      .optional(),
-  })
-  .catchall(z.unknown());
-export type ServerJsonPackage = z.infer<typeof ServerJsonPackageSchema>;
 
 const QUICKDEPLOY_TOP_LEVEL_FIELDS = new Set([
   "verifiedStatus",
@@ -96,11 +65,6 @@ const QUICKDEPLOY_TOP_LEVEL_FIELDS = new Set([
   "quickDeploy",
   "curation",
   "manifest",
-  "monetization",
-  "pricing",
-  "acceptedProtocols",
-  "accepted_protocols",
-  "x402",
 ]);
 
 export function extractOfficialServerJsonSchemaVintage(
@@ -122,18 +86,6 @@ export const ServerJsonMetaSchema = z.record(z.string(), z.unknown()).superRefin
         ctx.addIssue({
           ...issue,
           path: [QUICKDEPLOY_REGISTRY_CURATION_META_KEY, ...issue.path],
-        });
-      }
-    }
-  }
-  const monetization = meta[QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY];
-  if (monetization !== undefined) {
-    const parsed = QuickDeployRegistryMonetizationSchema.safeParse(monetization);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        ctx.addIssue({
-          ...issue,
-          path: [QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY, ...issue.path],
         });
       }
     }
@@ -215,12 +167,4 @@ export function quickDeployRegistryCuration(
   const curation = server._meta?.[QUICKDEPLOY_REGISTRY_CURATION_META_KEY];
   if (curation === undefined) return null;
   return QuickDeployRegistryCurationSchema.parse(curation);
-}
-
-export function quickDeployRegistryMonetization(
-  server: OfficialServerJsonDocument,
-): QuickDeployRegistryMonetization | null {
-  const monetization = server._meta?.[QUICKDEPLOY_REGISTRY_MONETIZATION_META_KEY];
-  if (monetization === undefined) return null;
-  return QuickDeployRegistryMonetizationSchema.parse(monetization);
 }
