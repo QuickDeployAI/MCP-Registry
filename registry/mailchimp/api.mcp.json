@@ -1,0 +1,180 @@
+{
+  "apiVersion": "quickdeploy.ai/v1",
+  "kind": "McpManifest",
+  "metadata": {
+    "name": "ai.quickdeploy/mailchimp",
+    "version": "0.1.0",
+    "title": "Mailchimp",
+    "description": "Generated Mailchimp Marketing API Campaigns read-only OpenAPI MCP catalog manifest.",
+    "labels": [
+      "generated",
+      "mailchimp",
+      "marketing",
+      "openapi",
+      "read-only"
+    ]
+  },
+  "spec": {
+    "importer": {
+      "engine": "openapi-2-mcp",
+      "versionRange": "^0.1.0"
+    },
+    "source": {
+      "type": "http",
+      "uri": "https://raw.githubusercontent.com/mailchimp/mailchimp-client-lib-codegen/994f53694a63dd72781e6f29270b0c0b42d04c6b/spec/marketing.json",
+      "digest": "sha256:679af28de17061c0605f73f738b1d6159ebfe36cb5d57b3ead61be08c5a45439",
+      "ref": "994f53694a63dd72781e6f29270b0c0b42d04c6b"
+    },
+    "select": {
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/campaigns"
+        },
+        {
+          "method": "GET",
+          "uriTemplate": "/campaigns/{campaign_id}"
+        }
+      ],
+      "grpcMethods": [],
+      "pythonFunctions": [],
+      "skills": [],
+      "knowledgeSources": [],
+      "corpusGlobs": []
+    },
+    "auth": [
+      {
+        "type": "basic",
+        "usernameFrom": {
+          "env": "MAILCHIMP_API_USERNAME"
+        },
+        "passwordFrom": {
+          "env": "MAILCHIMP_API_KEY"
+        }
+      }
+    ],
+    "config": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Mailchimp datacenter-specific API base URL, e.g. https://<dc>.api.mailchimp.com/3.0."
+          },
+          "requestTimeoutMs": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Per-request upstream timeout in milliseconds."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Importer execution profile."
+          }
+        },
+        "required": [
+          "baseUrl"
+        ]
+      },
+      "defaults": {
+        "requestTimeoutMs": 30000,
+        "mode": "read-only"
+      },
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/mailchimp/mailchimp-client-lib-codegen/994f53694a63dd72781e6f29270b0c0b42d04c6b/spec/marketing.json",
+        "type": "http",
+        "digest": "sha256:679af28de17061c0605f73f738b1d6159ebfe36cb5d57b3ead61be08c5a45439",
+        "ref": "994f53694a63dd72781e6f29270b0c0b42d04c6b",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "mailchimp-client-lib-codegen@994f53694a63dd72781e6f29270b0c0b42d04c6b",
+        "notes": [
+          "Official Mailchimp OpenAPI codegen source repository: https://github.com/mailchimp/mailchimp-client-lib-codegen",
+          "Pinned source path: spec/marketing.json",
+          "Pinned commit date: 2026-06-05T13:28:22-04:00",
+          "Pinned commit SHA: 994f53694a63dd72781e6f29270b0c0b42d04c6b",
+          "OpenAPI (Swagger 2.0) document info.version: 3.0.91",
+          "Verified source SHA-256: 679af28de17061c0605f73f738b1d6159ebfe36cb5d57b3ead61be08c5a45439",
+          "The committed manifest selects read-only Mailchimp Marketing API campaign list/get operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/mailchimp/mailchimp-client-lib-codegen/994f53694a63dd72781e6f29270b0c0b42d04c6b/spec/marketing.json for source retrieval",
+          "GET https://<mailchimp-dc>.api.mailchimp.com/3.0/campaigns for selected upstream operation",
+          "GET https://<mailchimp-dc>.api.mailchimp.com/3.0/campaigns/{campaign_id} for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/mailchimp/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/mailchimp.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/mailchimp/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    },
+    "expose": {
+      "tools": [
+        {
+          "from": "GET /campaigns",
+          "name": "list_mailchimp_campaigns",
+          "deny": false
+        },
+        {
+          "from": "GET /campaigns/{campaign_id}",
+          "name": "get_mailchimp_campaign",
+          "deny": false
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  },
+  "_meta": {
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://raw.githubusercontent.com/mailchimp/mailchimp-client-lib-codegen/994f53694a63dd72781e6f29270b0c0b42d04c6b/spec/marketing.json",
+      "type": "http",
+      "digest": "sha256:679af28de17061c0605f73f738b1d6159ebfe36cb5d57b3ead61be08c5a45439",
+      "ref": "994f53694a63dd72781e6f29270b0c0b42d04c6b",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "mailchimp-client-lib-codegen@994f53694a63dd72781e6f29270b0c0b42d04c6b",
+      "notes": [
+        "Official Mailchimp OpenAPI codegen source repository: https://github.com/mailchimp/mailchimp-client-lib-codegen",
+        "Pinned source path: spec/marketing.json",
+        "Pinned commit date: 2026-06-05T13:28:22-04:00",
+        "Pinned commit SHA: 994f53694a63dd72781e6f29270b0c0b42d04c6b",
+        "OpenAPI (Swagger 2.0) document info.version: 3.0.91",
+        "Verified source SHA-256: 679af28de17061c0605f73f738b1d6159ebfe36cb5d57b3ead61be08c5a45439",
+        "The committed manifest selects read-only Mailchimp Marketing API campaign list/get operations only."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://raw.githubusercontent.com/mailchimp/mailchimp-client-lib-codegen/994f53694a63dd72781e6f29270b0c0b42d04c6b/spec/marketing.json for source retrieval",
+        "GET https://<mailchimp-dc>.api.mailchimp.com/3.0/campaigns for selected upstream operation",
+        "GET https://<mailchimp-dc>.api.mailchimp.com/3.0/campaigns/{campaign_id} for selected upstream operation"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/mailchimp/api.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/openapi/mailchimp.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/openapi/mailchimp/"
+      ],
+      "process": [
+        "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+        "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  }
+}
