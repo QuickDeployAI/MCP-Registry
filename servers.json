@@ -6106,6 +6106,223 @@
     },
     {
       "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+      "name": "ai.quickdeploy/notion",
+      "version": "0.1.0",
+      "description": "Generated Notion API Users read-only OpenAPI MCP catalog manifest.",
+      "packages": [
+        {
+          "registryType": "oci",
+          "identifier": "ghcr.io/quickdeployai/mcp-host",
+          "runtimeHint": "mcp-host",
+          "transport": "streamable-http",
+          "runtimeArguments": [
+            "run",
+            "registry/notion/api.mcp.json",
+            "--transport",
+            "streamable-http"
+          ],
+          "environmentVariables": ["NOTION_API_KEY"]
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "NOTION_API_KEY",
+          "description": "Secret used by bearer upstream authentication.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ],
+      "_meta": {
+        "ai.quickdeploy.registry/curation": {
+          "verifiedStatus": "review",
+          "category": "openapi-2-mcp",
+          "isOfficial": true,
+          "tags": [
+            "generated",
+            "manifest-backed",
+            "notion",
+            "openapi",
+            "productivity",
+            "read-only"
+          ]
+        },
+        "ai.quickdeploy.registry/manifest": {
+          "apiVersion": "quickdeploy.ai/v1",
+          "kind": "McpManifest",
+          "metadata": {
+            "name": "ai.quickdeploy/notion",
+            "version": "0.1.0",
+            "title": "Notion",
+            "description": "Generated Notion API Users read-only OpenAPI MCP catalog manifest.",
+            "labels": [
+              "generated",
+              "notion",
+              "openapi",
+              "productivity",
+              "read-only"
+            ]
+          },
+          "spec": {
+            "importer": {
+              "engine": "openapi-2-mcp",
+              "versionRange": "^0.1.0"
+            },
+            "source": {
+              "type": "http",
+              "uri": "https://developers.notion.com/openapi.json",
+              "digest": "sha256:9d2937572ca5a662b72408c87ec42fdf85eb3581f6db9b90d3e8cce63a4d5c57",
+              "ref": "notion-api-openapi@2026-07-07"
+            },
+            "select": {
+              "requests": [
+                {
+                  "method": "GET",
+                  "uriTemplate": "/v1/users"
+                },
+                {
+                  "method": "GET",
+                  "uriTemplate": "/v1/users/{user_id}"
+                }
+              ],
+              "grpcMethods": [],
+              "pythonFunctions": [],
+              "skills": [],
+              "knowledgeSources": [],
+              "corpusGlobs": []
+            },
+            "auth": [
+              {
+                "type": "bearer",
+                "valueFrom": {
+                  "env": "NOTION_API_KEY"
+                }
+              }
+            ],
+            "config": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Notion API base URL."
+                  },
+                  "requestTimeoutMs": {
+                    "type": "number",
+                    "minimum": 1,
+                    "description": "Per-request upstream timeout in milliseconds."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Importer execution profile."
+                  }
+                }
+              },
+              "defaults": {
+                "baseUrl": "https://api.notion.com",
+                "requestTimeoutMs": 30000,
+                "mode": "read-only"
+              },
+              "ai.quickdeploy.codegen/source": {
+                "uri": "https://developers.notion.com/openapi.json",
+                "type": "http",
+                "digest": "sha256:9d2937572ca5a662b72408c87ec42fdf85eb3581f6db9b90d3e8cce63a4d5c57",
+                "ref": "notion-api-openapi@2026-07-07",
+                "retrievedAt": "2026-07-09",
+                "sourceVersion": "notion-api-openapi@2026-07-07",
+                "notes": [
+                  "Official Notion API OpenAPI document, published live at https://developers.notion.com/openapi.json.",
+                  "Document info: title \"Notion API\", version 1.0.0, OpenAPI 3.1.0.",
+                  "Upstream Last-Modified: Tue, 07 Jul 2026 00:10:33 GMT.",
+                  "Verified source SHA-256: 9d2937572ca5a662b72408c87ec42fdf85eb3581f6db9b90d3e8cce63a4d5c57",
+                  "All Notion API requests also require a Notion-Version request header; the importer selects only the operations below and does not model request headers in this manifest.",
+                  "The committed manifest selects read-only Notion Users list/get operations only."
+                ]
+              },
+              "ai.quickdeploy.codegen/policy": {
+                "network": [
+                  "GET https://developers.notion.com/openapi.json for source retrieval",
+                  "GET https://api.notion.com/v1/users for selected upstream operation",
+                  "GET https://api.notion.com/v1/users/{user_id} for selected upstream operation"
+                ],
+                "filesystem": [
+                  "Read committed manifest registry/notion/api.mcp.json",
+                  "Read committed generated test packages/tools/registry-cli/test/generated/openapi/notion.test.ts",
+                  "Read/write gitignored generated project .generated/mcp-codegen/openapi/notion/"
+                ],
+                "process": [
+                  "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                  "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+                ],
+                "generatedExecution": "openshell-mxc-only",
+                "unavailableRuntime": "fail-closed"
+              }
+            },
+            "expose": {
+              "tools": [
+                {
+                  "from": "GET /v1/users",
+                  "name": "list_notion_users",
+                  "deny": false
+                },
+                {
+                  "from": "GET /v1/users/{user_id}",
+                  "name": "get_notion_user",
+                  "deny": false
+                }
+              ],
+              "resources": [],
+              "prompts": []
+            }
+          },
+          "deployment": {
+            "transport": "streamable-http",
+            "auth": {
+              "type": "none"
+            },
+            "userConfig": {}
+          },
+          "_meta": {
+            "ai.quickdeploy.codegen/source": {
+              "uri": "https://developers.notion.com/openapi.json",
+              "type": "http",
+              "digest": "sha256:9d2937572ca5a662b72408c87ec42fdf85eb3581f6db9b90d3e8cce63a4d5c57",
+              "ref": "notion-api-openapi@2026-07-07",
+              "retrievedAt": "2026-07-09",
+              "sourceVersion": "notion-api-openapi@2026-07-07",
+              "notes": [
+                "Official Notion API OpenAPI document, published live at https://developers.notion.com/openapi.json.",
+                "Document info: title \"Notion API\", version 1.0.0, OpenAPI 3.1.0.",
+                "Upstream Last-Modified: Tue, 07 Jul 2026 00:10:33 GMT.",
+                "Verified source SHA-256: 9d2937572ca5a662b72408c87ec42fdf85eb3581f6db9b90d3e8cce63a4d5c57",
+                "All Notion API requests also require a Notion-Version request header; the importer selects only the operations below and does not model request headers in this manifest.",
+                "The committed manifest selects read-only Notion Users list/get operations only."
+              ]
+            },
+            "ai.quickdeploy.codegen/policy": {
+              "network": [
+                "GET https://developers.notion.com/openapi.json for source retrieval",
+                "GET https://api.notion.com/v1/users for selected upstream operation",
+                "GET https://api.notion.com/v1/users/{user_id} for selected upstream operation"
+              ],
+              "filesystem": [
+                "Read committed manifest registry/notion/api.mcp.json",
+                "Read committed generated test packages/tools/registry-cli/test/generated/openapi/notion.test.ts",
+                "Read/write gitignored generated project .generated/mcp-codegen/openapi/notion/"
+              ],
+              "process": [
+                "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+                "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+              ],
+              "generatedExecution": "openshell-mxc-only",
+              "unavailableRuntime": "fail-closed"
+            }
+          }
+        }
+      }
+    },
+    {
+      "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
       "name": "ai.quickdeploy/npm-releases",
       "version": "0.1.0",
       "description": "Generated npm registry release history feed MCP catalog manifest.",
@@ -13320,6 +13537,6 @@
   ],
   "_meta": {
     "ai.quickdeploy.registry/generatedBy": "@quickdeployai/registry-cli",
-    "ai.quickdeploy.registry/sourceCount": 89
+    "ai.quickdeploy.registry/sourceCount": 90
   }
 }
