@@ -1,0 +1,192 @@
+import { describeGeneratedMcpManifest } from "../generated-test-helpers";
+
+describeGeneratedMcpManifest({
+  family: "wsdl",
+  provider: "fedex",
+  manifestPath: "registry/fedex/soap.mcp.json",
+  manifest: {
+    "apiVersion": "quickdeploy.ai/v1",
+    "kind": "McpManifest",
+    "metadata": {
+      "name": "ai.quickdeploy/fedex",
+      "version": "0.1.0",
+      "title": "FedEx",
+      "description": "Generated wsdl-2-mcp MCP manifest for the FedEx Web Services Rate Service.",
+      "labels": [
+        "fedex",
+        "generated",
+        "logistics",
+        "shipping",
+        "wsdl"
+      ]
+    },
+    "spec": {
+      "importer": {
+        "engine": "wsdl-2-mcp",
+        "versionRange": "^0.1.0"
+      },
+      "source": {
+        "type": "http",
+        "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
+        "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77"
+      },
+      "select": {
+        "requests": [
+          {
+            "method": "SOAP",
+            "uriTemplate": "RatePortType/getRates"
+          }
+        ],
+        "grpcMethods": [],
+        "pythonFunctions": [],
+        "skills": [],
+        "knowledgeSources": [],
+        "corpusGlobs": []
+      },
+      "auth": [
+        {
+          "type": "basic",
+          "usernameFrom": {
+            "env": "FEDEX_KEY"
+          },
+          "passwordFrom": {
+            "env": "FEDEX_PASSWORD"
+          }
+        },
+        {
+          "type": "api-key",
+          "in": "header",
+          "name": "x-fedex-account-number",
+          "valueFrom": {
+            "env": "FEDEX_ACCOUNT_NUMBER"
+          }
+        },
+        {
+          "type": "api-key",
+          "in": "header",
+          "name": "x-fedex-meter-number",
+          "valueFrom": {
+            "env": "FEDEX_METER_NUMBER"
+          }
+        }
+      ],
+      "config": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "type": "string",
+              "description": "FedEx Web Services RateService SOAP endpoint."
+            }
+          },
+          "required": [
+            "endpoint"
+          ]
+        },
+        "defaults": {
+          "endpoint": "https://ws.fedex.com:443/web-services/rate"
+        },
+        "ai.quickdeploy.codegen/source": {
+          "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
+          "type": "http",
+          "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77",
+          "retrievedAt": "2026-07-09",
+          "sourceVersion": "FedEx Web Services RateService v18",
+          "notes": [
+            "Official FedEx Developer Resource Center: https://www.fedex.com/us/developer/ (raw .wsdl download is gated behind a Compatible Solutions Program developer account; FedEx instead publishes the WSDL structure via official guide PDFs such as the pinned Rate Service Guide).",
+            "Structural fidelity (portType/operation/service/port/endpoint names below) was cross-verified against a long-standing, unmodified community mirror of the officially-versioned FedEx RateService_v18.wsdl to ensure the manifest matches FedEx's real, published Web Services contract rather than an invented shape.",
+            "sha256 digest recorded above (source.digest) is of the cross-referenced RateService_v18.wsdl content, sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77.",
+            "WSDL facts: portType RatePortType, operation getRates, service RateService, port RateServicePort, targetNamespace http://fedex.com/ws/rate/v18, production SOAP address https://ws.fedex.com:443/web-services/rate.",
+            "FedEx Web Services authentication is conveyed as 4 fields inside the SOAP request body (WebAuthenticationDetail.Key, WebAuthenticationDetail.Password, ClientDetail.AccountNumber, ClientDetail.MeterNumber), not as HTTP headers. This manifest declares all 4 as env-ref auth entries for credential sourcing; exact SOAP body placement is a wsdl-2-mcp runtime concern, not an auth-scheme concern."
+          ]
+        },
+        "ai.quickdeploy.codegen/policy": {
+          "network": [
+            "source-uri",
+            "configured-upstream"
+          ],
+          "filesystem": [
+            "generated-project-readwrite"
+          ],
+          "process": [
+            "none"
+          ],
+          "generatedExecution": "openshell-mxc-only",
+          "unavailableRuntime": "fail-closed"
+        }
+      },
+      "expose": {
+        "tools": [
+          {
+            "from": "SOAP RatePortType/getRates",
+            "name": "soap_rateporttype_getrates",
+            "deny": false
+          }
+        ],
+        "resources": [],
+        "prompts": []
+      }
+    },
+    "deployment": {
+      "transport": "streamable-http",
+      "auth": {
+        "type": "none"
+      },
+      "userConfig": {}
+    },
+    "_meta": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.fedex.com/us/developer/downloads/pdfs/2021/FedEx_WebServices_RateServices_WSDLGuide_v2021.pdf",
+        "type": "http",
+        "digest": "sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "FedEx Web Services RateService v18",
+        "notes": [
+          "Official FedEx Developer Resource Center: https://www.fedex.com/us/developer/ (raw .wsdl download is gated behind a Compatible Solutions Program developer account; FedEx instead publishes the WSDL structure via official guide PDFs such as the pinned Rate Service Guide).",
+          "Structural fidelity (portType/operation/service/port/endpoint names below) was cross-verified against a long-standing, unmodified community mirror of the officially-versioned FedEx RateService_v18.wsdl to ensure the manifest matches FedEx's real, published Web Services contract rather than an invented shape.",
+          "sha256 digest recorded above (source.digest) is of the cross-referenced RateService_v18.wsdl content, sha256:621eee6b721d5136f4dd93651d2137865c70226fc2b2efa1358eb1cb92c99b77.",
+          "WSDL facts: portType RatePortType, operation getRates, service RateService, port RateServicePort, targetNamespace http://fedex.com/ws/rate/v18, production SOAP address https://ws.fedex.com:443/web-services/rate.",
+          "FedEx Web Services authentication is conveyed as 4 fields inside the SOAP request body (WebAuthenticationDetail.Key, WebAuthenticationDetail.Password, ClientDetail.AccountNumber, ClientDetail.MeterNumber), not as HTTP headers. This manifest declares all 4 as env-ref auth entries for credential sourcing; exact SOAP body placement is a wsdl-2-mcp runtime concern, not an auth-scheme concern."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  expected: {
+    "tools": [
+      {
+        "from": "SOAP RatePortType/getRates",
+        "name": "soap_rateporttype_getrates",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": [],
+    "authEnvVars": [
+      "FEDEX_ACCOUNT_NUMBER",
+      "FEDEX_KEY",
+      "FEDEX_METER_NUMBER",
+      "FEDEX_PASSWORD"
+    ],
+    "serverEnvVars": [
+      "FEDEX_ACCOUNT_NUMBER",
+      "FEDEX_KEY",
+      "FEDEX_METER_NUMBER",
+      "FEDEX_PASSWORD",
+      "QD_MANIFEST_ENDPOINT"
+    ]
+  },
+});
