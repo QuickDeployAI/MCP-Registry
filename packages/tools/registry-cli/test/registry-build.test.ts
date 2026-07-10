@@ -121,7 +121,7 @@ describe("registry build artifacts", () => {
 
     const unpinned = await buildRegistryArtifacts({ rootDir });
     expect(unpinned.serversJson.servers[0]?.packages?.[0]?.identifier).toBe(
-      "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
+      "ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp:0.1.0",
     );
 
     await mkdir(join(rootDir, "generated"), { recursive: true });
@@ -130,7 +130,7 @@ describe("registry build artifacts", () => {
       JSON.stringify(
         {
           images: {
-            "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0":
+            "ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp:0.1.0":
               "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           },
         },
@@ -141,7 +141,7 @@ describe("registry build artifacts", () => {
 
     const pinned = await buildRegistryArtifacts({ rootDir });
     expect(pinned.serversJson.servers[0]?.packages?.[0]?.identifier).toBe(
-      "ghcr.io/quickdeployai/importers/asyncapi-2-mcp@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     );
   });
 
@@ -515,7 +515,7 @@ async function seedOciServer(rootDir: string): Promise<void> {
         packages: [
           {
             registryType: "oci",
-            identifier: "ghcr.io/quickdeployai/importers/asyncapi-2-mcp:0.1.0",
+            identifier: "ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp:0.1.0",
             version: "0.1.0",
           },
         ],

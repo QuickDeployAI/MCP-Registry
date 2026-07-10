@@ -5,9 +5,9 @@ on:
     paths:
       - .github/workflows/importer-images.yml
       - docker/importer-*
-      - packages/mcp-importers/**
-      - packages/registry-cli/**
-      - packages/registry-schemas/**
+      - packages/importers/**
+      - packages/tools/registry-cli/**
+      - packages/schemas/registry-schemas/**
       - registry/**
       - manifests/**
       - package.json
@@ -19,9 +19,9 @@ on:
     paths:
       - .github/workflows/importer-images.yml
       - docker/importer-*
-      - packages/mcp-importers/**
-      - packages/registry-cli/**
-      - packages/registry-schemas/**
+      - packages/importers/**
+      - packages/tools/registry-cli/**
+      - packages/schemas/registry-schemas/**
       - registry/**
       - manifests/**
       - package.json
@@ -36,7 +36,7 @@ permissions:
 jobs:
   build:
     name: build ${{ matrix.slug }}
-    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -45,12 +45,12 @@ jobs:
           - slug: asyncapi-2-mcp
             package: "@quickdeployai/asyncapi-2-mcp"
             entrypoint: src/bin.mts
-            image: ghcr.io/quickdeployai/importers/asyncapi-2-mcp
+            image: ghcr.io/quickdeployai/mcp-registry-asyncapi-2-mcp
             smoke: --help
           - slug: grpc-2-mcp
             package: "@quickdeployai/grpc-2-mcp"
             entrypoint: src/bin.mts
-            image: ghcr.io/quickdeployai/importers/grpc-2-mcp
+            image: ghcr.io/quickdeployai/mcp-registry-grpc-2-mcp
             smoke: catalog --fixture greeter --proto fixtures/greeter.proto --package quickdeploy.fixture --endpoint 127.0.0.1:50051
     steps:
       - uses: actions/checkout@v6.0.3
@@ -107,11 +107,19 @@ jobs:
     name: digest-pinned registry artifacts
     if: github.event_name != 'pull_request'
     needs: build
-    runs-on: ${{ vars.RUNNER_LINUX_SMALL }}
+    runs-on: ${{ vars.RUNNER_LINUX_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6.0.3
-      - uses: ./.github/actions/setup
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - uses: actions/download-artifact@v4
         with:
           pattern: oci-image-digest-*
@@ -132,7 +140,7 @@ jobs:
           writeFileSync("registry/oci-image-digests.json", `${JSON.stringify({ images }, null, 2)}\n`);
           NODE
       - name: Build digest-pinned registry artifacts
-        run: vp run @quickdeployai/registry-cli#build:registry
+        run: pnpm --filter @quickdeployai/registry-cli build:registry
       - uses: actions/upload-artifact@v4
         with:
           name: digest-pinned-servers-json
