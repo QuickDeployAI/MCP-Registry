@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "OpenRPC to MCP importer utilities.",
+  "bin": {
+    "openrpc-2-mcp": "./src/bin.mts"
+  },
   "files": [
     "src",
     "fixtures",
@@ -26,6 +29,7 @@
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.2.1",
     "@quickdeployai/importer-core": "workspace:*",
+    "tsx": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { envCredential } from "@quickdeployai/importer-core";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("openrpc-2-mcp package", () => {
   it("parses OpenRPC methods with resolved by-name params and result schemas", async () => {
@@ -206,6 +207,129 @@ describe("openrpc-2-mcp package", () => {
     expect(result.diagnostics).toEqual([]);
   });
 });
+
+describe("buildOpenRpcTools — expose (allow/deny/rename)", () => {
+  it("only exposes allowed methods", async () => {
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+    const tools = buildOpenRpcTools(parseOpenRpcDocument(multiMethodOpenRpcDocument()), {
+      endpoint: "https://rpc.example.test",
+      transport: "http",
+      expose: { allow: ["pets.get"] },
+    });
+
+    expect(tools.map((tool) => tool.method)).toEqual(["pets.get"]);
+  });
+
+  it("hides denied methods", async () => {
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+    const tools = buildOpenRpcTools(parseOpenRpcDocument(multiMethodOpenRpcDocument()), {
+      endpoint: "https://rpc.example.test",
+      transport: "http",
+      expose: { deny: ["pets.delete"] },
+    });
+
+    expect(tools.map((tool) => tool.method)).toEqual(["pets.get"]);
+  });
+
+  it("renames a tool by original method name", async () => {
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+    const tools = buildOpenRpcTools(parseOpenRpcDocument(multiMethodOpenRpcDocument()), {
+      endpoint: "https://rpc.example.test",
+      transport: "http",
+      expose: { allow: ["pets.get"], rename: { "pets.get": "getPet" } },
+    });
+
+    expect(tools[0]?.name).toBe("getPet");
+  });
+});
+
+describe("buildOpenRpcTools — auth", () => {
+  const ENV_VAR = "OPENRPC_TEST_TOKEN";
+
+  beforeEach(() => {
+    delete process.env[ENV_VAR];
+  });
+
+  afterEach(() => {
+    delete process.env[ENV_VAR];
+  });
+
+  it("injects a bearer token header resolved from the environment", async () => {
+    process.env[ENV_VAR] = "secret-token";
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+
+    let sawAuthorization: string | null = null;
+    const [tool] = buildOpenRpcTools(parseOpenRpcDocument(validOpenRpcDocument()), {
+      endpoint: "https://rpc.example.test",
+      transport: "http",
+      auth: [{ type: "bearer", token: envCredential(ENV_VAR) }],
+      fetch: async (_input, init) => {
+        sawAuthorization = new Headers(init?.headers).get("authorization");
+        return jsonResponse({ jsonrpc: "2.0", id: 1, result: { id: "pet-1" } });
+      },
+    });
+
+    await tool?.execute({ petId: "pet-1" });
+    expect(sawAuthorization).toBe("Bearer secret-token");
+  });
+
+  it("throws before any request when the auth env var is missing", async () => {
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+    let fetchCalled = false;
+
+    expect(() =>
+      buildOpenRpcTools(parseOpenRpcDocument(validOpenRpcDocument()), {
+        endpoint: "https://rpc.example.test",
+        transport: "http",
+        auth: [{ type: "bearer", token: envCredential(ENV_VAR) }],
+        fetch: async () => {
+          fetchCalled = true;
+          return jsonResponse({ jsonrpc: "2.0", id: 1, result: {} });
+        },
+      }),
+    ).toThrow(/Missing required credential environment variable OPENRPC_TEST_TOKEN/);
+    expect(fetchCalled).toBe(false);
+  });
+});
+
+describe("buildOpenRpcTools — error surfacing", () => {
+  it("rejects with the JSON-RPC error message when the server returns an error response", async () => {
+    const { buildOpenRpcTools, parseOpenRpcDocument } = await import("./index");
+    const [tool] = buildOpenRpcTools(parseOpenRpcDocument(validOpenRpcDocument()), {
+      endpoint: "https://rpc.example.test",
+      transport: "http",
+      fetch: async () =>
+        jsonResponse({
+          jsonrpc: "2.0",
+          id: 1,
+          error: { code: -32602, message: "Invalid params: petId is required" },
+        }),
+    });
+
+    await expect(tool?.execute({ petId: "pet-1" })).rejects.toThrow(/Invalid params/);
+  });
+});
+
+function multiMethodOpenRpcDocument() {
+  return {
+    openrpc: "1.3.2",
+    info: { title: "Petstore JSON-RPC", version: "1.0.0" },
+    methods: [
+      {
+        name: "pets.get",
+        paramStructure: "by-name",
+        params: [{ name: "petId", required: true, schema: { type: "string" } }],
+        result: { name: "pet", schema: { type: "object" } },
+      },
+      {
+        name: "pets.delete",
+        paramStructure: "by-name",
+        params: [{ name: "petId", required: true, schema: { type: "string" } }],
+        result: { name: "ok", schema: { type: "boolean" } },
+      },
+    ],
+  };
+}
 
 function validOpenRpcDocument() {
   return {

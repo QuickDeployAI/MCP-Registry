@@ -4,6 +4,7 @@ import {
   type CreateJsonRpcClientOptions,
   type JsonRpcParamStructure,
 } from "@quickdeployai/importer-core/json-rpc";
+import { applyCredentialAuth, type CredentialAuthConfig } from "@quickdeployai/importer-core";
 import { validateOpenRPCDocument } from "@open-rpc/schema-utils-js";
 import type {
   ContentDescriptorObject,
@@ -99,10 +100,24 @@ export type OpenRpcTool = {
   execute(args: unknown): Promise<string>;
 };
 
+export type OpenRpcExposeOptions = {
+  /** Original JSON-RPC method names to expose. Everything else is hidden when set. */
+  allow?: string[];
+  /** Original JSON-RPC method names to hide. */
+  deny?: string[];
+  /** Original JSON-RPC method name -> tool name override. */
+  rename?: Record<string, string>;
+};
+
 export type BuildOpenRpcToolsOptions = Pick<
   CreateJsonRpcClientOptions,
   "endpoint" | "transport" | "fetch" | "headers" | "credentials" | "timeoutMs" | "createWebSocket"
->;
+> & {
+  expose?: OpenRpcExposeOptions;
+  /** Resolved eagerly (throws before any tool is called if a required env var is missing). */
+  auth?: readonly CredentialAuthConfig[];
+  env?: NodeJS.ProcessEnv;
+};
 
 export class OpenRpcDocumentError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -144,8 +159,18 @@ export function buildOpenRpcTools(
   model: OpenRpcModel,
   options: BuildOpenRpcToolsOptions,
 ): OpenRpcTool[] {
-  const client = createJsonRpcClient(options);
-  return model.methods.map((method) => {
+  const authHeaders = options.auth?.length
+    ? applyCredentialAuth(options.auth, options.env ?? process.env).headers
+    : undefined;
+  const client = createJsonRpcClient({
+    ...options,
+    ...(authHeaders || options.headers
+      ? { headers: { ...authHeaders, ...options.headers } }
+      : {}),
+  });
+  return model.methods
+    .filter((method) => isMethodExposed(method.name, options.expose))
+    .map((method) => {
     const paramStructure = jsonRpcParamStructure(method.paramStructure);
     const inputSchema = inputSchemaForMethod(method);
     const parameters = z.object(
@@ -160,7 +185,7 @@ export function buildOpenRpcTools(
     );
 
     return {
-      name: openRpcToolName(method.name),
+      name: options.expose?.rename?.[method.name] ?? openRpcToolName(method.name),
       description: method.description ?? method.summary ?? `JSON-RPC method ${method.name}`,
       method: method.name,
       paramStructure,
@@ -405,6 +430,13 @@ function wireParamsForMethod(method: OpenRpcMethod, args: Record<string, unknown
 
 function jsonRpcParamStructure(paramStructure: MethodObjectParamStructure): JsonRpcParamStructure {
   return paramStructure === "by-position" ? "by-position" : "by-name";
+}
+
+function isMethodExposed(methodName: string, expose: OpenRpcExposeOptions | undefined): boolean {
+  if (!expose) return true;
+  if (expose.allow && !expose.allow.includes(methodName)) return false;
+  if (expose.deny?.includes(methodName)) return false;
+  return true;
 }
 
 function openRpcToolName(methodName: string): string {
