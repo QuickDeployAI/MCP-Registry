@@ -29,6 +29,9 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Claude Code local worktree state
+.claude/
+
 # Editors and OS files
 .DS_Store
 Thumbs.db
