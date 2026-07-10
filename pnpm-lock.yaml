@@ -483,6 +483,9 @@ importers:
 
   packages/runtime/mcp-host:
     dependencies:
+      '@quickdeployai/arazzo-2-mcp':
+        specifier: workspace:*
+        version: link:../../importers/arazzo-2-mcp
       '@quickdeployai/git-2-mcp':
         specifier: workspace:*
         version: link:../../importers/git-2-mcp

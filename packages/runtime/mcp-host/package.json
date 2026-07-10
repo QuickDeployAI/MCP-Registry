@@ -30,6 +30,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@quickdeployai/arazzo-2-mcp": "workspace:*",
     "@quickdeployai/git-2-mcp": "workspace:*",
     "@quickdeployai/importer-core": "workspace:*",
     "@quickdeployai/registry-schemas": "workspace:*",

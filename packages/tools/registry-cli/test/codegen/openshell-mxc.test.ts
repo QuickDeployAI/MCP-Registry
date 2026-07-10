@@ -247,6 +247,7 @@ function fixtureManifest(): McpManifest {
         skills: [],
         knowledgeSources: [],
         corpusGlobs: [],
+        workflows: [],
       },
       auth: [
         {

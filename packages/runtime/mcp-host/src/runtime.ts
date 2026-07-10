@@ -1,6 +1,8 @@
 import { timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
+import { buildArazzoTools, loadArazzoDocument } from "@quickdeployai/arazzo-2-mcp";
+import { resolveArazzoSources } from "@quickdeployai/arazzo-2-mcp/sources";
 import {
   type McpManifest,
   validateMcpManifestImporterConfig,
@@ -137,6 +139,11 @@ export const defaultEngines: HostEngine[] = [
     name: "git-2-mcp",
     version: "0.1.0",
     createSurface: createGit2McpSurface,
+  },
+  {
+    name: "arazzo-2-mcp",
+    version: "0.1.0",
+    createSurface: createArazzoSurface,
   },
 ];
 
@@ -352,7 +359,7 @@ async function dispatchJsonRpc(
   if (request.id === undefined) return null;
 
   switch (request.method) {
-    case "initialize":
+    case "initialize": {
       const initializeTools = await listTools(surface);
       return rpcResult(request.id, {
         protocolVersion: MCP_PROTOCOL_VERSION,
@@ -367,13 +374,19 @@ async function dispatchJsonRpc(
           title: manifest.metadata.title,
         },
       });
+    }
     case "ping":
       return rpcResult(request.id, {});
-    case "tools/list":
+    case "tools/list": {
       const tools = await listTools(surface);
       return rpcResult(request.id, {
-        tools: tools.map(({ call: _call, ...tool }) => tool),
+        tools: tools.map(({ name, description, inputSchema }) => ({
+          name,
+          description,
+          inputSchema,
+        })),
       });
+    }
     case "tools/call":
       return await callTool(request.id, surface, request.params);
     case "resources/list":
@@ -550,6 +563,95 @@ function createSkillsSurface(manifest: McpManifest): HostSurface {
     resources: [],
     prompts,
   };
+}
+
+function createArazzoSurface(manifest: McpManifest, config: HostConfig): HostSurface {
+  let cached: Promise<HostTool[]> | undefined;
+  return {
+    tools: () => {
+      cached ??= createArazzoTools(manifest, config);
+      return cached;
+    },
+    resources: [],
+    prompts: [],
+  };
+}
+
+async function createArazzoTools(
+  manifest: McpManifest,
+  config: HostConfig,
+): Promise<HostTool[]> {
+  const document = await loadArazzoDocument(manifest.spec.source.uri);
+  const sources = await resolveArazzoSources(document, {
+    baseUrl: manifest.spec.source.uri,
+  });
+  const configuredAllowlist = readStringArray(config.values.workflowAllowlist);
+  const manifestAllowlist = manifest.spec.select.workflows;
+  const workflowAllowlist =
+    manifestAllowlist.length > 0 ? manifestAllowlist : configuredAllowlist;
+  const denied = new Set(
+    manifest.spec.expose.tools.filter((item) => item.deny).map((item) => item.from),
+  );
+  const renamed = new Map(
+    manifest.spec.expose.tools.flatMap((item) =>
+      !item.deny && item.name ? [[item.from, item.name] as const] : [],
+    ),
+  );
+
+  return buildArazzoTools(document, {
+    executor: executeHttpRequest,
+    sources,
+    sourceOverrides: readStringRecord(config.values.sourceOverrides),
+    workflowAllowlist,
+    maxSteps: readPositiveInteger(config.values.maxSteps),
+    stepTimeoutMs: readPositiveInteger(config.values.stepTimeoutMs),
+  })
+    .filter((tool) => !denied.has(tool.name))
+    .map((tool) => ({
+      name: renamed.get(tool.name) ?? tool.name,
+      description: tool.description,
+      inputSchema: tool.inputSchema,
+      call: tool.execute,
+    }));
+}
+
+async function executeHttpRequest(request: {
+  url: URL;
+  method: string;
+  headers: Record<string, string>;
+  body?: unknown;
+}): Promise<{ status: number; text: string }> {
+  const response = await fetch(request.url, {
+    method: request.method,
+    headers: request.headers,
+    body:
+      request.body === undefined
+        ? undefined
+        : typeof request.body === "string"
+          ? request.body
+          : JSON.stringify(request.body),
+  });
+  return { status: response.status, text: await response.text() };
+}
+
+function readStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const strings = value.filter((item): item is string => typeof item === "string");
+  return strings.length > 0 ? strings : undefined;
+}
+
+function readStringRecord(value: unknown): Record<string, string> | undefined {
+  const record = readRecord(value);
+  if (!record) return undefined;
+  return Object.fromEntries(
+    Object.entries(record).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
+function readPositiveInteger(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : undefined;
 }
 
 function createGit2McpSurface(manifest: McpManifest, config: HostConfig): HostSurface {
