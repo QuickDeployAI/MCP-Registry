@@ -1,0 +1,20 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:petstore",
+  "select": {
+    "requests": [
+      { "method": "get", "uriTemplate": "/pet/{petId}" },
+      { "method": "post", "uriTemplate": "/pet" }
+    ]
+  },
+  "expose": {
+    "tools": [
+      { "from": "GET /pet/{petId}", "name": "get_pet" },
+      { "from": "POST /pet", "name": "create_pet" }
+    ]
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": { "type": "none" }
+  }
+}

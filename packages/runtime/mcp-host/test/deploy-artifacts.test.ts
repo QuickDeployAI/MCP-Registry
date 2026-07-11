@@ -9,7 +9,7 @@ describe("mcp-host deploy artifacts", () => {
     expect(dockerfile).toContain("pnpm --filter @quickdeployai/mcp-host deploy --prod");
     expect(dockerfile).toContain('ENTRYPOINT ["node", "--import", "tsx", "src/cli.mts"]');
     expect(dockerfile).toContain(
-      'CMD ["run", "/manifests/manifest.mcp.yaml", "--transport", "streamable-http"',
+      'CMD ["run", "/projections/entry.ard.json", "--projection", "/projections/entry.projection.json", "--transport", "streamable-http"',
     );
     expect(dockerfile).toContain("ghcr.io/quickdeployai/mcp-host@sha256:<digest>");
   });
@@ -45,7 +45,9 @@ describe("mcp-host deploy artifacts", () => {
     expect(container.image).toMatch(/^ghcr\.io\/quickdeployai\/mcp-host@sha256:[a-f0-9]{64}$/);
     expect(container.args).toEqual([
       "run",
-      "/manifests/manifest.mcp.yaml",
+      "/projections/entry.ard.json",
+      "--projection",
+      "/projections/entry.projection.json",
       "--transport",
       "streamable-http",
       "--hostname",
@@ -57,10 +59,10 @@ describe("mcp-host deploy artifacts", () => {
     expect(container.readinessProbe).toMatchObject({ httpGet: { path: "/readyz" } });
     expect(container.livenessProbe).toMatchObject({ httpGet: { path: "/healthz" } });
     expect(container.volumeMounts).toEqual([
-      { name: "manifest", mountPath: "/manifests", readOnly: true },
+      { name: "projection", mountPath: "/projections", readOnly: true },
     ]);
     expect(template.spec?.volumes).toEqual([
-      { name: "manifest", configMap: { name: "petstore-mcp-manifest" } },
+      { name: "projection", configMap: { name: "petstore-mcp-projection" } },
     ]);
   });
 });

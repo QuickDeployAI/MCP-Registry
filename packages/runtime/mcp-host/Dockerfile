@@ -11,7 +11,10 @@ WORKDIR /repo
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
 COPY packages/schemas/registry-schemas ./packages/schemas/registry-schemas
 COPY packages/core/importer-core ./packages/core/importer-core
-COPY packages/importers/git-2-mcp ./packages/importers/git-2-mcp
+COPY packages/core/proxy-core ./packages/core/proxy-core
+COPY packages/importers/grpc-2-mcp ./packages/importers/grpc-2-mcp
+COPY packages/importers/openapi-2-mcp ./packages/importers/openapi-2-mcp
+COPY packages/importers/wsdl-2-mcp ./packages/importers/wsdl-2-mcp
 COPY packages/runtime/mcp-host ./packages/runtime/mcp-host
 
 # --ignore-scripts avoids wiring repo hooks inside the container build context.
@@ -30,4 +33,4 @@ COPY --from=build /out ./
 USER node
 EXPOSE 3000
 ENTRYPOINT ["node", "--import", "tsx", "src/cli.mts"]
-CMD ["run", "/manifests/manifest.mcp.yaml", "--transport", "streamable-http", "--hostname", "0.0.0.0", "--port", "3000"]
+CMD ["run", "/projections/entry.ard.json", "--projection", "/projections/entry.projection.json", "--transport", "streamable-http", "--hostname", "0.0.0.0", "--port", "3000"]

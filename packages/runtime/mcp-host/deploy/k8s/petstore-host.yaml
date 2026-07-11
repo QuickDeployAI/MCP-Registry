@@ -8,39 +8,28 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: petstore-mcp-manifest
+  name: petstore-mcp-projection
   namespace: qdai-mcp-dev
 data:
-  manifest.mcp.yaml: |
-    apiVersion: quickdeploy.ai/v1
-    kind: McpManifest
-    metadata:
-      name: ai.quickdeploy/petstore
-      version: 1.0.0
-      title: Petstore
-      description: Selected Petstore operations exposed as MCP tools.
-      labels: [openapi, petstore]
-    spec:
-      importer:
-        engine: openapi-2-mcp
-        versionRange: ^0.1.0
-      source:
-        type: http
-        uri: https://petstore3.swagger.io/api/v3/openapi.json
-      select:
-        requests:
-          - method: get
-            uriTemplate: /pet/{petId}
-      expose:
-        tools:
-          - from: GET /pet/{petId}
-            name: get_pet
-    deployment:
-      transport: streamable-http
-      auth:
-        type: bearer
-        tokenFrom:
-          env: MCP_HOST_TOKEN
+  entry.ard.json: |
+    {
+      "identifier": "urn:air:quickdeploy.ai:mcp:petstore",
+      "displayName": "Petstore",
+      "type": "application/vnd.oai.openapi+json",
+      "version": "1.0.0",
+      "url": "https://petstore3.swagger.io/api/v3/openapi.json"
+    }
+  entry.projection.json: |
+    {
+      "kind": "McpProjectionConfig",
+      "entryRef": "urn:air:quickdeploy.ai:mcp:petstore",
+      "select": { "requests": [{ "method": "get", "uriTemplate": "/pet/{petId}" }] },
+      "expose": { "tools": [{ "from": "GET /pet/{petId}", "name": "get_pet" }] },
+      "deployment": {
+        "transport": "streamable-http",
+        "auth": { "type": "bearer", "tokenFrom": { "env": "MCP_HOST_TOKEN" } }
+      }
+    }
 ---
 apiVersion: v1
 kind: Secret
@@ -76,7 +65,9 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - run
-            - /manifests/manifest.mcp.yaml
+            - /projections/entry.ard.json
+            - --projection
+            - /projections/entry.projection.json
             - --transport
             - streamable-http
             - --hostname
@@ -102,8 +93,8 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           volumeMounts:
-            - name: manifest
-              mountPath: /manifests
+            - name: projection
+              mountPath: /projections
               readOnly: true
           resources:
             requests:
@@ -113,9 +104,9 @@ spec:
               cpu: 500m
               memory: 512Mi
       volumes:
-        - name: manifest
+        - name: projection
           configMap:
-            name: petstore-mcp-manifest
+            name: petstore-mcp-projection
 ---
 apiVersion: v1
 kind: Service
