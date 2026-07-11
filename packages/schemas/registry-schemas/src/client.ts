@@ -1,4 +1,4 @@
-import type { CapabilityType } from "./capability";
+import type { CapabilityType } from "./capability.js";
 import type {
   ActorSearchSource,
   AddListingInput,
@@ -7,8 +7,8 @@ import type {
   RegistryFavorite,
   RegistryListing,
   SourceKind,
-} from "./listing";
-import type { InferenceResult } from "./inference";
+} from "./listing.js";
+import type { InferenceResult } from "./inference.js";
 
 /**
  * Transport adapter. Apps wire this to `supabase.functions.invoke("registries",

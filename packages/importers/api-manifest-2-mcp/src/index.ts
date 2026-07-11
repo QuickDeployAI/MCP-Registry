@@ -16,8 +16,8 @@ import {
 export type ApiManifestInlineInput = ApiManifest | Record<string, unknown> | string | Uint8Array;
 export type ApiManifestInput = ApiManifestInlineInput | URL;
 
-export { buildApiManifestTools } from "./tools";
-export type { ApiManifestProxyTool, BuildApiManifestToolsOptions } from "./tools";
+export { buildApiManifestTools } from "./tools.js";
+export type { ApiManifestProxyTool, BuildApiManifestToolsOptions } from "./tools.js";
 
 export type LoadApiManifestOptions = {
   fetch?: typeof fetch;

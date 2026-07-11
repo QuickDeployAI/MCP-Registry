@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CapabilityTypeSchema, type CapabilityType } from "./capability";
+import { CapabilityTypeSchema, type CapabilityType } from "./capability.js";
 
 /**
  * Chat-native capability experience packs (QUI-62).

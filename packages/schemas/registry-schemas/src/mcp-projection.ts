@@ -6,7 +6,7 @@ import {
   McpManifestDeploymentSchema,
   McpManifestExposeSchema,
   McpManifestSelectSchema,
-} from "./mcp-manifest";
+} from "./mcp-manifest.js";
 
 export const MCP_PROJECTION_CONFIG_KIND = "McpProjectionConfig" as const;
 

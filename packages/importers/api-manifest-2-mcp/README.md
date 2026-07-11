@@ -1,6 +1,17 @@
 # @quickdeployai/api-manifest-2-mcp
 
-Microsoft API Manifest to MCP importer utilities on the QuickDeploy baseline.
+Microsoft API Manifest to MCP importer utilities and standalone server on the
+QuickDeploy baseline.
+
+```bash
+npx @quickdeployai/api-manifest-2-mcp serve \
+  --manifest ./api-manifest.json \
+  --port 3000
+```
+
+The server exposes the selected dependency operations over stdio and
+streamable HTTP at `/mcp`. `--base-url dependencyKey=https://override.example`
+overrides a manifest deployment base URL.
 
 This package loads Microsoft API Manifest documents from file paths, `file:`
 URLs, HTTP(S) URLs, inline JSON strings, buffers, or already-parsed objects. It

@@ -1,13 +1,14 @@
 {
   "name": "@quickdeployai/openrpc-2-mcp",
   "version": "0.1.0",
-  "private": true,
-  "description": "OpenRPC to MCP importer utilities.",
+  "description": "Standalone OpenRPC to MCP server.",
   "bin": {
-    "openrpc-2-mcp": "./src/bin.mts"
+    "openrpc-2-mcp": "./dist/bin.mjs"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src",
+    "dist",
     "fixtures",
     "README.md"
   ],
@@ -15,15 +16,15 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "tsc --noEmit"
+    "test": "pnpm build && vitest run",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/bin.mjs serve"
   },
   "dependencies": {
     "@open-rpc/meta-schema": "^1.14.9",
@@ -33,6 +34,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
     "@types/node": "^22.0.0",
     "typescript": "^5.8.3",
     "vitest": "^4.1.9"

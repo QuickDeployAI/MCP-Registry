@@ -25,7 +25,7 @@ import {
   type ApiManifestInput,
   type ResolveApiManifestDependenciesOptions,
   type ResolvedApiManifestDependency,
-} from "./index";
+} from "./index.js";
 
 export type BuildApiManifestToolsOptions = ResolveApiManifestDependenciesOptions & {
   /**

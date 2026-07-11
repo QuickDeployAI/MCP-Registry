@@ -1,46 +1,43 @@
 {
   "name": "@quickdeployai/registry-schemas",
   "version": "0.1.0",
-  "private": true,
-  "description": "Shared registry + capability schemas, listing DTOs, manifest inference, and a typed client for the registries edge function. Consumed from source by Vite/tsc — no build step.",
+  "description": "Published registry and capability schemas used by MCP importers and clients.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src"
+    "dist",
+    "schemas"
   ],
   "type": "module",
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./ard": {
-      "types": "./src/ard.ts",
-      "import": "./src/ard.ts",
-      "default": "./src/ard.ts"
+      "types": "./dist/ard.d.ts",
+      "default": "./dist/ard.js"
     },
     "./inference": {
-      "types": "./src/inference.ts",
-      "import": "./src/inference.ts",
-      "default": "./src/inference.ts"
+      "types": "./dist/inference.d.ts",
+      "default": "./dist/inference.js"
     },
     "./client": {
-      "types": "./src/client.ts",
-      "import": "./src/client.ts",
-      "default": "./src/client.ts"
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
     },
     "./mcp-manifest": {
-      "types": "./src/mcp-manifest.ts",
-      "import": "./src/mcp-manifest.ts",
-      "default": "./src/mcp-manifest.ts"
+      "types": "./dist/mcp-manifest.d.ts",
+      "default": "./dist/mcp-manifest.js"
     },
     "./mcp-projection": {
-      "types": "./src/mcp-projection.ts",
-      "import": "./src/mcp-projection.ts",
-      "default": "./src/mcp-projection.ts"
+      "types": "./dist/mcp-projection.d.ts",
+      "default": "./dist/mcp-projection.js"
     }
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
