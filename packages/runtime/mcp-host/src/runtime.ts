@@ -9,6 +9,10 @@ import type {
 } from "@quickdeployai/importer-core/parser";
 import { openApiArtifactParser } from "@quickdeployai/openapi-2-mcp";
 import {
+  acpAgentManifestArtifactParser,
+  createAcpAgentManifestArtifactParser,
+} from "@quickdeployai/acp-agent-manifest-2-mcp";
+import {
   buildOpenRpcTools,
   openRpcArtifactParser,
   openRpcToParsedCapabilities,
@@ -81,6 +85,7 @@ export type McpHost = {
 type ArdArtifactParser = ArtifactParser<ArdEntry, string>;
 
 export const defaultArtifactParsers: ArdArtifactParser[] = [
+  acpAgentManifestArtifactParser,
   openApiArtifactParser,
   openRpcArtifactParser,
   grpcArtifactParser,
@@ -312,7 +317,22 @@ function configuredHostParsers(
   fetchImpl = globalThis.fetch,
 ): ArdArtifactParser[] {
   return defaultArtifactParsers.map((parser) =>
-    parser === openRpcArtifactParser
+    parser === acpAgentManifestArtifactParser
+      ? createAcpAgentManifestArtifactParser({
+          ...(config.values.transport === "http" ||
+            config.values.transport === "slim" ||
+            config.values.transport === "acp"
+            ? { transport: config.values.transport }
+            : {}),
+          ...(Array.isArray(config.values.skillAllowlist)
+            ? {
+                skillAllowlist: config.values.skillAllowlist.filter(
+                  (value): value is string => typeof value === "string",
+                ),
+              }
+            : {}),
+        })
+      : parser === openRpcArtifactParser
       ? createConfiguredOpenRpcParser(projection, config.values, env, fetchImpl)
       : parser,
   );

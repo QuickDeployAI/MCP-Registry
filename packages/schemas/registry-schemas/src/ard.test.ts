@@ -278,6 +278,9 @@ describe("source-definition artifacts + capability kinds", () => {
     expect(sourceMediaTypeToImporterEngine(OPENRPC_MEDIA_TYPE)).toBe("openrpc-2-mcp");
     expect(sourceMediaTypeToImporterEngine(JSON_RPC_MEDIA_TYPE)).toBe("openrpc-2-mcp");
     expect(sourceMediaTypeToImporterEngine(RSS_FEED_MEDIA_TYPE)).toBe("feed-2-mcp");
+    expect(sourceMediaTypeToImporterEngine(ACP_AGENT_MANIFEST_MEDIA_TYPE)).toBe(
+      "acp-agent-manifest-2-mcp",
+    );
     expect(sourceMediaTypeToImporterEngine(QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE)).toBe(
       "git-2-mcp",
     );

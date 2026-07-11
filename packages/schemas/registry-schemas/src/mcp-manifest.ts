@@ -600,6 +600,28 @@ export const ARAZZO_2_MCP_CONFIG_SCHEMA = {
   },
 } as const satisfies ImporterConfigJsonSchema;
 
+export const ACP_AGENT_MANIFEST_2_MCP_CONFIG_SCHEMA = {
+  $id: "https://schemas.quickdeploy.ai/importers/acp-agent-manifest-2-mcp.config.schema.json",
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  title: "acp-agent-manifest-2-mcp importer config",
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    transport: {
+      type: "string",
+      enum: ["http", "slim", "acp"],
+      description:
+        "AGNTCY invocation transport override. This is not the Zed Agent Client Protocol capability type.",
+    },
+    skillAllowlist: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+      uniqueItems: true,
+      description: "Declared ACP skill names to include. Omit to derive every declared skill.",
+    },
+  },
+} as const satisfies ImporterConfigJsonSchema;
+
 const IMPORTER_CONFIG_SCHEMAS: Record<string, ImporterConfigJsonSchema> = {
   "openapi-2-mcp": OPENAPI_2_MCP_CONFIG_SCHEMA,
   "asyncapi-2-mcp": ASYNCAPI_2_MCP_CONFIG_SCHEMA,
@@ -610,6 +632,7 @@ const IMPORTER_CONFIG_SCHEMAS: Record<string, ImporterConfigJsonSchema> = {
   "har-2-mcp": HAR_2_MCP_CONFIG_SCHEMA,
   "grpc-2-mcp": GRPC_2_MCP_CONFIG_SCHEMA,
   "arazzo-2-mcp": ARAZZO_2_MCP_CONFIG_SCHEMA,
+  "acp-agent-manifest-2-mcp": ACP_AGENT_MANIFEST_2_MCP_CONFIG_SCHEMA,
 };
 
 export function getImporterConfigSchema(engine: string): ImporterConfigJsonSchema | undefined {
