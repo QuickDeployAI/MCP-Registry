@@ -57,6 +57,11 @@ jobs:
             entrypoint: src/bin.mts
             image: ghcr.io/quickdeployai/mcp-registry-openrpc-2-mcp
             smoke: --help
+          - slug: api-manifest-2-mcp
+            package: "@quickdeployai/api-manifest-2-mcp"
+            entrypoint: src/bin.mts
+            image: ghcr.io/quickdeployai/mcp-registry-api-manifest-2-mcp
+            smoke: --help
           - slug: arazzo-2-mcp
             package: "@quickdeployai/arazzo-2-mcp"
             entrypoint: src/bin.mts

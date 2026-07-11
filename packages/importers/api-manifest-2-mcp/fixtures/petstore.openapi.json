@@ -43,6 +43,16 @@
           }
         }
       }
+    },
+    "/admin/audit": {
+      "get": {
+        "operationId": "getAuditLog",
+        "responses": {
+          "200": {
+            "description": "Audit log"
+          }
+        }
+      }
     }
   }
 }
