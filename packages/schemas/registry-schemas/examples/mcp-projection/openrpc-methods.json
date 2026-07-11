@@ -1,0 +1,24 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:openrpc-petstore",
+  "select": {
+    "methods": ["pets.get"]
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "pets.get",
+        "name": "get_pet"
+      }
+    ]
+  },
+  "config": {
+    "defaults": {
+      "endpoint": "https://rpc.example.test",
+      "transport": "http"
+    }
+  },
+  "deployment": {
+    "transport": "stdio"
+  }
+}
