@@ -270,26 +270,53 @@ export function compileArdProjectionToServerJson(
   const projectionPath = normalizePath(options.projectionPath);
   const parsedEntry = parseArdEntryForRegistry(entry, entryPath);
   const parsedProjection = parseProjectionForRegistry(projection, projectionPath);
-  const manifest = projectionToMcpManifest(parsedEntry, parsedProjection, entryPath);
+  const engine = sourceMediaTypeToImporterEngine(parsedEntry.type);
+  if (!engine) {
+    throw new Error(`ARD entry ${entryPath} type "${parsedEntry.type}" has no importer engine mapping.`);
+  }
+  if (parsedProjection.entryRef !== parsedEntry.identifier) {
+    throw new Error(
+      `MCP projection for ${entryPath} references ${parsedProjection.entryRef}, expected ${parsedEntry.identifier}.`,
+    );
+  }
+  const slug = parsedEntry.identifier.split(":").at(-1);
+  if (!slug) throw new Error(`ARD entry ${parsedEntry.identifier} has no terminal slug.`);
+  const envVars = projectionEnvironmentVariables(parsedProjection);
 
-  return compileMcpRuntimeServerJson(manifest, {
-    runtimeConfigPath: entryPath,
-    runtimeArguments: [
-      "run",
-      entryPath,
-      "--projection",
-      projectionPath,
-      "--transport",
-      parsedProjection.deployment.transport,
-    ],
-    sourcePath: entryPath,
-    embedManifest: false,
-    curationTags: ["ard-entry", "projection-backed", ...(parsedEntry.tags ?? [])],
-    meta: {
+  return parseServerJson({
+    $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
+    name: `ai.quickdeploy/${slug}`,
+    version: parsedEntry.version ?? "0.1.0",
+    description: parsedEntry.description ?? parsedEntry.displayName,
+    packages: [{
+      registryType: "oci",
+      identifier: MCP_HOST_IMAGE,
+      runtimeHint: "mcp-host",
+      transport: parsedProjection.deployment.transport,
+      runtimeArguments: [
+        "run",
+        entryPath,
+        "--projection",
+        projectionPath,
+        "--transport",
+        parsedProjection.deployment.transport,
+      ],
+      ...(envVars.length > 0
+        ? { environmentVariables: envVars.map((variable) => variable.name) }
+        : {}),
+    }],
+    ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
+    _meta: {
+      [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
+        verifiedStatus: "review",
+        category: engine,
+        isOfficial: true,
+        tags: uniqueStrings(["ard-entry", "projection-backed", ...(parsedEntry.tags ?? [])]),
+      },
       [QUICKDEPLOY_ARD_ENTRY_META_KEY]: parsedEntry,
       [QUICKDEPLOY_MCP_PROJECTION_META_KEY]: parsedProjection,
     },
-  });
+  }, entryPath);
 }
 
 export function compileManifestToServerJson(
@@ -486,6 +513,47 @@ function manifestEnvironmentVariables(
   return [...variables.values()].sort((left, right) => left.name.localeCompare(right.name));
 }
 
+function projectionEnvironmentVariables(
+  projection: McpProjectionConfig,
+): Array<{ name: string; description: string; isRequired: boolean; isSecret: boolean }> {
+  const variables = new Map<
+    string,
+    { name: string; description: string; isRequired: boolean; isSecret: boolean }
+  >();
+
+  for (const auth of projection.auth) {
+    for (const variable of credentialEnvironmentVariables(credentialBindingsFromMcpAuth([auth]))) {
+      variables.set(variable.name, {
+        name: variable.name,
+        description: `Secret used by ${auth.type} upstream authentication.`,
+        isRequired: true,
+        isSecret: true,
+      });
+    }
+  }
+
+  const inboundAuth = projection.deployment.auth;
+  if ((inboundAuth?.type === "bearer" || inboundAuth?.type === "oauth2-resource") && inboundAuth.tokenFrom) {
+    variables.set(inboundAuth.tokenFrom.env, {
+      name: inboundAuth.tokenFrom.env,
+      description: inboundAuth.type === "bearer"
+        ? "Bearer token required by the hosted MCP endpoint."
+        : "OAuth access token accepted by the hosted MCP endpoint.",
+      isRequired: true,
+      isSecret: true,
+    });
+  }
+
+  for (const variable of configSchemaEnvironmentVariables(projection.config?.schema)) {
+    variables.set(variable.name, variable);
+  }
+  for (const variable of configSchemaEnvironmentVariables(projection.deployment.configSchema)) {
+    variables.set(variable.name, variable);
+  }
+
+  return [...variables.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
 function proxyGatewayRemotes(
   manifest: McpManifest,
   sourceManifestPath: string,
@@ -618,50 +686,6 @@ function parseProjectionForRegistry(
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Invalid MCP projection config in ${relativePath}: ${message}`);
   }
-}
-
-function projectionToMcpManifest(
-  entry: ArdEntry,
-  projection: McpProjectionConfig,
-  entryPath: string,
-): McpManifest {
-  const engine = sourceMediaTypeToImporterEngine(entry.type);
-  if (!engine) throw new Error(`ARD entry ${entryPath} type "${entry.type}" has no importer engine mapping.`);
-  if (projection.entryRef !== entry.identifier) {
-    throw new Error(`MCP projection for ${entryPath} references ${projection.entryRef}, expected ${entry.identifier}.`);
-  }
-  const slug = entry.identifier.split(":").at(-1);
-  if (!slug) throw new Error(`ARD entry ${entry.identifier} has no terminal slug.`);
-  return parseManifestForRegistry({
-    apiVersion: "quickdeploy.ai/v1",
-    kind: "McpManifest",
-    metadata: {
-      name: `ai.quickdeploy/${slug}`,
-      version: entry.version ?? "0.1.0",
-      title: entry.displayName,
-      description: entry.description,
-      labels: entry.tags ?? [],
-    },
-    spec: {
-      importer: { engine, versionRange: projection.importerVersionRange },
-      source: sourceFromArdEntry(entry),
-      select: projection.select,
-      auth: projection.auth,
-      ...(projection.config ? { config: projection.config } : {}),
-      expose: projection.expose,
-    },
-    deployment: projection.deployment,
-  }, entryPath);
-}
-
-function sourceFromArdEntry(entry: ArdEntry): McpManifest["spec"]["source"] {
-  if (entry.url) {
-    if (entry.url.startsWith("git+https://") || entry.url.startsWith("ssh://")) return { type: "git", uri: entry.url };
-    if (entry.url.startsWith("file://")) return { type: "file", uri: entry.url };
-    if (entry.url.startsWith("oci://")) return { type: "oci", uri: entry.url };
-    return { type: "http", uri: entry.url };
-  }
-  return { type: "file", uri: `inline:${entry.identifier}` };
 }
 
 function projectionPathForEntryPath(entryPath: string): string {
