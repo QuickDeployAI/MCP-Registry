@@ -32,6 +32,7 @@
     "@quickdeployai/grpc-2-mcp": "workspace:*",
     "@quickdeployai/importer-core": "workspace:*",
     "@quickdeployai/openapi-2-mcp": "workspace:*",
+    "@quickdeployai/openrpc-2-mcp": "workspace:*",
     "@quickdeployai/registry-schemas": "workspace:*",
     "@quickdeployai/wsdl-2-mcp": "workspace:*",
     "tsx": "catalog:",

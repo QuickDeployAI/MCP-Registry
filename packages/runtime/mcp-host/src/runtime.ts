@@ -9,6 +9,12 @@ import type {
 } from "@quickdeployai/importer-core/parser";
 import { openApiArtifactParser } from "@quickdeployai/openapi-2-mcp";
 import {
+  buildOpenRpcTools,
+  openRpcArtifactParser,
+  openRpcToParsedCapabilities,
+  parseOpenRpcDocument,
+} from "@quickdeployai/openrpc-2-mcp";
+import {
   ArdEntrySchema,
   normalizeArtifactMediaType,
   sourceMediaTypeToImporterEngine,
@@ -76,6 +82,7 @@ type ArdArtifactParser = ArtifactParser<ArdEntry, string>;
 
 export const defaultArtifactParsers: ArdArtifactParser[] = [
   openApiArtifactParser,
+  openRpcArtifactParser,
   grpcArtifactParser,
   wsdlArtifactParser,
 ];
@@ -147,11 +154,12 @@ export async function createMcpHost(options: CreateMcpHostOptions): Promise<McpH
   }
 
   const config = resolveHostConfig(projection, options.userConfig ?? {}, options.env);
+  const parsers = options.parsers ?? configuredHostParsers(projection, config, options.env, options.fetch);
   const parsed = await createArdSurface({
     entry,
     projection,
     nativeArtifact: options.nativeArtifact,
-    parsers: options.parsers,
+    parsers,
     fetch: options.fetch,
   });
   const parserName = sourceMediaTypeToImporterEngine(entry.type) ?? "unmapped";
@@ -277,6 +285,7 @@ function selectedToolSelectors(projection: McpProjectionConfig): Set<string> {
   return new Set([
     ...select.requests.map((item) => `${item.method.toUpperCase()} ${item.uriTemplate}`),
     ...select.grpcMethods.map((item) => `${item.service}/${item.method}`),
+    ...select.methods,
     ...select.pythonFunctions,
     ...select.skills.map((item) => item.name),
     ...select.workflows,
@@ -290,7 +299,109 @@ function capabilitySelector(raw: unknown, fallback: string): string {
     return `${record.method.toUpperCase()} ${record.path}`;
   }
   if (typeof record.fullName === "string") return record.fullName;
+  if (typeof record.name === "string" && typeof record.paramStructure === "string") {
+    return record.name;
+  }
   return fallback;
+}
+
+function configuredHostParsers(
+  projection: McpProjectionConfig,
+  config: HostConfig,
+  env: NodeJS.ProcessEnv = process.env,
+  fetchImpl = globalThis.fetch,
+): ArdArtifactParser[] {
+  return defaultArtifactParsers.map((parser) =>
+    parser === openRpcArtifactParser
+      ? createConfiguredOpenRpcParser(projection, config.values, env, fetchImpl)
+      : parser,
+  );
+}
+
+function createConfiguredOpenRpcParser(
+  projection: McpProjectionConfig,
+  values: Record<string, unknown>,
+  env: NodeJS.ProcessEnv,
+  fetchImpl: typeof fetch,
+): ArdArtifactParser {
+  return {
+    mediaTypes: openRpcArtifactParser.mediaTypes,
+    async parse(nativeArtifact) {
+      const model = parseOpenRpcDocument(nativeArtifact as Parameters<typeof parseOpenRpcDocument>[0]);
+      const endpoint = configuredString(values.endpoint) ?? model.servers[0]?.url;
+      if (!endpoint) {
+        return {
+          capabilities: openRpcToParsedCapabilities(model),
+          diagnostics: [{
+            level: "warn",
+            message: "OpenRPC document has no runtime endpoint in projection config or servers[].",
+          }],
+        };
+      }
+      const transport = values.transport === "ws" || /^wss?:/i.test(endpoint) ? "ws" : "http";
+      return {
+        capabilities: openRpcToParsedCapabilities(model),
+        mcpProjection: {
+          tools: buildOpenRpcTools(model, {
+            endpoint,
+            transport,
+            fetch: fetchImpl,
+            env,
+            auth: projectionAuthToOpenRpcAuth(projection.auth),
+            ...(configuredHeaders(values.headers) ? { headers: configuredHeaders(values.headers) } : {}),
+            ...(typeof values.requestTimeoutMs === "number"
+              ? { timeoutMs: values.requestTimeoutMs }
+              : {}),
+          }),
+        },
+        diagnostics: [],
+      };
+    },
+  };
+}
+
+function projectionAuthToOpenRpcAuth(
+  auth: McpProjectionConfig["auth"],
+): import("@quickdeployai/importer-core").CredentialAuthConfig[] {
+  const result: import("@quickdeployai/importer-core").CredentialAuthConfig[] = [];
+  for (const item of auth) {
+    switch (item.type) {
+      case "bearer":
+        result.push({ type: "bearer", token: item.valueFrom });
+        break;
+      case "api-key":
+        result.push({ type: "apiKey", in: item.in, name: item.name, value: item.valueFrom });
+        break;
+      case "basic":
+        result.push({
+          type: "basic",
+          username: item.usernameFrom,
+          password: item.passwordFrom,
+        });
+        break;
+      case "oauth2":
+        if (!item.valueFrom) {
+          throw new Error(
+            "OpenRPC runtime auth requires oauth2.valueFrom; token exchange is not supported by this client.",
+          );
+        }
+        result.push({ type: "oauth2ClientCredentials", accessToken: item.valueFrom });
+        break;
+    }
+  }
+  return result;
+}
+
+function configuredString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function configuredHeaders(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value).filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string",
+  );
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
 function projectNamedSurface<T extends { name?: unknown; description?: unknown; uri?: unknown }>(

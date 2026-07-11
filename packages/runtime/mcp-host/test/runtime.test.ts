@@ -54,7 +54,53 @@ const petstoreProjection = McpProjectionConfigSchema.parse({
   deployment: { transport: "streamable-http", auth: { type: "none" } },
 });
 
+const openRpcEntry: ArdEntry = {
+  identifier: "urn:air:quickdeploy.ai:openrpc:petstore",
+  displayName: "OpenRPC Petstore",
+  type: "application/vnd.open-rpc+json",
+  data: {
+    openrpc: "1.3.2",
+    info: { title: "OpenRPC Petstore", version: "1.0.0" },
+    methods: [
+      {
+        name: "pets.get",
+        paramStructure: "by-name",
+        params: [{ name: "petId", required: true, schema: { type: "string" } }],
+        result: { name: "pet", required: true, schema: { type: "object" } },
+      },
+      {
+        name: "pets.delete",
+        paramStructure: "by-name",
+        params: [{ name: "petId", required: true, schema: { type: "string" } }],
+        result: { name: "deleted", required: true, schema: { type: "boolean" } },
+      },
+    ],
+  },
+};
+
+const openRpcProjection = McpProjectionConfigSchema.parse({
+  entryRef: openRpcEntry.identifier,
+  select: { methods: ["pets.get"] },
+  expose: { tools: [{ from: "pets.get", name: "get_pet" }] },
+  config: { defaults: { endpoint: "https://rpc.example.test", transport: "http" } },
+  deployment: { transport: "stdio" },
+});
+
 describe("ARD projection host", () => {
+  it("resolves OpenRPC and applies select.methods to the executable projection", async () => {
+    expect(resolveParserByMediaType(openRpcEntry.type)).toBeDefined();
+    const host = await createMcpHost({
+      entry: openRpcEntry,
+      projection: openRpcProjection,
+      fetch: async () => new Response(
+        JSON.stringify({ jsonrpc: "2.0", id: 1, result: { id: "pet-1" } }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    });
+    expect(await toolNames(host)).toEqual(["get_pet"]);
+    expect(host.ready.parser.name).toBe("openrpc-2-mcp");
+  });
+
   it("loads an ARD artifact by media type and applies select/expose parity", async () => {
     expect(resolveParserByMediaType(petstoreEntry.type)).toBeDefined();
     const host = await createMcpHost({ entry: petstoreEntry, projection: petstoreProjection });
