@@ -1,0 +1,55 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:arazzo-adoption",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": [
+      "create-and-assign-ticket"
+    ]
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "create-and-assign-ticket",
+        "name": "create_and_assign_ticket",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "sourceOverrides": {
+          "type": "object"
+        },
+        "stepTimeoutMs": {
+          "type": "integer"
+        },
+        "maxSteps": {
+          "type": "integer"
+        }
+      }
+    },
+    "defaults": {
+      "stepTimeoutMs": 30000,
+      "maxSteps": 50
+    }
+  },
+  "deployment": {
+    "transport": "stdio",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

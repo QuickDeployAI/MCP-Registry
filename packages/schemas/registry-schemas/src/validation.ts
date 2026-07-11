@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CapabilityTypeSchema } from "./capability";
+import { CapabilityTypeSchema } from "./capability.js";
 
 /**
  * Capability validation pipeline — shared contracts + pure derivation.
@@ -470,9 +470,9 @@ export function resultsToStaticScanResult(
   if (!security || security.status === "not-run" || security.status === "skipped") return null;
   return {
     riskScore: typeof security.score === "number" ? security.score : 0,
-    summary: security.summary || undefined,
-    scannedAt: security.completedAt,
-    reportRef: security.reportRef,
+    ...(security.summary ? { summary: security.summary } : {}),
+    ...(security.completedAt ? { scannedAt: security.completedAt } : {}),
+    ...(security.reportRef ? { reportRef: security.reportRef } : {}),
     status: validationStatusToScanStatus(security.status),
     scannerId: security.checkId,
   };

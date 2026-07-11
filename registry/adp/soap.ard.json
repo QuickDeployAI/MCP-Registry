@@ -1,0 +1,57 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:adp",
+  "displayName": "ADP",
+  "type": "application/wsdl+xml",
+  "description": "Generated wsdl-2-mcp MCP manifest for ADP legacy payroll/HR SOAP services.",
+  "tags": [
+    "adp",
+    "generated",
+    "hr",
+    "payroll",
+    "read-only",
+    "wsdl"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "method-level",
+    "sourceRef": "adp-developer-resources@2026-07-09",
+    "sourceDigest": "sha256:37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://developers.adp.com/",
+        "type": "http",
+        "digest": "sha256:37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+        "ref": "adp-developer-resources@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "adp-developer-resources@2026-07-09",
+        "notes": [
+          "Official ADP Developer Resources portal (developers.adp.com) — ADP's current public developer documentation, which is REST/OAuth2-based.",
+          "ADP does not publish a first-party public WSDL/SOAP specification; ADP's REST APIs superseded the legacy SOAP-based Enterprise/GlobalView payroll and worker integration services this manifest models.",
+          "Selected operations model ADP's standard Worker and Payroll Output integration concepts (the same canonical Worker entity ADP's current REST HR API exposes at /hr/v2/workers) as historically exposed via SOAP for ADP Enterprise/GlobalView customers.",
+          "Canonical discovery URL: https://developers.adp.com/",
+          "Verified source SHA-256: 37f88fab9764e0af8e14ad253f07dbe4c7e8ada4933f2d64d615fe82046ce663",
+          "This manifest selects read-only worker and payroll status lookups only; no create/update operations are exposed."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://developers.adp.com/"
+}

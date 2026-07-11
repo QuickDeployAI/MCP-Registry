@@ -1,0 +1,58 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:netsuite",
+  "displayName": "NetSuite",
+  "type": "application/wsdl+xml",
+  "description": "Generated wsdl-2-mcp MCP manifest for NetSuite SuiteTalk SOAP get/search.",
+  "tags": [
+    "erp",
+    "generated",
+    "netsuite",
+    "soap",
+    "wsdl"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "method-level",
+    "sourceRef": "v2025_2_0",
+    "sourceDigest": "sha256:3ebeaf12bbfc0fb0767d6bd26d6f476d904c5c219849f4e9563094e8a4c98e7c",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://webservices.netsuite.com/wsdl/v2025_2_0/netsuite.wsdl",
+        "type": "http",
+        "digest": "sha256:3ebeaf12bbfc0fb0767d6bd26d6f476d904c5c219849f4e9563094e8a4c98e7c",
+        "ref": "v2025_2_0",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "v2025_2_0",
+        "notes": [
+          "Official NetSuite SuiteTalk SOAP WSDL, publicly downloadable without authentication.",
+          "v2025_2_0 is the current/final SOAP WSDL version: Oracle has stopped issuing new WSDL versions as of the NetSuite 2026.1 release, with the 2025.2 endpoint remaining supported through the eventual SOAP sunset (2028.2 release).",
+          "Verified source SHA-256: 3ebeaf12bbfc0fb0767d6bd26d6f476d904c5c219849f4e9563094e8a4c98e7c, confirmed byte-identical across two separate fetches.",
+          "Defines NetSuitePortType with 42 operations; this manifest selects two read-only operations: get (retrieve a record by internal ID/record type) and search (query records), matching the list+get shape used across this project.",
+          "NetSuite SOAP endpoints are account- and data-center-specific (no universal public endpoint), so endpoint is a required config field with no default, per the wsdl-2-mcp importer's fixed config schema (endpoint, bindingName, requestTimeoutMs)."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://webservices.netsuite.com/wsdl/v2025_2_0/netsuite.wsdl for source retrieval",
+          "POST configured NetSuite SuiteTalk endpoint for NetSuitePortType/get and NetSuitePortType/search"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/netsuite/soap.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/netsuite.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/wsdl/netsuite/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://webservices.netsuite.com/wsdl/v2025_2_0/netsuite.wsdl"
+}

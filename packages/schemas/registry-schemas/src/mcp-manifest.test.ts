@@ -9,6 +9,7 @@ import {
   ApiManifestSchema,
   getImporterConfigSchema,
   MCP_MANIFEST_SCHEMA_ID,
+  McpManifestSelectSchema,
   McpManifestSchema,
   OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
   QUICKDEPLOY_MCP_MANIFEST_META_KEY,
@@ -34,6 +35,12 @@ function publicSchema(): AnySchema {
 }
 
 describe("McpManifestSchema", () => {
+  it("accepts Arazzo workflow selectors", () => {
+    expect(McpManifestSelectSchema.parse({ workflows: ["create-ticket"] })).toMatchObject({
+      workflows: ["create-ticket"],
+    });
+  });
+
   it("publishes a JSON Schema that validates the canonical examples", () => {
     const schema = publicSchema();
     const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
@@ -43,7 +50,7 @@ describe("McpManifestSchema", () => {
       $schema: "https://json-schema.org/draft/2020-12/schema",
     });
 
-    for (const name of ["openapi-select", "feed", "skills", "git-python"]) {
+    for (const name of ["openapi-select", "feed", "skills", "git-python", "arazzo-adoption"]) {
       const manifest = example(name);
       expect(validate(manifest), `${name}: ${JSON.stringify(validate.errors)}`).toBe(true);
       expect(() => McpManifestSchema.parse(manifest)).not.toThrow();
@@ -61,6 +68,44 @@ describe("McpManifestSchema", () => {
       { method: "GET", uriTemplate: "/pets/{petId}" },
       { method: "POST", uriTemplate: "/orders" },
     ]);
+  });
+
+  it("accepts manifest server package and remote declarations", () => {
+    const manifest = {
+      ...(example("openapi-select") as Record<string, unknown>),
+      server: {
+        packages: [
+          {
+            registryType: "npm",
+            identifier: "@quickdeployai/petstore-mcp",
+            version: "1.0.0",
+          },
+          {
+            registryType: "docker",
+            identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0",
+          },
+        ],
+        remotes: [
+          {
+            type: "streamable-http",
+            url: "https://remote.example.test/mcp",
+            variables: {
+              tenant: { description: "Tenant slug." },
+            },
+          },
+        ],
+      },
+    };
+    const validate = new Ajv2020({ allErrors: true, strict: false }).compile(publicSchema());
+
+    expect(validate(manifest), JSON.stringify(validate.errors)).toBe(true);
+    expect(McpManifestSchema.parse(manifest).server).toMatchObject({
+      packages: [
+        { registryType: "npm", identifier: "@quickdeployai/petstore-mcp" },
+        { registryType: "docker", identifier: "ghcr.io/quickdeployai/petstore-mcp:1.0.0" },
+      ],
+      remotes: [{ type: "streamable-http", url: "https://remote.example.test/mcp" }],
+    });
   });
 
   it("maps API Manifest authorization requirements to env-backed OAuth config", () => {
@@ -195,8 +240,13 @@ describe("McpManifestSchema", () => {
     expect(getImporterConfigSchema("arazzo-2-mcp")).toMatchObject({
       type: "object",
       properties: {
-        sourceUrl: { type: "string", format: "uri" },
-        resolveSourceDescriptions: { type: "boolean" },
+        sourceOverrides: {
+          type: "object",
+          additionalProperties: { type: "string", format: "uri" },
+        },
+        workflowAllowlist: { type: "array", items: { type: "string" } },
+        stepTimeoutMs: { type: "integer", minimum: 1 },
+        maxSteps: { type: "integer", minimum: 1 },
       },
     });
   });

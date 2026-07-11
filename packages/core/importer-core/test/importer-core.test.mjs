@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { PassThrough } from "node:stream";
 import test from "node:test";
 import {
   applyCredentialAuth,
   authEnvironmentVariables,
+  createMxcSandboxRunner,
   defineConfig,
   envCredential,
   fetchTextSource,
@@ -123,4 +126,74 @@ test("startServer connects a transport", async () => {
     },
   }, transport);
   assert.equal(connected, true);
+});
+
+test("createMxcSandboxRunner builds a closed MXC policy and collects output", async () => {
+  const configs = [];
+  let receivedInput = "";
+  const sdk = {
+    getPlatformSupport: () => ({ isSupported: true }),
+    getAvailableToolsPolicy: () => ({ readonlyPaths: ["/bin"], readwritePaths: [] }),
+    getTemporaryFilesPolicy: () => ({ readwritePaths: ["/tmp"] }),
+    createConfigFromPolicy(policy) {
+      configs.push(policy);
+      return { process: {} };
+    },
+    spawnSandboxFromConfig(config, options) {
+      assert.equal(options.usePty, false);
+      assert.equal(config.process.commandLine, "python -c bridge.py");
+      const child = new EventEmitter();
+      child.stdout = new PassThrough();
+      child.stderr = new PassThrough();
+      child.stdin = {
+        end(input) {
+          receivedInput = input;
+          child.stdout.write("sandbox stdout");
+          child.stderr.write("sandbox stderr");
+          child.stdout.end();
+          child.stderr.end();
+          child.emit("close", 0);
+        },
+      };
+      return child;
+    },
+  };
+
+  const result = await createMxcSandboxRunner({ sdk, env: {} }).run({
+    commandLine: "python -c bridge.py",
+    input: "{\"ok\":true}",
+    readonlyPaths: ["/workspace/src"],
+    readwritePaths: ["/workspace/out"],
+    timeoutMs: 1234,
+  });
+
+  assert.deepEqual(result, {
+    stdout: "sandbox stdout",
+    stderr: "sandbox stderr",
+    exitCode: 0,
+  });
+  assert.equal(receivedInput, "{\"ok\":true}");
+  assert.equal(configs[0].network.allowOutbound, false);
+  assert.equal(configs[0].timeoutMs, 1234);
+  assert.ok(configs[0].filesystem.readonlyPaths.includes("/workspace/src"));
+  assert.ok(configs[0].filesystem.readwritePaths.includes("/workspace/out"));
+});
+
+test("createMxcSandboxRunner fails closed when MXC is unsupported", async () => {
+  const sdk = {
+    getPlatformSupport: () => ({ isSupported: false, reason: "missing backend" }),
+    getAvailableToolsPolicy: () => ({ readonlyPaths: [] }),
+    getTemporaryFilesPolicy: () => ({ readwritePaths: [] }),
+    createConfigFromPolicy() {
+      throw new Error("should not build config");
+    },
+    spawnSandboxFromConfig() {
+      throw new Error("should not spawn");
+    },
+  };
+
+  await assert.rejects(
+    () => createMxcSandboxRunner({ sdk }).run({ commandLine: "node -e 0" }),
+    /MXC sandbox is required but unavailable: missing backend/,
+  );
 });

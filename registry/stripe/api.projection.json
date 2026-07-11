@@ -1,0 +1,115 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:stripe",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [
+      {
+        "method": "GET",
+        "uriTemplate": "/v1/customers"
+      },
+      {
+        "method": "GET",
+        "uriTemplate": "/v1/customers/{customer}"
+      }
+    ],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "GET /v1/customers",
+        "name": "list_stripe_customers",
+        "deny": false
+      },
+      {
+        "from": "GET /v1/customers/{customer}",
+        "name": "get_stripe_customer",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "bearer",
+      "valueFrom": {
+        "env": "STRIPE_API_KEY"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Stripe API base URL."
+        },
+        "requestTimeoutMs": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Per-request upstream timeout in milliseconds."
+        },
+        "mode": {
+          "type": "string",
+          "description": "Importer execution profile."
+        }
+      }
+    },
+    "defaults": {
+      "baseUrl": "https://api.stripe.com",
+      "requestTimeoutMs": 30000,
+      "mode": "read-only"
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://raw.githubusercontent.com/stripe/openapi/1b1305f06ca561be6a085a948b717efa15d97336/openapi/spec3.json",
+      "type": "http",
+      "digest": "sha256:e24a26de4188fd64dec4c043d5d3726277fdcb07556a493ea481c305b0a223d8",
+      "ref": "1b1305f06ca561be6a085a948b717efa15d97336",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "stripe/openapi@1b1305f06ca561be6a085a948b717efa15d97336",
+      "notes": [
+        "Official Stripe OpenAPI repository: https://github.com/stripe/openapi",
+        "Pinned source path: openapi/spec3.json",
+        "Pinned commit date: 2026-07-08T21:41:59Z",
+        "Pinned Git blob SHA: 634a4b329a8e6f0d1dd13373d9f92458d0e6ee6d",
+        "OpenAPI document info.version: 2026-06-24.dahlia",
+        "Verified source SHA-256: e24a26de4188fd64dec4c043d5d3726277fdcb07556a493ea481c305b0a223d8",
+        "The committed manifest selects read-only Stripe Customers list/get operations only."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://raw.githubusercontent.com/stripe/openapi/1b1305f06ca561be6a085a948b717efa15d97336/openapi/spec3.json for source retrieval",
+        "GET https://api.stripe.com/v1/customers for selected upstream operation",
+        "GET https://api.stripe.com/v1/customers/{customer} for selected upstream operation"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/stripe/api.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/openapi/stripe.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/openapi/stripe/"
+      ],
+      "process": [
+        "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+        "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

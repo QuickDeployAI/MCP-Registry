@@ -16,6 +16,13 @@ import {
   type HttpExecutor,
   type OpenApiProxyTool,
 } from "@quickdeployai/proxy-core/openapi";
+import type { ArtifactParser, ParsedCapability } from "@quickdeployai/importer-core/parser";
+import {
+  deriveCapabilityKinds,
+  OPENAPI_MEDIA_TYPE,
+  type ArdCapabilityKind,
+  type ArdEntry,
+} from "@quickdeployai/registry-schemas/ard";
 import type { OpenAPIV3 } from "openapi-types";
 
 export { buildBody, buildUrl, openApiToProxyTools, parseVersion, schemaToZod };
@@ -67,6 +74,80 @@ export function buildOpenApiTools(
     ...(options.executor ? { executor: options.executor } : {}),
     ...(options.securityEnv ? { securityEnv: options.securityEnv } : {}),
   });
+}
+
+export const openApiArtifactParser: ArtifactParser<ArdEntry, ArdCapabilityKind> = {
+  mediaTypes: [OPENAPI_MEDIA_TYPE],
+  async parse(nativeArtifact, entry) {
+    const doc = assertOpenApiDocument(nativeArtifact);
+    const derived = deriveCapabilityKinds(entry);
+    const capabilities: ParsedCapability<ArdCapabilityKind>[] = [];
+
+    if (derived.kinds.includes("api-contract")) {
+      capabilities.push({
+        kind: "api-contract",
+        name: entry.displayName,
+        description: entry.description ?? doc.info.description ?? doc.info.title,
+        raw: doc,
+      });
+    }
+
+    if (derived.kinds.includes("tool")) {
+      capabilities.push(...openApiOperationsToCapabilities(doc));
+    }
+
+    const baseUrl = runtimeBaseUrl(doc, entry);
+    return {
+      capabilities,
+      ...(baseUrl ? { mcpProjection: { tools: buildOpenApiTools(doc, baseUrl) } } : {}),
+      diagnostics: derived.unrecognizedHints.map((hint) => ({
+        level: "warn" as const,
+        message: `Ignoring unrecognized publisher capabilityKinds hint "${hint}" for ${entry.identifier}.`,
+      })),
+    };
+  },
+};
+
+function assertOpenApiDocument(nativeArtifact: unknown): OpenAPIV3.Document {
+  if (
+    !nativeArtifact ||
+    typeof nativeArtifact !== "object" ||
+    typeof (nativeArtifact as { openapi?: unknown }).openapi !== "string" ||
+    !("paths" in nativeArtifact)
+  ) {
+    throw new ImporterConfigError("OpenAPI ArtifactParser expected an OpenAPI document object.");
+  }
+  return nativeArtifact as OpenAPIV3.Document;
+}
+
+function openApiOperationsToCapabilities(
+  doc: OpenAPIV3.Document,
+): ParsedCapability<ArdCapabilityKind>[] {
+  return Object.entries(doc.paths ?? {}).flatMap(([path, item]) => {
+    const pathItem = item as OpenAPIV3.PathItemObject;
+    return HTTP_METHODS.flatMap((method) => {
+      const operation = pathItem[method as OpenAPIV3.HttpMethods];
+      if (!operation || operation.deprecated) return [];
+
+      return [{
+        kind: "tool" as const,
+        name: operation.operationId ?? `${method}_${path.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        description: operation.description ?? operation.summary ?? `${method.toUpperCase()} ${path}`,
+        inputSchema: {
+          parameters: operation.parameters ?? [],
+          requestBody: operation.requestBody,
+        },
+        raw: { method, path, operation },
+      }];
+    });
+  });
+}
+
+function runtimeBaseUrl(doc: OpenAPIV3.Document, entry: ArdEntry): string | undefined {
+  const serverUrl = doc.servers?.[0]?.url;
+  if (serverUrl) return serverUrl;
+  if (!entry.url) return undefined;
+  return new URL(entry.url).origin;
 }
 
 function resolveCredentials(

@@ -6,24 +6,35 @@ import {
   credentialEnvironmentVariables,
 } from "@quickdeployai/importer-core";
 import {
+  type ArdEntry,
+  ArdEntrySchema,
   OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
+  QUICKDEPLOY_ARD_ENTRY_META_KEY,
+  QUICKDEPLOY_MCP_PROJECTION_META_KEY,
   QUICKDEPLOY_REGISTRY_CURATION_META_KEY,
   QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY,
   type McpManifest,
+  type McpManifestServerRemote,
   McpManifestSchema,
   type ServersJsonEnvelope,
   ServersJsonEnvelopeSchema,
   OfficialServerJsonDocumentSchema,
   attachMcpManifestToServerJson,
   type OfficialServerJsonDocument,
+  type McpProjectionConfig,
+  McpProjectionConfigSchema,
+  sourceMediaTypeToImporterEngine,
   validateMcpManifestImporterConfig,
 } from "@quickdeployai/registry-schemas";
 
 const SERVERS_JSON_SCHEMA = "https://quickdeploy.ai/schemas/servers-json.schema.json";
 const MCP_HOST_IMAGE = "ghcr.io/quickdeployai/mcp-host";
+const QUICKDEPLOY_PROXY_GATEWAY_BASE_URL = "https://mcp.quickdeploy.ai/proxy";
 const MANIFEST_CONFIG_ENV_PREFIX = "QD_MANIFEST";
 const DEFAULT_BAKED_MANIFEST_PATH = "/app/manifest.mcp.yaml";
 const OCI_SHA256_DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/i;
+const ARD_ENTRY_EXTENSION = ".ard.json";
+const PROJECTION_CONFIG_EXTENSION = ".projection.json";
 
 export interface RegistryBuildOptions {
   rootDir: string;
@@ -53,7 +64,7 @@ export interface RegistrySourceProvider {
 
 export interface RegistrySourceIndexEntry {
   path: string;
-  kind: "mcp-manifest" | "server-json";
+  kind: "ard-projection" | "mcp-manifest" | "server-json";
   name: string;
   version?: string;
 }
@@ -195,10 +206,16 @@ async function discoverRegistrySources(rootDir: string): Promise<RegistrySource[
   const files = await findFiles(registryDir, (name, path) => {
     const relativePath = normalizePath(relative(rootDir, path));
     if (relativePath === "registry/index.json") return false;
-    return isMcpManifestFileName(name) || isServerManifestFileName(name);
+    return isArdEntryFileName(name) || isMcpManifestFileName(name) || isServerManifestFileName(name);
   });
 
-  const sources = await Promise.all(files.map((path) => readRegistrySource(rootDir, path)));
+  const discovered = new Set(files);
+  const preferredFiles = files.filter((path) => {
+    if (!isMcpManifestFileName(path)) return true;
+    const basePath = path.replace(/\.mcp\.(json|ya?ml)$/i, "");
+    return !discovered.has(`${basePath}${ARD_ENTRY_EXTENSION}`);
+  });
+  const sources = await Promise.all(preferredFiles.map((path) => readRegistrySource(rootDir, path)));
   return sources.sort((left, right) => left.path.localeCompare(right.path));
 }
 
@@ -214,6 +231,22 @@ async function readRegistrySource(rootDir: string, path: string): Promise<Regist
     };
   }
 
+  if (isArdEntryFileName(path)) {
+    const entryPath = relativePath;
+    const projectionPath = projectionPathForEntryPath(entryPath);
+    const entry = parseArdEntryForRegistry((await readJson(path)).value, entryPath);
+    const projection = parseProjectionForRegistry(
+      (await readJson(join(rootDir, projectionPath))).value,
+      projectionPath,
+    );
+    return {
+      provider,
+      path: entryPath,
+      kind: "ard-projection",
+      document: compileArdProjectionToServerJson(entry, projection, { entryPath, projectionPath }),
+    };
+  }
+
   const { manifest } = await readManifest(rootDir, path);
   return {
     provider,
@@ -221,6 +254,69 @@ async function readRegistrySource(rootDir: string, path: string): Promise<Regist
     kind: "mcp-manifest",
     document: compileManifestToServerJson(manifest, relativePath),
   };
+}
+
+export interface ArdProjectionServerJsonOptions {
+  entryPath: string;
+  projectionPath: string;
+}
+
+export function compileArdProjectionToServerJson(
+  entry: unknown,
+  projection: unknown,
+  options: ArdProjectionServerJsonOptions,
+): OfficialServerJsonDocument {
+  const entryPath = normalizePath(options.entryPath);
+  const projectionPath = normalizePath(options.projectionPath);
+  const parsedEntry = parseArdEntryForRegistry(entry, entryPath);
+  const parsedProjection = parseProjectionForRegistry(projection, projectionPath);
+  const engine = sourceMediaTypeToImporterEngine(parsedEntry.type);
+  if (!engine) {
+    throw new Error(`ARD entry ${entryPath} type "${parsedEntry.type}" has no importer engine mapping.`);
+  }
+  if (parsedProjection.entryRef !== parsedEntry.identifier) {
+    throw new Error(
+      `MCP projection for ${entryPath} references ${parsedProjection.entryRef}, expected ${parsedEntry.identifier}.`,
+    );
+  }
+  const slug = parsedEntry.identifier.split(":").at(-1);
+  if (!slug) throw new Error(`ARD entry ${parsedEntry.identifier} has no terminal slug.`);
+  const envVars = projectionEnvironmentVariables(parsedProjection);
+
+  return parseServerJson({
+    $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
+    name: `ai.quickdeploy/${slug}`,
+    version: parsedEntry.version ?? "0.1.0",
+    description: parsedEntry.description ?? parsedEntry.displayName,
+    packages: [{
+      registryType: "oci",
+      identifier: MCP_HOST_IMAGE,
+      runtimeHint: "mcp-host",
+      transport: parsedProjection.deployment.transport,
+      runtimeArguments: [
+        "run",
+        entryPath,
+        "--projection",
+        projectionPath,
+        "--transport",
+        parsedProjection.deployment.transport,
+      ],
+      ...(envVars.length > 0
+        ? { environmentVariables: envVars.map((variable) => variable.name) }
+        : {}),
+    }],
+    ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
+    _meta: {
+      [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
+        verifiedStatus: "review",
+        category: engine,
+        isOfficial: true,
+        tags: uniqueStrings(["ard-entry", "projection-backed", ...(parsedEntry.tags ?? [])]),
+      },
+      [QUICKDEPLOY_ARD_ENTRY_META_KEY]: parsedEntry,
+      [QUICKDEPLOY_MCP_PROJECTION_META_KEY]: parsedProjection,
+    },
+  }, entryPath);
 }
 
 export function compileManifestToServerJson(
@@ -243,45 +339,55 @@ function compileMcpRuntimeServerJson(
   parsedManifest: McpManifest,
   options: {
     runtimeConfigPath: string;
+    runtimeArguments?: string[];
     sourcePath: string;
     curationTags: string[];
     meta: Record<string, unknown>;
+    embedManifest?: boolean;
   },
 ): OfficialServerJsonDocument {
   const envVars = manifestEnvironmentVariables(parsedManifest);
-  const server = {
-    $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
-    name: parsedManifest.metadata.name,
-    version: parsedManifest.metadata.version,
-    description: parsedManifest.metadata.description ?? parsedManifest.metadata.title,
-    packages: [
-      {
-        registryType: "oci",
-        identifier: MCP_HOST_IMAGE,
-        runtimeHint: "mcp-host",
-        transport: parsedManifest.deployment.transport,
-        runtimeArguments: [
-          "run",
-          options.runtimeConfigPath,
-          "--transport",
-          parsedManifest.deployment.transport,
-        ],
-        ...(envVars.length > 0
-          ? { environmentVariables: envVars.map((variable) => variable.name) }
-          : {}),
+  const manifestServer = parsedManifest.server;
+  const document = {
+      $schema: OFFICIAL_MCP_SERVER_SCHEMA_2025_12_11,
+      name: parsedManifest.metadata.name,
+      version: parsedManifest.metadata.version,
+      description: parsedManifest.metadata.description ?? parsedManifest.metadata.title,
+      packages: [
+        {
+          registryType: "oci",
+          identifier: MCP_HOST_IMAGE,
+          runtimeHint: "mcp-host",
+          transport: parsedManifest.deployment.transport,
+          runtimeArguments: options.runtimeArguments ?? [
+            "run",
+            options.runtimeConfigPath,
+            "--transport",
+            parsedManifest.deployment.transport,
+          ],
+          ...(envVars.length > 0
+            ? { environmentVariables: envVars.map((variable) => variable.name) }
+            : {}),
+        },
+        ...(manifestServer?.packages ?? []),
+      ],
+      ...(manifestServer?.remotes.length
+        ? { remotes: proxyGatewayRemotes(parsedManifest, options.sourcePath) }
+        : {}),
+      ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
+      _meta: {
+        [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
+          verifiedStatus: "review",
+          category: parsedManifest.spec.importer.engine,
+          isOfficial: true,
+          tags: uniqueStrings(options.curationTags),
+        },
+        ...options.meta,
       },
-    ],
-    ...(envVars.length > 0 ? { environmentVariables: envVars } : {}),
-    _meta: {
-      [QUICKDEPLOY_REGISTRY_CURATION_META_KEY]: {
-        verifiedStatus: "review",
-        category: parsedManifest.spec.importer.engine,
-        isOfficial: true,
-        tags: uniqueStrings(options.curationTags),
-      },
-      ...options.meta,
-    },
-  };
+    };
+  const server = options.embedManifest === false
+    ? document
+    : attachMcpManifestToServerJson(document, parsedManifest);
 
   return parseServerJson(server, options.sourcePath);
 }
@@ -407,6 +513,80 @@ function manifestEnvironmentVariables(
   return [...variables.values()].sort((left, right) => left.name.localeCompare(right.name));
 }
 
+function projectionEnvironmentVariables(
+  projection: McpProjectionConfig,
+): Array<{ name: string; description: string; isRequired: boolean; isSecret: boolean }> {
+  const variables = new Map<
+    string,
+    { name: string; description: string; isRequired: boolean; isSecret: boolean }
+  >();
+
+  for (const auth of projection.auth) {
+    for (const variable of credentialEnvironmentVariables(credentialBindingsFromMcpAuth([auth]))) {
+      variables.set(variable.name, {
+        name: variable.name,
+        description: `Secret used by ${auth.type} upstream authentication.`,
+        isRequired: true,
+        isSecret: true,
+      });
+    }
+  }
+
+  const inboundAuth = projection.deployment.auth;
+  if ((inboundAuth?.type === "bearer" || inboundAuth?.type === "oauth2-resource") && inboundAuth.tokenFrom) {
+    variables.set(inboundAuth.tokenFrom.env, {
+      name: inboundAuth.tokenFrom.env,
+      description: inboundAuth.type === "bearer"
+        ? "Bearer token required by the hosted MCP endpoint."
+        : "OAuth access token accepted by the hosted MCP endpoint.",
+      isRequired: true,
+      isSecret: true,
+    });
+  }
+
+  for (const variable of configSchemaEnvironmentVariables(projection.config?.schema)) {
+    variables.set(variable.name, variable);
+  }
+  for (const variable of configSchemaEnvironmentVariables(projection.deployment.configSchema)) {
+    variables.set(variable.name, variable);
+  }
+
+  return [...variables.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function proxyGatewayRemotes(
+  manifest: McpManifest,
+  sourceManifestPath: string,
+): OfficialServerJsonDocument["remotes"] {
+  return (manifest.server?.remotes ?? []).map((remote, index) => ({
+    type: remote.type,
+    url: quickDeployProxyGatewayUrl(manifest.metadata.name, index),
+    ...(remote.variables ? { variables: remote.variables } : {}),
+    _meta: {
+      "ai.quickdeploy.registry/proxy": {
+        sourceManifestPath,
+        remoteIndex: index,
+        upstream: remoteForProxyMeta(remote),
+      },
+    },
+  }));
+}
+
+function quickDeployProxyGatewayUrl(serverName: string, remoteIndex: number): string {
+  return `${QUICKDEPLOY_PROXY_GATEWAY_BASE_URL}/${encodeURIComponent(serverName)}/${remoteIndex}/mcp`;
+}
+
+function remoteForProxyMeta(remote: McpManifestServerRemote): Record<string, unknown> {
+  const { type, url, headers, variables, ...rest } = remote;
+  return {
+    type,
+    url,
+    ...(headers ? { headers } : {}),
+    ...(variables ? { variables } : {}),
+    ...rest,
+  };
+}
+
 function configSchemaEnvironmentVariables(
   schema: unknown,
 ): Array<{ name: string; description: string; isRequired: boolean; isSecret: boolean }> {
@@ -487,6 +667,34 @@ async function readManifest(
   };
 }
 
+function parseArdEntryForRegistry(entry: unknown, relativePath: string): ArdEntry {
+  try {
+    return ArdEntrySchema.parse(entry);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid ARD entry in ${relativePath}: ${message}`);
+  }
+}
+
+function parseProjectionForRegistry(
+  projection: unknown,
+  relativePath: string,
+): McpProjectionConfig {
+  try {
+    return McpProjectionConfigSchema.parse(projection);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid MCP projection config in ${relativePath}: ${message}`);
+  }
+}
+
+function projectionPathForEntryPath(entryPath: string): string {
+  if (!entryPath.endsWith(ARD_ENTRY_EXTENSION)) {
+    throw new Error(`ARD entry path must end with ${ARD_ENTRY_EXTENSION}: ${entryPath}`);
+  }
+  return `${entryPath.slice(0, -ARD_ENTRY_EXTENSION.length)}${PROJECTION_CONFIG_EXTENSION}`;
+}
+
 function parseManifestForRegistry(manifest: unknown, relativePath: string): McpManifest {
   try {
     return validateMcpManifestImporterConfig(manifest);
@@ -531,6 +739,10 @@ function normalizePath(path: string): string {
 
 function isMcpManifestFileName(name: string): boolean {
   return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
+}
+
+function isArdEntryFileName(name: string): boolean {
+  return name.endsWith(ARD_ENTRY_EXTENSION);
 }
 
 function isServerManifestFileName(name: string): boolean {

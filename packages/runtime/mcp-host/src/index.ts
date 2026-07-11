@@ -1,11 +1,22 @@
 export type {
-  HostEngine,
+  ArdSurfaceResult,
+  CreateArdSurfaceOptions,
+  CreateMcpHostOptions,
   HostReadyState,
+  HttpHost,
+  HostSurface,
+  HostTool,
   JsonRpcRequest,
   JsonRpcResponse,
   McpHost,
-  ResolvedEngine,
 } from "./runtime";
-export { createMcpHost, defaultEngines, resolveEngine, startHttpHost } from "./runtime";
-export { loadManifestFile, loadUserConfigFile } from "./manifest-loader";
+export {
+  createArdSurface,
+  createMcpHost,
+  createParserRegistry,
+  defaultArtifactParsers,
+  resolveParserByMediaType,
+  startHttpHost,
+} from "./runtime";
+export { loadProjectedEntry, loadUserConfigFile, type ProjectedEntry } from "./projection-loader";
 export { readStdioFrames, writeStdioFrame } from "./stdio";

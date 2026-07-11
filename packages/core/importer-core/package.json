@@ -20,6 +20,10 @@
     "./json-rpc": {
       "types": "./dist/json-rpc.d.ts",
       "default": "./dist/json-rpc.js"
+    },
+    "./parser": {
+      "types": "./dist/parser.d.ts",
+      "default": "./dist/parser.js"
     }
   },
   "scripts": {
@@ -27,6 +31,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "tsc -p tsconfig.build.json && node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@microsoft/mxc-sdk": "^0.7.0"
   },
   "devDependencies": {
     "@quickdeployai/mcp-registry-workspace-config": "workspace:*",

@@ -1,0 +1,58 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:google-workspace",
+  "displayName": "Google Workspace",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Google Workspace Drive read-only MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "google-drive",
+    "google-workspace",
+    "openapi",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "drive:v3@20260707",
+    "sourceDigest": "sha256:94c58bcc6993d8c4903c81f1c9a2d904c8af86b5e53813d093a6594cf26c6679",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+        "type": "http",
+        "digest": "sha256:94c58bcc6993d8c4903c81f1c9a2d904c8af86b5e53813d093a6594cf26c6679",
+        "ref": "drive:v3@20260707",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "drive:v3@20260707",
+        "notes": [
+          "Official Google API Discovery Service document for Google Drive API v3.",
+          "Google documents Discovery documents as machine-readable metadata for Google APIs.",
+          "Google publishes Discovery documents for these Workspace APIs rather than a first-party OpenAPI repository; this manifest pins the official source document used for selected read-only Drive operations."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://www.googleapis.com/discovery/v1/apis/drive/v3/rest for source retrieval",
+          "GET https://www.googleapis.com/drive/v3/files for selected upstream operation",
+          "GET https://www.googleapis.com/drive/v3/files/{fileId} for selected upstream operation",
+          "GET https://www.googleapis.com/drive/v3/about for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/google-workspace/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/google-workspace.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/google-workspace/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+}

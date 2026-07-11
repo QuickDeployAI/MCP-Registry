@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:stripe",
+  "displayName": "Stripe",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Stripe Customers read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "openapi",
+    "payments",
+    "read-only",
+    "stripe"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "1b1305f06ca561be6a085a948b717efa15d97336",
+    "sourceDigest": "sha256:e24a26de4188fd64dec4c043d5d3726277fdcb07556a493ea481c305b0a223d8",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/stripe/openapi/1b1305f06ca561be6a085a948b717efa15d97336/openapi/spec3.json",
+        "type": "http",
+        "digest": "sha256:e24a26de4188fd64dec4c043d5d3726277fdcb07556a493ea481c305b0a223d8",
+        "ref": "1b1305f06ca561be6a085a948b717efa15d97336",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "stripe/openapi@1b1305f06ca561be6a085a948b717efa15d97336",
+        "notes": [
+          "Official Stripe OpenAPI repository: https://github.com/stripe/openapi",
+          "Pinned source path: openapi/spec3.json",
+          "Pinned commit date: 2026-07-08T21:41:59Z",
+          "Pinned Git blob SHA: 634a4b329a8e6f0d1dd13373d9f92458d0e6ee6d",
+          "OpenAPI document info.version: 2026-06-24.dahlia",
+          "Verified source SHA-256: e24a26de4188fd64dec4c043d5d3726277fdcb07556a493ea481c305b0a223d8",
+          "The committed manifest selects read-only Stripe Customers list/get operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/stripe/openapi/1b1305f06ca561be6a085a948b717efa15d97336/openapi/spec3.json for source retrieval",
+          "GET https://api.stripe.com/v1/customers for selected upstream operation",
+          "GET https://api.stripe.com/v1/customers/{customer} for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/stripe/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/stripe.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/stripe/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://raw.githubusercontent.com/stripe/openapi/1b1305f06ca561be6a085a948b717efa15d97336/openapi/spec3.json"
+}

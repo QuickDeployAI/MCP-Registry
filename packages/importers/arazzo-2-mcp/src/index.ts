@@ -126,6 +126,12 @@ export type ArazzoWorkflowCapability = {
   manifest: ArazzoWorkflow;
 };
 
+export {
+  buildArazzoTools,
+  type ArazzoTool,
+  type BuildArazzoToolsOptions,
+} from "./tools.js";
+
 export class ArazzoImportError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);

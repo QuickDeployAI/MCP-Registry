@@ -1,0 +1,53 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:ftc-news",
+  "displayName": "FTC News",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for the FTC's official Press Release RSS feed.",
+  "tags": [
+    "feed",
+    "ftc-news",
+    "generated",
+    "government",
+    "news",
+    "press-releases",
+    "rss"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.ftc.gov/feeds/press-release.xml",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "Official FTC RSS feed directory: https://www.ftc.gov/news-events/stay-connected/ftc-rss-feeds (also linked from https://www.ftc.gov/stay-connected/rss).",
+          "Selected feed: the general Press Release feed at https://www.ftc.gov/feeds/press-release.xml (confirmed via direct fetch: RSS 2.0, channel title \"Press Release Feed\", channel link https://www.ftc.gov/), covering all FTC enforcement actions and policy announcements rather than a narrower topic-only feed (e.g. Competition-only or Consumer-Protection-only press release feeds).",
+          "Feed items expose standard RSS 2.0 fields (title, link, description, pubDate, dc:creator, guid).",
+          "The feed is public; no authentication is required."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://www.ftc.gov/feeds/press-release.xml for source retrieval and periodic polling"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/ftc-news/feed.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/feed/ftc-news.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/feed/ftc-news/"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.ftc.gov/feeds/press-release.xml"
+}

@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:shopify",
+  "displayName": "Shopify",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Shopify Admin REST Products read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "openapi",
+    "read-only",
+    "commerce",
+    "shopify"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "shopify-admin-rest-product-docs@2026-07",
+    "sourceDigest": "sha256:86defc85c43c17d5aa11427cffc8da1130db0bd267c77b09da1a3613a1ab9ec8",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://shopify.dev/docs/api/admin-rest/latest/resources/product",
+        "type": "http",
+        "digest": "sha256:86defc85c43c17d5aa11427cffc8da1130db0bd267c77b09da1a3613a1ab9ec8",
+        "ref": "shopify-admin-rest-product-docs@2026-07",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "shopify-admin-rest-product-docs@2026-07",
+        "notes": [
+          "Official Shopify dev docs Admin REST API \"Product\" resource reference: https://shopify.dev/docs/api/admin-rest/latest/resources/product",
+          "Shopify does not publish a first-party OpenAPI/JSON document for the Admin REST API; only community-maintained mirrors exist. This manifest pins the official documentation source used for the catalog entry, matching the precedent set by the Salesforce entry in this catalog.",
+          "Admin REST API version referenced: 2026-07 (current stable quarterly release as of retrieval date).",
+          "Shopify's Admin REST API was deprecated for new public apps as of 2025-04-01 in favor of the GraphQL Admin API, but REST remains officially documented and supported for custom/private apps.",
+          "Canonical source URL: https://shopify.dev/docs/api/admin-rest/latest/resources/product",
+          "Verified source SHA-256: 86defc85c43c17d5aa11427cffc8da1130db0bd267c77b09da1a3613a1ab9ec8",
+          "The committed manifest selects read-only Shopify Admin product list/get operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://shopify.dev/docs/api/admin-rest/latest/resources/product for source retrieval",
+          "GET https://<shopify-store>.myshopify.com/admin/api/2026-07/products.json for selected upstream operation",
+          "GET https://<shopify-store>.myshopify.com/admin/api/2026-07/products/{product_id}.json for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/shopify/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/shopify.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/shopify/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://shopify.dev/docs/api/admin-rest/latest/resources/product"
+}

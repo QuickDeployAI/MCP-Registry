@@ -63,6 +63,21 @@ describe("registry-cli validate", () => {
     );
   });
 
+  it("validates an ARD entry and reports a mismatched projection reference", async () => {
+    const rootDir = await fixtureRoot();
+    await seedArdProjection(rootDir, "urn:air:quickdeploy.ai:mcp:wrong");
+
+    const result = await validateRegistryEntries({ rootDir });
+    expect(result.ok).toBe(false);
+    expect(result.violations).toContainEqual(
+      expect.objectContaining({
+        code: "invalid-manifest",
+        path: "registry/quickdeploy/fixture.ard.json",
+        message: expect.stringContaining("references urn:air:quickdeploy.ai:mcp:wrong"),
+      }),
+    );
+  });
+
   it("flags a remote-ref entry that squats the ai.quickdeploy namespace", async () => {
     const rootDir = await fixtureRoot();
     await seedRemoteServer(rootDir, {
@@ -297,5 +312,26 @@ async function seedMcpManifest(rootDir: string, name: string): Promise<void> {
       null,
       2,
     ),
+  );
+}
+
+async function seedArdProjection(rootDir: string, entryRef: string): Promise<void> {
+  const targetDir = join(rootDir, "registry", "quickdeploy");
+  await mkdir(targetDir, { recursive: true });
+  await writeFile(
+    join(targetDir, "fixture.ard.json"),
+    JSON.stringify({
+      identifier: "urn:air:quickdeploy.ai:mcp:fixture",
+      displayName: "Fixture",
+      type: "application/vnd.oai.openapi+json",
+      url: "https://example.com/openapi.json",
+    }),
+  );
+  await writeFile(
+    join(targetDir, "fixture.projection.json"),
+    JSON.stringify({
+      entryRef,
+      deployment: { transport: "streamable-http", auth: { type: "none" } },
+    }),
   );
 }

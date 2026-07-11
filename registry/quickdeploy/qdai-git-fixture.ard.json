@@ -1,0 +1,19 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
+  "displayName": "QuickDeployAI Git Fixture",
+  "type": "application/vnd.quickdeploy.git-repository",
+  "description": "git-2-mcp dogfood example, every lib method of a small Python package as a tool.",
+  "tags": [
+    "git",
+    "python",
+    "example"
+  ],
+  "version": "1.0.0",
+  "metadata": {
+    "capabilityKinds": [
+      "tool"
+    ],
+    "importMode": "whole-artifact"
+  },
+  "url": "git+https://github.com/QuickDeployAI/git-2-mcp-fixture.git@0123456789abcdef0123456789abcdef01234567"
+}

@@ -1,0 +1,85 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:microsoft-dynamics-soap",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [
+      {
+        "method": "SOAP",
+        "uriTemplate": "Organization/Execute"
+      }
+    ],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "SOAP Organization/Execute",
+        "name": "soap_organization_execute",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "bearer",
+      "valueFrom": {
+        "env": "MICROSOFT_DYNAMICS_SOAP_ACCESS_TOKEN"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "endpoint"
+      ]
+    },
+    "defaults": {},
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://learn.microsoft.com/en-us/dynamics365/customerengagement/on-premises/developer/developer-resources-page?view=op-9-1",
+      "type": "http",
+      "digest": "sha256:1d3050600323242fbdb563871a5c10d3da582df919a8a2ac4e9eb5b3f10e46fa",
+      "ref": "op-9-1",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "op-9-1",
+      "notes": [
+        "Microsoft Dynamics 365 Customer Engagement (on-premises) has no single public WSDL file: the 2011 Organization service SOAP endpoint (Organization.svc) is deployed per organization/tenant, so this manifest pins the official Microsoft Learn developer resources page documenting the endpoint URL pattern and the IOrganizationService contract instead.",
+        "Per the official IOrganizationService Interface documentation (https://learn.microsoft.com/power-apps/developer/data-platform/org-service/iorganizationservice-interface), the Organization service exposes only the Execute SOAP operation; the other IOrganizationService methods (Create, Retrieve, RetrieveMultiple, Update, Delete, Associate, Disassociate) are client-side SDK helper wrappers around Execute, not separate wire operations."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "source-uri",
+        "configured-upstream"
+      ],
+      "filesystem": [
+        "generated-project-readwrite"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

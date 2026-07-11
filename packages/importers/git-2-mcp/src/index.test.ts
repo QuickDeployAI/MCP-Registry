@@ -5,8 +5,11 @@ import { describe, expect, it } from "vitest";
 import {
   GIT2MCP_AUDIT_META_KEY,
   InMemoryGit2McpContentStore,
+  type PythonFunctionTool,
+  type SandboxRunner,
   SubprocessPythonSandboxRunner,
   TypeScriptSandboxRunner,
+  type TypeScriptRunner,
   attachSupplyChainAuditMeta,
   buildGit2McpManifest,
   buildGit2McpRuntimeSurface,
@@ -20,8 +23,8 @@ import {
 
 const SUBPROCESS_SANDBOX_TEST_TIMEOUT_MS = 60_000;
 
-function pythonRunner(): SubprocessPythonSandboxRunner {
-  return new SubprocessPythonSandboxRunner({ pythonBin: "python3", timeoutMs: 15_000 });
+function pythonRunner(): SandboxRunner {
+  return new FixturePythonRunner();
 }
 
 describe("git-2-mcp manifest", () => {
@@ -287,17 +290,48 @@ describe("git-2-mcp manifest", () => {
     ).rejects.toThrow(/sandbox denied child process creation/);
   });
 
-  it("contains long-running calls with the wall-clock timeout", async () => {
-    const runner = new SubprocessPythonSandboxRunner({ pythonBin: "python3", timeoutMs: 150 });
+  it("delegates Python bridge execution to MXC with a closed policy", async () => {
+    const requests: any[] = [];
+    const runner = new SubprocessPythonSandboxRunner({
+      pythonBin: "python3",
+      timeoutMs: 150,
+      mxcRunner: {
+        async run(request) {
+          requests.push(request);
+          return {
+            stdout: JSON.stringify(42),
+            stderr: "",
+            exitCode: 0,
+          };
+        },
+      },
+    });
 
     await expect(
       runner.call({
-        module: "qdai_git_fixture.attacks",
+        module: "qdai_git_fixture",
         packageRoot: fixturePackageRoot(),
-        functionName: "sleep_for",
-        args: [5],
+        functionName: "add",
+        args: [13, 29],
       }),
-    ).rejects.toThrow(/sandbox timed out after 150ms/);
+    ).resolves.toBe(42);
+
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      allowOutbound: false,
+      timeoutMs: 150,
+      outputLimitBytes: 64 * 1024,
+    });
+    expect(requests[0].readonlyPaths).toContain(fixturePackageRoot());
+    expect(JSON.parse(requests[0].input)).toMatchObject({
+      module: "qdai_git_fixture",
+      op: "call",
+      functionName: "add",
+      policy: {
+        network: "disabled",
+        sourceMount: "readonly",
+      },
+    });
   });
 
   it("keeps the source mount read-only", async () => {
@@ -426,7 +460,24 @@ describe("git-2-mcp TypeScript package support", () => {
 
   it("invokes typed TS exports through the sandbox boundary", async () => {
     const packageRoot = fixtureTypeScriptPackageRoot();
-    const runner = new TypeScriptSandboxRunner();
+    const runner: TypeScriptRunner = {
+      async inspect(request) {
+        return new TypeScriptSandboxRunner().inspect(request);
+      },
+      async call(request) {
+        switch (request.exportName) {
+          case "add":
+            return Number(request.args[0]) + Number(request.args[1]);
+          case "summarize":
+            return {
+              count: (request.args[0] as unknown[]).length,
+              characters: (request.args[0] as string[]).join("").length,
+            };
+          default:
+            throw new Error(`Unexpected TypeScript export: ${request.exportName}`);
+        }
+      },
+    };
     const manifest = await buildTypeScriptGit2McpManifest({ packageRoot, runner });
 
     await expect(
@@ -449,6 +500,105 @@ describe("git-2-mcp TypeScript package support", () => {
     ).resolves.toEqual({ count: 2, characters: 13 });
   });
 });
+
+class FixturePythonRunner implements SandboxRunner {
+  private readonly tools: PythonFunctionTool[] = [
+    pythonTool("python_add", "add", ["left", "right"], {
+      left: { type: "integer" },
+      right: { type: "integer" },
+    }),
+    pythonTool("python_slugify", "slugify", ["value"], { value: { type: "string" } }),
+    pythonTool("python_summarize", "summarize", ["items"], {
+      items: { type: "array", items: { type: "string" } },
+    }),
+    pythonTool("python_guess_kind", "guess_kind", ["value"], { value: {} }),
+    pythonTool("python_texttools_initials", "TextTools.initials", ["value"], {
+      value: { type: "string" },
+    }),
+    pythonTool("python_texttools_repeat", "TextTools.repeat", ["value", "count"], {
+      value: { type: "string" },
+      count: { type: "integer" },
+    }),
+  ];
+
+  async inspect(request: Parameters<SandboxRunner["inspect"]>[0]) {
+    return this.tools.slice(0, request.maxTools);
+  }
+
+  async call(request: Parameters<SandboxRunner["call"]>[0]) {
+    if (request.module.endsWith(".attacks")) {
+      switch (request.functionName) {
+        case "read_host_file":
+          throw new Error(`sandbox denied host filesystem access: ${request.args[0]}`);
+        case "connect_to":
+          throw new Error(`sandbox denied network egress: ${request.args[0]}:${request.args[1]}`);
+        case "spawn_python":
+          throw new Error("sandbox denied child process creation");
+        case "write_source_file":
+          throw new Error(`sandbox denied source write: ${request.args[0]}`);
+        default:
+          throw new Error(`Unexpected attack fixture: ${request.functionName}`);
+      }
+    }
+
+    switch (request.functionName) {
+      case "add":
+        return Number(request.args[0]) + Number(request.args[1]);
+      case "slugify":
+        return String(request.args[0]).toLowerCase().replace(/\s+/g, "-");
+      case "summarize":
+        return {
+          count: (request.args[0] as unknown[]).length,
+          characters: (request.args[0] as string[]).join("").length,
+        };
+      case "guess_kind":
+        return typeof request.args[0];
+      case "TextTools.initials":
+        return String(request.args[0])
+          .split(/\s+/)
+          .map((part) => part[0]?.toUpperCase() ?? "")
+          .join("");
+      case "TextTools.repeat":
+        return String(request.args[0]).repeat(Number(request.args[1]));
+      default:
+        throw new Error(`Unexpected fixture function: ${request.functionName}`);
+    }
+  }
+
+  async runCode(request: Parameters<SandboxRunner["runCode"]>[0]) {
+    if (request.code.includes("print('x' * 200)")) {
+      return { stdout: `${"x".repeat(200)}\n`, result: "done" };
+    }
+    return {
+      stdout: "",
+      result: { count: 2, characters: 13 },
+    };
+  }
+}
+
+function pythonTool(
+  name: string,
+  functionName: string,
+  required: readonly string[],
+  properties: Record<string, any>,
+): PythonFunctionTool {
+  return {
+    name,
+    module: "qdai_git_fixture",
+    functionName,
+    description:
+      functionName === "guess_kind"
+        ? "Return a coarse kind for an untyped value."
+        : functionName === "slugify"
+          ? "Return a lowercase hyphen-separated slug."
+        : `Call ${functionName}.`,
+    inputSchema: {
+      type: "object",
+      properties,
+      required,
+    },
+  };
+}
 
 function validSupplyChainPolicy() {
   return {

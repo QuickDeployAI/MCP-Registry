@@ -1,0 +1,56 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:fda-recalls",
+  "displayName": "FDA Recalls",
+  "type": "application/rss+xml",
+  "description": "Generated FDA Recalls read-only feed MCP catalog manifest.",
+  "tags": [
+    "fda-recalls",
+    "feed",
+    "generated",
+    "government",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "sourceRef": "fda-recalls-rss@2026-07-09",
+    "sourceDigest": "sha256:e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+        "type": "http",
+        "digest": "sha256:e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+        "ref": "fda-recalls-rss@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "fda-recalls-rss@2026-07-09",
+        "notes": [
+          "Official FDA \"Food and Drugs Administration--Recalls/Safety Alerts\" RSS feed.",
+          "Canonical source URL: https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml",
+          "Verified source SHA-256: e12a992c16c929380a0700186d7f301f394382d1db9bf50597e1d077e1cc46df",
+          "Provides recently published FDA recalls, market withdrawals, and safety alerts."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml for source retrieval and periodic refresh"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/fda-recalls/feed.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/feed/fda-recalls.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/feed/fda-recalls/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml"
+}

@@ -1,10 +1,11 @@
 #!/usr/bin/env tsx
-import { loadManifestFile, loadUserConfigFile } from "./manifest-loader";
+import { loadProjectedEntry, loadUserConfigFile } from "./projection-loader";
 import { createMcpHost, startHttpHost } from "./runtime";
 import { runStdioHost } from "./stdio";
 
 type CliOptions = {
-  manifestPath: string;
+  entryPath: string;
+  projectionPath?: string;
   configPath?: string;
   transport?: "stdio" | "streamable-http" | "sse";
   port?: number;
@@ -13,10 +14,10 @@ type CliOptions = {
 
 async function main(argv: string[]): Promise<void> {
   const options = parseArgs(argv);
-  const manifest = await loadManifestFile(options.manifestPath);
+  const projected = await loadProjectedEntry(options.entryPath, options.projectionPath);
   const userConfig = await loadUserConfigFile(options.configPath);
-  const host = createMcpHost({ manifest, userConfig });
-  const transport = options.transport ?? manifest.deployment.transport;
+  const host = await createMcpHost({ ...projected, userConfig });
+  const transport = options.transport ?? projected.projection.deployment.transport;
 
   if (transport === "stdio") {
     await runStdioHost(host);
@@ -36,18 +37,22 @@ async function main(argv: string[]): Promise<void> {
 
 function parseArgs(argv: string[]): CliOptions {
   if (argv[0] === "--") argv = argv.slice(1);
-  const [command, manifestPath, ...rest] = argv;
-  if (command !== "run" || !manifestPath) {
+  const [command, entryPath, ...rest] = argv;
+  if (command !== "run" || !entryPath) {
     throw new Error(
-      "Usage: mcp-host run <manifest.(json|yaml)> [--config file] [--transport stdio|streamable-http] [--port 3000]",
+      "Usage: mcp-host run <entry.ard.json> [--projection file] [--config file] [--transport stdio|streamable-http] [--port 3000]",
     );
   }
 
-  const options: CliOptions = { manifestPath };
+  const options: CliOptions = { entryPath };
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
     const value = rest[index + 1];
     switch (arg) {
+      case "--projection":
+        options.projectionPath = requireValue(arg, value);
+        index += 1;
+        break;
       case "--config":
         options.configPath = requireValue(arg, value);
         index += 1;

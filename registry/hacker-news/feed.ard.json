@@ -1,0 +1,48 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:hacker-news",
+  "displayName": "Hacker News",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for the official Hacker News front-page RSS feed.",
+  "tags": [
+    "feed",
+    "generated",
+    "hacker-news",
+    "news",
+    "tech"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://news.ycombinator.com/rss",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "Official Hacker News RSS feed, linked from the site footer at https://news.ycombinator.com/ (\"rss\" link) and documented in the Hacker News FAQ (https://news.ycombinator.com/newsfaq.html).",
+          "Verified live and fetchable at retrieval time; feed content is the current front-page story list and updates continuously (no fixed version)."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://news.ycombinator.com/rss"
+}

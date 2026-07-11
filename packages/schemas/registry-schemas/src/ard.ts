@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CapabilityTypeSchema, type CapabilityType } from "./capability";
+import { CapabilityTypeSchema, type CapabilityType } from "./capability.js";
 import {
   badgeLabel,
   categoryToEvidenceLevel,
@@ -7,7 +7,7 @@ import {
   ValidationStatusSchema,
   type ValidationCheckCategory,
   type ValidationRun,
-} from "./validation";
+} from "./validation.js";
 
 /**
  * Agentic Resource Discovery (ARD) — shared contracts + pure mapping.
@@ -256,9 +256,9 @@ export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [API_MANIFEST_MEDIA_TYPE]: "api-manifest-2-mcp",
   [CAPABILITY_TO_MEDIA_TYPE["agent-skill"]]: "agent-skills-2-mcp",
   [AI_SKILL_MD_MEDIA_TYPE]: "agent-skills-2-mcp",
-  [RSS_FEED_MEDIA_TYPE]: "knowledge-2-mcp",
+  [RSS_FEED_MEDIA_TYPE]: "feed-2-mcp",
   [QUICKDEPLOY_OKF_MEDIA_TYPE]: "knowledge-2-mcp",
-  [QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE]: "git-2-mcp-spike",
+  [QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE]: "git-2-mcp",
 };
 
 export function sourceMediaTypeToImporterEngine(mediaType: string): string | undefined {
@@ -308,9 +308,10 @@ export function deriveCapabilityKinds(
   const kinds = [...mediaTypeToCapabilityKinds(mediaType)];
   const authoritativeKinds = new Set(kinds);
   const hints = entry.metadata?.capabilityKinds ?? [];
+  const engine = sourceMediaTypeToImporterEngine(mediaType);
   return {
     kinds,
-    engine: sourceMediaTypeToImporterEngine(mediaType),
+    ...(engine ? { engine } : {}),
     isSource: isSourceArtifactMediaType(mediaType),
     unrecognizedHints: hints.filter((kind) => !authoritativeKinds.has(kind)),
   };

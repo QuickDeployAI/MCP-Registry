@@ -1,0 +1,48 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:grants-gov",
+  "displayName": "Grants.gov",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for the Grants.gov new/modified opportunities RSS feed.",
+  "tags": [
+    "feed",
+    "generated",
+    "government",
+    "grants",
+    "grants-gov",
+    "rss"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.grants.gov/rss/GG_OppModByCategory.xml",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "Grants.gov (a U.S. federal government service) publishes official RSS feeds for new and modified funding opportunities, documented at https://grants.gov/connect/rss-feeds (byte-verified sha256:12d7becc41d73f60759b407690c7281bf04d11dd61bb57590b347f5a10a290b7 across two fetches on 2026-07-09). This manifest pins the 'New/Modified Opportunities by Category' feed (GG_OppModByCategory.xml); a sibling feed (GG_OppModByAgency.xml) provides the same updates grouped by federal agency instead of category."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.grants.gov/rss/GG_OppModByCategory.xml"
+}

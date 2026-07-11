@@ -1,0 +1,20 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
+  "displayName": "OKF Knowledge Bundle Example",
+  "type": "application/vnd.quickdeploy.okf+json",
+  "description": "Open Knowledge Format bundle ingested through knowledge-2-mcp.",
+  "tags": [
+    "knowledge",
+    "okf",
+    "openwiki"
+  ],
+  "version": "0.1.0",
+  "url": "git+https://github.com/example/generated-openwiki.git#main",
+  "metadata": {
+    "importMode": "whole-artifact",
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ]
+  }
+}

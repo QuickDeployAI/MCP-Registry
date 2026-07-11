@@ -1,0 +1,57 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:cloudevents",
+  "displayName": "CloudEvents",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated asyncapi-2-mcp MCP manifest for publishing CloudEvents-formatted events.",
+  "tags": [
+    "asyncapi",
+    "cloudevents",
+    "cncf",
+    "events",
+    "generated"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "v1.0.2",
+    "sourceDigest": "sha256:e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/cloudevents/spec/v1.0.2/cloudevents/formats/cloudevents.json",
+        "type": "http",
+        "digest": "sha256:e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
+        "ref": "v1.0.2",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "cloudevents/spec@v1.0.2:cloudevents/formats/cloudevents.json",
+        "notes": [
+          "Official CloudEvents Specification repository: https://github.com/cloudevents/spec",
+          "Pinned release tag: v1.0.2 (released 2024-02-06), the latest stable CloudEvents core specification.",
+          "Pinned machine-readable JSON Schema path: cloudevents/formats/cloudevents.json",
+          "Verified source SHA-256: e28a6d252d7b7238d176618f6bbf6cde570b26a867bc5241563aed34c9dd1d83",
+          "CloudEvents is a transport- and auth-agnostic event envelope format (id, source, specversion, type, data, datacontenttype, dataschema, subject, time). It does not mandate a broker or credential scheme.",
+          "This manifest assumes the most common interoperable transport — an HTTP sink endpoint (CloudEvents HTTP Protocol Binding) — and models bearer-token auth for that sink accordingly; brokerProtocol defaults to \"http\" rather than Kafka/MQTT."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://raw.githubusercontent.com/cloudevents/spec/v1.0.2/cloudevents/formats/cloudevents.json"
+}

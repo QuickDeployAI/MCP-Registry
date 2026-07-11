@@ -1,13 +1,11 @@
-import { execFile } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import { promisify } from "node:util";
 import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { createMxcSandboxRunner, type MxcCommandRunner } from "@quickdeployai/importer-core";
 import type { LoadedSkill } from "./skill-loader.js";
 import { buildSkillCatalog, normalizeSkills, skillResourceUris } from "./catalog.js";
 
-const execFileAsync = promisify(execFile);
 const RUNNABLE_SCRIPT_EXTENSIONS = new Set([".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".sh"]);
 const MAX_ARGUMENTS_LENGTH = 8_192;
 const MAX_ARGUMENT_COUNT = 64;
@@ -33,6 +31,7 @@ export interface ToolRegistrationOptions {
   allowedScripts?: readonly string[];
   envPassthrough?: readonly string[];
   sandboxRunner?: ScriptSandboxRunner;
+  mxcRunner?: MxcCommandRunner;
 }
 
 interface ToolDefinition {
@@ -124,8 +123,8 @@ function buildCommand(scriptPath: string): { command: string; args: string[] } {
   return { command: scriptPath, args: [] };
 }
 
-function buildSandboxEnv(envPassthrough: readonly string[], sandboxDir: string): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {
+function buildSandboxEnv(envPassthrough: readonly string[], sandboxDir: string): Record<string, string> {
+  const env: Record<string, string> = {
     TMPDIR: sandboxDir,
     TEMP: sandboxDir,
     TMP: sandboxDir,
@@ -136,13 +135,15 @@ function buildSandboxEnv(envPassthrough: readonly string[], sandboxDir: string):
   }
 
   for (const name of envPassthrough) {
-    if (process.env[name] !== undefined) env[name] = process.env[name];
+    if (process.env[name] !== undefined) env[name] = process.env[name]!;
   }
 
   return env;
 }
 
-export function createLocalSandboxRunner(): ScriptSandboxRunner {
+export function createLocalSandboxRunner(
+  mxcRunner: MxcCommandRunner = createMxcSandboxRunner(),
+): ScriptSandboxRunner {
   return async ({ skillDir, scriptPath, args, envPassthrough }) => {
     const scriptsDir = path.join(skillDir, "scripts");
     const safeScriptPath = resolveInside(scriptsDir, scriptPath);
@@ -167,19 +168,32 @@ export function createLocalSandboxRunner(): ScriptSandboxRunner {
         path.join(sandboxSkillDir, relativeScriptPath),
       );
       const command = buildCommand(sandboxScriptPath);
-      const result = await execFileAsync(command.command, [...command.args, ...args], {
+      const result = await mxcRunner.run({
+        commandLine: [command.command, ...command.args, ...args].map(quoteCommandArg).join(" "),
         cwd: sandboxSkillDir,
         env: buildSandboxEnv(envPassthrough, sandboxRoot),
-        timeout: SCRIPT_TIMEOUT_MS,
-        maxBuffer: SCRIPT_MAX_BUFFER_BYTES,
-        windowsHide: true,
+        readonlyPaths: [sandboxSkillDir],
+        readwritePaths: [sandboxRoot],
+        allowOutbound: false,
+        timeoutMs: SCRIPT_TIMEOUT_MS,
+        outputLimitBytes: SCRIPT_MAX_BUFFER_BYTES,
       });
+      if (result.exitCode !== 0) {
+        throw new Error(result.stderr.trim() || `MXC sandbox exited with code ${result.exitCode}`);
+      }
 
       return { stdout: result.stdout, stderr: result.stderr };
     } finally {
       await fs.rm(sandboxRoot, { recursive: true, force: true });
     }
   };
+}
+
+function quoteCommandArg(value: string): string {
+  if (process.platform === "win32") {
+    return `"${value.replace(/(["\\])/g, "\\$1")}"`;
+  }
+  return `'${value.replace(/'/g, "'\\''")}'`;
 }
 
 export function registerTools(
@@ -193,7 +207,7 @@ export function registerTools(
   );
   const envPassthrough =
     options.envPassthrough ?? parseCommaSeparatedList(process.env.SKILLS_MCP_SCRIPT_ENV_ALLOWLIST);
-  const sandboxRunner = options.sandboxRunner ?? createLocalSandboxRunner();
+  const sandboxRunner = options.sandboxRunner ?? createLocalSandboxRunner(options.mxcRunner);
 
   const promptTools: ToolDefinition[] = [
     {
