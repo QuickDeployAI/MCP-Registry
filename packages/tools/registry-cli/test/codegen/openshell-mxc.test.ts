@@ -243,6 +243,7 @@ function fixtureManifest(): McpManifest {
       select: {
         requests: [{ method: "GET", uriTemplate: "/v1/products" }],
         grpcMethods: [],
+        methods: [],
         pythonFunctions: [],
         skills: [],
         knowledgeSources: [],
