@@ -511,6 +511,9 @@ importers:
       '@quickdeployai/openapi-2-mcp':
         specifier: workspace:*
         version: link:../../importers/openapi-2-mcp
+      '@quickdeployai/openrpc-2-mcp':
+        specifier: workspace:*
+        version: link:../../importers/openrpc-2-mcp
       '@quickdeployai/registry-schemas':
         specifier: workspace:*
         version: link:../../schemas/registry-schemas

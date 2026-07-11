@@ -122,6 +122,7 @@ export const McpManifestSelectSchema = z
   .object({
     requests: z.array(McpManifestRequestSelectSchema).default([]),
     grpcMethods: z.array(McpManifestGrpcMethodSelectSchema).default([]),
+    methods: z.array(z.string().min(1)).default([]),
     pythonFunctions: z.array(McpManifestPythonFunctionSelectSchema).default([]),
     skills: z.array(McpManifestSkillSelectSchema).default([]),
     knowledgeSources: z.array(McpManifestKnowledgeSourceSelectSchema).default([]),
@@ -133,12 +134,13 @@ export const McpManifestSelectSchema = z
     (select) =>
       select.requests.length > 0 ||
       select.grpcMethods.length > 0 ||
+      select.methods.length > 0 ||
       select.pythonFunctions.length > 0 ||
       select.skills.length > 0 ||
       select.knowledgeSources.length > 0 ||
       select.corpusGlobs.length > 0 ||
       select.workflows.length > 0,
-    "select must include at least one request, gRPC method, Python function, skill, knowledge source, corpus glob, or workflow",
+    "select must include at least one request, gRPC method, JSON-RPC method, Python function, skill, knowledge source, corpus glob, or workflow",
   );
 export type McpManifestSelect = z.infer<typeof McpManifestSelectSchema>;
 
