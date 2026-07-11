@@ -13,6 +13,10 @@ import {
   createAcpAgentManifestArtifactParser,
 } from "@quickdeployai/acp-agent-manifest-2-mcp";
 import {
+  apiManifestArtifactParser,
+  createApiManifestArtifactParser,
+} from "@quickdeployai/api-manifest-2-mcp";
+import {
   buildOpenRpcTools,
   openRpcArtifactParser,
   openRpcToParsedCapabilities,
@@ -86,6 +90,7 @@ type ArdArtifactParser = ArtifactParser<ArdEntry, string>;
 
 export const defaultArtifactParsers: ArdArtifactParser[] = [
   acpAgentManifestArtifactParser,
+  apiManifestArtifactParser,
   openApiArtifactParser,
   openRpcArtifactParser,
   grpcArtifactParser,
@@ -334,8 +339,39 @@ function configuredHostParsers(
         })
       : parser === openRpcArtifactParser
       ? createConfiguredOpenRpcParser(projection, config.values, env, fetchImpl)
+      : parser === apiManifestArtifactParser
+      ? createConfiguredApiManifestParser(config.values, env, fetchImpl)
       : parser,
   );
+}
+
+function createConfiguredApiManifestParser(
+  values: Record<string, unknown>,
+  env: NodeJS.ProcessEnv,
+  fetchImpl: typeof fetch,
+): ArdArtifactParser {
+  const dependencyKey = configuredString(values.dependencyKey);
+  const deploymentBaseUrlOverride = configuredString(values.deploymentBaseUrlOverride);
+  return createApiManifestArtifactParser({
+    ...(dependencyKey ? { dependencyKey } : {}),
+    ...(dependencyKey && deploymentBaseUrlOverride
+      ? { baseUrls: { [dependencyKey]: deploymentBaseUrlOverride } }
+      : {}),
+    env,
+    fetch: fetchImpl,
+    executor: apiManifestHttpExecutor(fetchImpl),
+  });
+}
+
+function apiManifestHttpExecutor(fetchImpl: typeof fetch) {
+  return async (request: { url: URL; method: string; headers: Record<string, string>; body?: unknown }) => {
+    const response = await fetchImpl(request.url, {
+      method: request.method,
+      headers: request.headers,
+      ...(request.body !== undefined ? { body: JSON.stringify(request.body) } : {}),
+    });
+    return { status: response.status, text: await response.text() };
+  };
 }
 
 function createConfiguredOpenRpcParser(

@@ -1,5 +1,12 @@
 import { readFile } from "node:fs/promises";
 import type { OpenAPIV3 } from "openapi-types";
+import type { ArtifactParser, ParsedCapability } from "@quickdeployai/importer-core/parser";
+import {
+  deriveCapabilityKinds,
+  API_MANIFEST_MEDIA_TYPE,
+  type ArdCapabilityKind,
+  type ArdEntry,
+} from "@quickdeployai/registry-schemas/ard";
 import {
   ApiManifestSchema,
   McpManifestSelectSchema,
@@ -13,11 +20,14 @@ import {
   type OpenApiOperationSelection,
 } from "@quickdeployai/registry-schemas";
 
+import { buildApiManifestTools, type BuildApiManifestToolsOptions } from "./tools.js";
+
 export type ApiManifestInlineInput = ApiManifest | Record<string, unknown> | string | Uint8Array;
 export type ApiManifestInput = ApiManifestInlineInput | URL;
 
-export { buildApiManifestTools } from "./tools.js";
+export { buildApiManifestTools };
 export type { ApiManifestProxyTool, BuildApiManifestToolsOptions } from "./tools.js";
+export { API_MANIFEST_MEDIA_TYPE };
 
 export type LoadApiManifestOptions = {
   fetch?: typeof fetch;
@@ -25,6 +35,8 @@ export type LoadApiManifestOptions = {
 
 export type ResolveApiManifestDependenciesOptions = LoadApiManifestOptions & {
   openApiDocuments?: Record<string, unknown>;
+  /** Resolve only this dependency; all dependencies are resolved when omitted. */
+  dependencyKey?: string;
 };
 
 export type ResolvedApiManifestDependency = {
@@ -59,12 +71,95 @@ export function apiManifestToSelect(input: ApiManifestInlineInput): McpManifestS
   return apiManifestToMcpManifestSelect(parseApiManifest(input));
 }
 
+export function apiManifestToParsedCapabilities(
+  manifest: ApiManifest,
+  dependencyKey?: string,
+): ParsedCapability<ArdCapabilityKind>[] {
+  return selectDependencyEntries(manifest, dependencyKey).flatMap(([dependencyKey, dependency]) =>
+    dependency.requests.map((request) => ({
+      kind: "tool" as const,
+      name: `${dependencyKey}.${request.method.toUpperCase()}_${request.uriTemplate.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      description: `${request.method.toUpperCase()} ${request.uriTemplate} via ${dependencyKey}.`,
+      raw: { dependencyKey, ...request },
+    })),
+  );
+}
+
+/**
+ * Builds an executable MCP tool surface from a parsed API Manifest. Any failure (a missing
+ * `apiDeploymentBaseUrl`/override, a missing auth environment variable, …) degrades to a
+ * diagnostic rather than throwing, matching the dispatch layer's leniency contract — one
+ * misconfigured dependency should not take down the whole host.
+ */
+export function createApiManifestArtifactParser(
+  runtime?: BuildApiManifestToolsOptions,
+): ArtifactParser<ArdEntry, ArdCapabilityKind> {
+  return {
+    mediaTypes: [API_MANIFEST_MEDIA_TYPE],
+    async parse(nativeArtifact, entry) {
+      const manifest = parseApiManifest(nativeArtifact as ApiManifestInlineInput);
+      const derived = deriveCapabilityKinds(entry);
+      const capabilities: ParsedCapability<ArdCapabilityKind>[] = [];
+
+      if (derived.kinds.includes("api-contract")) {
+        capabilities.push({
+          kind: "api-contract",
+          name: entry.displayName,
+          description: entry.description ?? manifest.applicationName,
+          raw: manifest,
+        });
+      }
+      if (derived.kinds.includes("tool")) {
+        capabilities.push(...apiManifestToParsedCapabilities(manifest, runtime?.dependencyKey));
+      }
+
+      const diagnostics = derived.unrecognizedHints.map((hint) => ({
+        level: "warn" as const,
+        message: `Ignoring unrecognized publisher capabilityKinds hint "${hint}" for ${entry.identifier}.`,
+      }));
+
+      if (!runtime) {
+        return {
+          capabilities,
+          diagnostics: [
+            ...diagnostics,
+            {
+              level: "info",
+              message: "API Manifest parsed without runtime options; MCP projection omitted.",
+            },
+          ],
+        };
+      }
+
+      try {
+        const tools = await buildApiManifestTools(manifest, runtime);
+        return { capabilities, mcpProjection: { tools }, diagnostics };
+      } catch (error) {
+        return {
+          capabilities,
+          diagnostics: [
+            ...diagnostics,
+            {
+              level: "warn",
+              message: `Could not build an API Manifest tool surface: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+        };
+      }
+    },
+  };
+}
+
+export const apiManifestArtifactParser = createApiManifestArtifactParser();
+
 export async function resolveApiManifestDependencies(
   input: ApiManifestInput,
   options: ResolveApiManifestDependenciesOptions = {},
 ): Promise<ResolvedApiManifestDependency[]> {
   const manifest = await loadApiManifest(input, options);
-  const entries = Object.entries(manifest.apiDependencies);
+  const entries = selectDependencyEntries(manifest, options.dependencyKey);
 
   return Promise.all(
     entries.map(async ([dependencyKey, dependency]) => {
@@ -174,6 +269,24 @@ function parseOpenApiDocument(input: unknown, dependencyKey: string): OpenAPIV3.
     );
   }
   return input as unknown as OpenAPIV3.Document;
+}
+
+function selectDependencyEntries(
+  manifest: ApiManifest,
+  dependencyKey: string | undefined,
+): Array<[string, ApiManifestDependency]> {
+  const entries = Object.entries(manifest.apiDependencies);
+  if (!dependencyKey) return entries;
+
+  const match = entries.find(([key]) => key === dependencyKey);
+  if (!match) {
+    throw new ApiManifestLoadError(
+      `API Manifest has no dependency "${dependencyKey}". Known dependencies: ${entries
+        .map(([key]) => key)
+        .join(", ")}.`,
+    );
+  }
+  return [match];
 }
 
 function dependencyToSelect(dependency: ApiManifestDependency): McpManifestSelect {

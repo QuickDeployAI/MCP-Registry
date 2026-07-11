@@ -86,6 +86,69 @@ const openRpcProjection = McpProjectionConfigSchema.parse({
   deployment: { transport: "stdio" },
 });
 
+const apiManifestEntry: ArdEntry = {
+  identifier: "urn:air:quickdeploy.ai:apimanifest:shop",
+  displayName: "Shop",
+  type: "application/vnd.apimanifest+json",
+  data: {
+    applicationName: "shop",
+    apiDependencies: {
+      petstore: {
+        apiDeploymentBaseUrl: "https://api.example.test/petstore",
+        apiDescriptionUrl: "https://manifest.example.test/petstore.json",
+        requests: [{ method: "get", uriTemplate: "/pets/{petId}" }],
+      },
+      orders: {
+        apiDeploymentBaseUrl: "https://api.example.test/orders",
+        apiDescriptionUrl: "https://manifest.example.test/orders.json",
+        requests: [{ method: "post", uriTemplate: "/orders" }],
+      },
+    },
+  },
+};
+
+const apiManifestOpenApiDocuments: Record<string, unknown> = {
+  "https://manifest.example.test/petstore.json": {
+    openapi: "3.0.0",
+    info: { title: "Petstore", version: "1.0.0" },
+    paths: {
+      "/pets/{petId}": {
+        get: {
+          operationId: "getPetById",
+          parameters: [{ name: "petId", in: "path", required: true, schema: { type: "string" } }],
+          responses: { "200": { description: "Pet" } },
+        },
+      },
+    },
+  },
+  "https://manifest.example.test/orders.json": {
+    openapi: "3.0.0",
+    info: { title: "Orders", version: "1.0.0" },
+    paths: {
+      "/orders": {
+        post: { operationId: "createOrder", responses: { "200": { description: "Order" } } },
+      },
+    },
+  },
+};
+
+function apiManifestFetch(): typeof fetch {
+  return (async (input: RequestInfo | URL) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const document = apiManifestOpenApiDocuments[url];
+    if (document) {
+      return new Response(JSON.stringify(document), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ ok: true, url }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }) as typeof fetch;
+}
+
 describe("ARD projection host", () => {
   it("resolves OpenRPC and applies select.methods to the executable projection", async () => {
     expect(resolveParserByMediaType(openRpcEntry.type)).toBeDefined();
@@ -179,6 +242,37 @@ describe("ARD projection host", () => {
     expect(host.ready.parser.name).toBe("acp-agent-manifest-2-mcp");
     expect(host.diagnostics.at(-1)?.message).toContain('transport resolved as "slim"');
     expect(await toolNames(host)).toEqual([]);
+  });
+
+  it("dispatches API Manifest entries and builds a tool surface across all dependencies", async () => {
+    const projection = McpProjectionConfigSchema.parse({
+      entryRef: apiManifestEntry.identifier,
+      deployment: { transport: "stdio" },
+    });
+
+    expect(resolveParserByMediaType(apiManifestEntry.type)).toBeDefined();
+    const host = await createMcpHost({
+      entry: apiManifestEntry,
+      projection,
+      fetch: apiManifestFetch(),
+    });
+    expect(host.ready.parser.name).toBe("api-manifest-2-mcp");
+    expect(await toolNames(host)).toEqual(["petstore.getPetById", "orders.createOrder"]);
+  });
+
+  it("restricts the API Manifest tool surface to a single dependency when dependencyKey is configured", async () => {
+    const projection = McpProjectionConfigSchema.parse({
+      entryRef: apiManifestEntry.identifier,
+      config: { defaults: { dependencyKey: "petstore" } },
+      deployment: { transport: "stdio" },
+    });
+
+    const host = await createMcpHost({
+      entry: apiManifestEntry,
+      projection,
+      fetch: apiManifestFetch(),
+    });
+    expect(await toolNames(host)).toEqual(["petstore.getPetById"]);
   });
 
   it("uses projection deployment auth for streamable HTTP", async () => {

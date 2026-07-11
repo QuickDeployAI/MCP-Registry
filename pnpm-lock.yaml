@@ -533,6 +533,9 @@ importers:
       '@quickdeployai/acp-agent-manifest-2-mcp':
         specifier: workspace:*
         version: link:../../importers/acp-agent-manifest-2-mcp
+      '@quickdeployai/api-manifest-2-mcp':
+        specifier: workspace:*
+        version: link:../../importers/api-manifest-2-mcp
       '@quickdeployai/grpc-2-mcp':
         specifier: workspace:*
         version: link:../../importers/grpc-2-mcp
