@@ -2,7 +2,9 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createMcpHost, loadManifestFile, startHttpHost } from "@quickdeployai/mcp-host";
+import { createMcpHost, startHttpHost } from "@quickdeployai/mcp-host";
+import { McpManifestSchema, McpProjectionConfigSchema } from "@quickdeployai/registry-schemas";
+import { parse as parseYaml } from "yaml";
 import {
   ScaffoldError,
   buildImporterScaffoldFiles,
@@ -135,7 +137,7 @@ describe("writeScaffoldManifest", () => {
     const onDisk = await readFile(result.path, "utf8");
     expect(onDisk).toContain("ai.quickdeploy/widgets");
 
-    const loaded = await loadManifestFile(result.path);
+    const loaded = McpManifestSchema.parse(parseYaml(onDisk));
     expect(loaded.metadata.name).toBe("ai.quickdeploy/widgets");
   });
 
@@ -165,7 +167,39 @@ describe("writeScaffoldManifest", () => {
       requests: [{ method: "get", uriTemplate: "/items/{id}" }],
     });
 
-    const host = createMcpHost({ manifest: result.manifest });
+    const entry = {
+      identifier: "urn:air:quickdeploy.ai:mcp:scaffold-e2e",
+      displayName: result.manifest.metadata.name,
+      version: result.manifest.metadata.version,
+      type: "application/vnd.oai.openapi+json",
+      url: result.manifest.spec.source.uri,
+    };
+    const projection = McpProjectionConfigSchema.parse({
+      entryRef: entry.identifier,
+      importerVersionRange: result.manifest.spec.importer.versionRange,
+      select: result.manifest.spec.select,
+      expose: result.manifest.spec.expose,
+      auth: result.manifest.spec.auth,
+      config: result.manifest.spec.config,
+      deployment: result.manifest.deployment,
+    });
+    const host = await createMcpHost({
+      entry,
+      projection,
+      nativeArtifact: {
+        openapi: "3.0.0",
+        info: { title: "Scaffold E2E", version: "1.0.0" },
+        servers: [{ url: "https://scaffold-e2e.example" }],
+        paths: {
+          "/items/{id}": {
+            get: {
+              operationId: "get_items_id",
+              responses: { "200": { description: "Item" } },
+            },
+          },
+        },
+      },
+    });
     const http = await startHttpHost(host);
     try {
       const ready = await fetch(`${http.url}/readyz`).then((res) => res.json());
