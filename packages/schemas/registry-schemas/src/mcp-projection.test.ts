@@ -1,8 +1,17 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { McpProjectionConfigSchema } from "./mcp-projection";
 
 describe("McpProjectionConfigSchema", () => {
+  it("accepts the OpenRPC method-selection example and rejects its empty variant", () => {
+    const valid = readExample("openrpc-methods.json");
+    const invalid = readExample("invalid-openrpc-empty-methods.json");
+
+    expect(McpProjectionConfigSchema.parse(valid).select?.methods).toEqual(["pets.get"]);
+    expect(() => McpProjectionConfigSchema.parse(invalid)).toThrow(/select must include/);
+  });
+
   it("validates MCP-only projection config linked to an ARD entry", () => {
     const projection = McpProjectionConfigSchema.parse({
       kind: "McpProjectionConfig",
@@ -79,3 +88,10 @@ describe("McpProjectionConfigSchema", () => {
     ).toThrow(/entryRef must be an ARD urn:air/);
   });
 });
+
+function readExample(name: string): unknown {
+  return JSON.parse(readFileSync(
+    new URL(`../examples/mcp-projection/${name}`, import.meta.url),
+    "utf8",
+  ));
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:openrpc-petstore",
+  "select": {
+    "methods": []
+  },
+  "deployment": {
+    "transport": "stdio"
+  }
+}
