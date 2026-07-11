@@ -1,0 +1,94 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:solace-event-portal",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [
+      {
+        "method": "PUBLISH",
+        "uriTemplate": "channel://event-portal.publish-event"
+      }
+    ],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "PUBLISH channel://event-portal.publish-event",
+        "name": "publish_channel_event_portal_publish_event",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "basic",
+      "usernameFrom": {
+        "env": "SOLACE_EVENT_PORTAL_USERNAME"
+      },
+      "passwordFrom": {
+        "env": "SOLACE_EVENT_PORTAL_PASSWORD"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "brokerProtocol": {
+          "type": "string",
+          "description": "Delivery protocol for generated publish tools. Solace PubSub+ uses topic/queue destinations per the official Solace AsyncAPI binding, not Kafka/MQTT."
+        },
+        "publishTimeoutMs": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Per-publish timeout in milliseconds."
+        }
+      }
+    },
+    "defaults": {
+      "brokerProtocol": "solace",
+      "publishTimeoutMs": 30000
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://www.asyncapi.com/docs/reference/bindings/solace",
+      "type": "http",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "solace binding 0.4.0",
+      "notes": [
+        "Solace Event Portal is a design-time event catalog; the AsyncAPI documents it exports are per-tenant/per-event-API, so there is no single downloadable official AsyncAPI document for the product itself.",
+        "The authoritative, versioned, machine-readable source is the official AsyncAPI Initiative Solace protocol binding specification: https://www.asyncapi.com/docs/reference/bindings/solace (binding version 0.4.0), which defines exactly how Solace queue/topic destinations, delivery mode, and operation bindings are expressed in AsyncAPI — this is what Event Portal's own AsyncAPI exporter emits.",
+        "Secondary reference: Solace Event Portal event API export documentation, https://docs.solace.com/Cloud/Event-Portal/event-portal-designer-event-apis.htm.",
+        "This manifest models a topic/queue publish operation using the Solace Destination Object shape (destinationType queue|topic, deliveryMode direct|persistent, topic.topicSubscriptions)."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "source-uri",
+        "configured-upstream"
+      ],
+      "filesystem": [
+        "generated-project-readwrite"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

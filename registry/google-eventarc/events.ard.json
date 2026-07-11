@@ -1,0 +1,60 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:google-eventarc",
+  "displayName": "Google Eventarc",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated Google Eventarc read-only AsyncAPI/CloudEvents MCP catalog manifest.",
+  "tags": [
+    "asyncapi",
+    "cloudevents",
+    "generated",
+    "google-eventarc",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "google-eventarc-event-types-docs@2026-07-09",
+    "sourceDigest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://docs.cloud.google.com/eventarc/docs/event-types",
+        "type": "http",
+        "digest": "sha256:421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+        "ref": "google-eventarc-event-types-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "google-eventarc-event-types-docs@2026-07-09",
+        "notes": [
+          "Official Google Cloud Eventarc \"Google event types\" documentation page.",
+          "Google Eventarc does not publish an AsyncAPI document; events are delivered in CloudEvents format. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/Airtable precedent (QUI-351, QUI-366) for providers without a first-party AsyncAPI/OpenAPI artifact.",
+          "Canonical source URL: https://docs.cloud.google.com/eventarc/docs/event-types",
+          "Verified source SHA-256: 421a8795e56a42974df84f13f580aa5531c147986a21dc4c09d385d4a75f970a",
+          "The committed manifest selects a read-only representative subset of documented Google event types: Pub/Sub message published and Cloud Storage object finalized."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://docs.cloud.google.com/eventarc/docs/event-types for source retrieval",
+          "SUBSCRIBE channel://google.cloud.pubsub.topic.v1.messagePublished for selected upstream operation",
+          "SUBSCRIBE channel://google.cloud.storage.object.v1.finalized for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/google-eventarc/events.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/google-eventarc.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/google-eventarc/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://docs.cloud.google.com/eventarc/docs/event-types"
+}

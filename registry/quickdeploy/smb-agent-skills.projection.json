@@ -1,0 +1,95 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:smb-agent-skills",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [
+      {
+        "name": "stripe-payments-operator",
+        "globs": [
+          "skills/quickdeploy/stripe-payments-operator/**"
+        ]
+      },
+      {
+        "name": "smb-cashflow-daily-pulse",
+        "globs": [
+          "skills/quickdeploy/smb-cashflow-daily-pulse/**"
+        ]
+      },
+      {
+        "name": "smb-collections-followup",
+        "globs": [
+          "skills/quickdeploy/smb-collections-followup/**"
+        ]
+      },
+      {
+        "name": "quickbooks-bookkeeping",
+        "globs": [
+          "skills/quickdeploy/quickbooks-bookkeeping/**"
+        ]
+      },
+      {
+        "name": "hubspot-crm-followup",
+        "globs": [
+          "skills/quickdeploy/hubspot-crm-followup/**"
+        ]
+      },
+      {
+        "name": "shopify-store-operator",
+        "globs": [
+          "skills/quickdeploy/shopify-store-operator/**"
+        ]
+      },
+      {
+        "name": "square-pos-ops",
+        "globs": [
+          "skills/quickdeploy/square-pos-ops/**"
+        ]
+      },
+      {
+        "name": "smb-month-end-close",
+        "globs": [
+          "skills/quickdeploy/smb-month-end-close/**"
+        ]
+      },
+      {
+        "name": "skill-registry-author",
+        "globs": [
+          "skills/quickdeploy/skill-registry-author/**"
+        ]
+      }
+    ],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [],
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {
+      "workspaceRoot": {
+        "type": "string",
+        "description": "Workspace root passed to the skills runtime."
+      }
+    },
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "workspaceRoot": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

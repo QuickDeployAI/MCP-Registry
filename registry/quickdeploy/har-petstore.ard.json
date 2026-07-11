@@ -1,0 +1,13 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:har-petstore",
+  "displayName": "HAR Petstore Fixture",
+  "type": "application/vnd.har+json",
+  "description": "Reviewed Petstore HAR capture exposed through har-2-mcp.",
+  "tags": ["har", "petstore"],
+  "version": "0.1.0",
+  "url": "file://packages/importers/har-2-mcp/fixtures/petstore.har",
+  "metadata": {
+    "importMode": "operation-level",
+    "capabilityKinds": ["api-contract", "tool"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:ups",
+  "displayName": "UPS Tracking SOAP",
+  "type": "application/wsdl+xml",
+  "description": "Generated wsdl-2-mcp MCP manifest for the UPS Tracking API SOAP/WSDL service.",
+  "tags": [
+    "generated",
+    "read-only",
+    "soap",
+    "tracking",
+    "ups",
+    "wsdl"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "method-level",
+    "sourceRef": "ups-developer-kit-user-guide@2026-07-09",
+    "sourceDigest": "sha256:37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+        "type": "http",
+        "digest": "sha256:37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+        "ref": "ups-developer-kit-user-guide@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "ups-developer-kit-user-guide@2026-07-09",
+        "notes": [
+          "Official first-party UPS Developer Kit User Guide PDF (ups.com/media/en/UPS_dev_kit_user_guide.pdf), describing the three UPS Developer Kit API types (XML, SOAP+WSDL, JSON) and the Tracking/Rating/Shipping SOAP services.",
+          "UPS does not publish its per-service WSDL files (Track, Rate, Ship) through a public repository; WSDLs are bundled inside the UPS Developer Kit download after registration. This manifest pins the official Developer Kit User Guide document instead, matching the Salesforce/Airtable/Google Eventarc/Microsoft Dynamics precedent (QUI-351, QUI-366, QUI-372, QUI-384) for providers without a fetchable first-party machine-readable artifact.",
+          "Canonical source URL: https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf",
+          "Verified source SHA-256 (of the downloaded PDF bytes, 5,446,416 bytes): 37ef4baef4d2a7a836ac06069009e911741ce3aea41885664cb79be15ce6197b",
+          "The committed manifest selects the read-only Tracking API SOAP operation only (TrackPort/ProcessTrack). Production endpoint https://onlinetools.ups.com/webservices/Track is a live, publicly reachable UPS SOAP endpoint (confirmed via HTTP 405 on GET, which is expected for a POST-only SOAP service)."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf for source retrieval",
+          "SOAP POST https://onlinetools.ups.com/webservices/Track for selected upstream operation (TrackPort/ProcessTrack)"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/ups/soap.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/wsdl/ups.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/wsdl/ups/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.ups.com/media/en/UPS_dev_kit_user_guide.pdf"
+}

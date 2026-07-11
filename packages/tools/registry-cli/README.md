@@ -14,6 +14,7 @@ vp exec -F @quickdeployai/registry-cli registry-cli bake --manifest registry/qui
 
 Sources:
 
+- `registry/<provider>/*.ard.json` with a sibling `*.projection.json`
 - `registry/<provider>/*.mcp.json`, `registry/<provider>/*.mcp.yaml`, and
   `registry/<provider>/*.mcp.yml`
 - `registry/<provider>/*.server.json`
@@ -82,7 +83,13 @@ vp run @quickdeployai/registry-cli#check:generated
 vp run @quickdeployai/registry-cli#test
 ```
 
-Manifest-backed entries are compiled by applying the `McpManifest` selection,
+ARD projection entries are the preferred input of record. The CLI validates the
+entry and projection independently, resolves the importer from the entry media
+type, and emits `server.json` metadata that references the ARD entry and MCP
+projection without embedding a source recipe. The generated runtime command
+passes both files to `mcp-host`.
+
+Legacy manifest-backed entries are compiled by applying the `McpManifest` selection,
 auth, config, expose, and deployment settings to the shared `mcp-host` runtime.
 Manifest config is validated against the referenced importer's registered
 `spec.config` JSON Schema before `servers.json` is generated. The

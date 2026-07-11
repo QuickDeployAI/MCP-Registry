@@ -1,0 +1,96 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:google-alerts-rss",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [
+      "/alerts/**"
+    ],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "feed.query",
+        "name": "query_google_alerts_rss_feed",
+        "deny": false
+      }
+    ],
+    "resources": [
+      {
+        "from": "feed:item",
+        "name": "google_alerts_rss_feed_item",
+        "deny": false
+      }
+    ],
+    "prompts": []
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "refreshMinutes": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Refresh interval for feed polling and cache updates."
+        },
+        "maxItems": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Maximum feed items retained in the MCP corpus."
+        },
+        "includeContent": {
+          "type": "boolean",
+          "description": "Whether full feed content is exposed in resources."
+        }
+      }
+    },
+    "defaults": {
+      "refreshMinutes": 15,
+      "maxItems": 30,
+      "includeContent": true
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://support.google.com/websearch/answer/4815696?hl=en",
+      "type": "http",
+      "digest": "sha256:dc029446b34585f2aa015652f4e7d3c1ca81fdd56b6cdfc56d301563b6df6b35",
+      "ref": "google-alerts-help@2026-07-09",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "google-alerts-help@2026-07-09",
+      "notes": [
+        "Official Google Search Help page for creating and managing Google Alerts, including the RSS delivery option.",
+        "Google Alerts RSS feed URLs are private and per-alert (e.g. google.com/alerts/feeds/<user-id>/<feed-id>), generated only after a user creates an alert in their own Google account and selects RSS as the delivery method; there is no single fixed public Google Alerts feed URL to pin.",
+        "This manifest models the generic Google Alerts RSS delivery mechanism; the concrete per-alert feed URL is an operator-supplied deployment detail outside this manifest's fixed feed-2-mcp config schema.",
+        "Canonical source URL: https://support.google.com/websearch/answer/4815696?hl=en",
+        "Verified source SHA-256: dc029446b34585f2aa015652f4e7d3c1ca81fdd56b6cdfc56d301563b6df6b35"
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "source-uri",
+        "configured-upstream"
+      ],
+      "filesystem": [
+        "generated-project-readwrite"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

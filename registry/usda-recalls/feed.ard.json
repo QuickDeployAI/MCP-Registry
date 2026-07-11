@@ -1,0 +1,53 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:usda-recalls",
+  "displayName": "USDA Recalls",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for USDA FSIS recall and public health alerts.",
+  "tags": [
+    "feed",
+    "food-safety",
+    "generated",
+    "government",
+    "recalls",
+    "rss",
+    "usda-recalls"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "http://www.fsis.usda.gov/RSS/usdarss.xml",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "Official USDA Food Safety and Inspection Service (FSIS) recall/public-health-alert RSS feed, referenced from the FSIS recalls page https://www.fsis.usda.gov/recalls and the FSIS news feeds & subscriptions page https://www.fsis.usda.gov/news-events/news-feeds-subscriptions.",
+          "fsis.usda.gov returns HTTP 403 to automated/unauthenticated fetches (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here - matches the eBay Trading (QUI-391) and HubSpot (QUI-352) precedent for sources that block unauthenticated automated retrieval.",
+          "FSIS also launched a Recall and Public Health Alert API for structured access; the RSS feed remains the documented lightweight subscription channel and is used here for consistency with the other feed-2-mcp catalog entries.",
+          "The feed is public; no authentication is required."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET http://www.fsis.usda.gov/RSS/usdarss.xml for source retrieval and periodic polling"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/usda-recalls/feed.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/feed/usda-recalls.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/feed/usda-recalls/"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "http://www.fsis.usda.gov/RSS/usdarss.xml"
+}

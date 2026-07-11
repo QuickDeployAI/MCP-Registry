@@ -250,9 +250,9 @@ export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [HAR_MEDIA_TYPE]: "har-2-mcp",
   [CAPABILITY_TO_MEDIA_TYPE["agent-skill"]]: "agent-skills-2-mcp",
   [AI_SKILL_MD_MEDIA_TYPE]: "agent-skills-2-mcp",
-  [RSS_FEED_MEDIA_TYPE]: "knowledge-2-mcp",
+  [RSS_FEED_MEDIA_TYPE]: "feed-2-mcp",
   [QUICKDEPLOY_OKF_MEDIA_TYPE]: "knowledge-2-mcp",
-  [QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE]: "git-2-mcp-spike",
+  [QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE]: "git-2-mcp",
 };
 
 export function sourceMediaTypeToImporterEngine(mediaType: string): string | undefined {

@@ -1,0 +1,77 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:qdai-git-fixture",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [
+      "qdai_git_fixture.*"
+    ],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "qdai_git_fixture.add",
+        "name": "fixture_add",
+        "deny": false
+      },
+      {
+        "from": "qdai_git_fixture.slugify",
+        "name": "fixture_slugify",
+        "deny": false
+      },
+      {
+        "from": "qdai_git_fixture.summarize",
+        "name": "fixture_summarize",
+        "deny": false
+      },
+      {
+        "from": "qdai_git_fixture.guess_kind",
+        "name": "fixture_guess_kind",
+        "deny": false
+      },
+      {
+        "from": "qdai_git_fixture.TextTools.initials",
+        "name": "fixture_text_initials",
+        "deny": false
+      },
+      {
+        "from": "qdai_git_fixture.TextTools.repeat",
+        "name": "fixture_text_repeat",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "packageRoot": {
+          "type": "string",
+          "description": "Materialized checkout path for the pinned git source."
+        }
+      }
+    },
+    "defaults": {}
+  },
+  "deployment": {
+    "transport": "stdio",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {
+      "packageRoot": {
+        "type": "string",
+        "description": "Materialized checkout path for the pinned git source."
+      }
+    }
+  }
+}

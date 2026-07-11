@@ -1,0 +1,24 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:smb-agent-skills",
+  "displayName": "SMB Agent Skills",
+  "type": "application/ai-skill",
+  "description": "SMB back-office skills served as MCP prompts and resources.",
+  "tags": [
+    "accounting",
+    "agent",
+    "commerce",
+    "crm",
+    "payments",
+    "skills",
+    "smb"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "skill",
+      "resource"
+    ],
+    "importMode": "skill-level"
+  },
+  "url": "git+https://github.com/QuickDeployAI/agent-skills-registry.git#main"
+}

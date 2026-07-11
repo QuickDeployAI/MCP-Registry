@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:xero",
+  "displayName": "Xero",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Xero Accounting read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "openapi",
+    "read-only",
+    "xero",
+    "xero-accounting"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "f8cf55be5de745938d073fbeab0a6820f6bd3563",
+    "sourceDigest": "sha256:271539c6afbfda79dfb49e9c54cbcc8e3338e3c0f095df24811bb9408394991c",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/f8cf55be5de745938d073fbeab0a6820f6bd3563/xero_accounting.yaml",
+        "type": "http",
+        "digest": "sha256:271539c6afbfda79dfb49e9c54cbcc8e3338e3c0f095df24811bb9408394991c",
+        "ref": "f8cf55be5de745938d073fbeab0a6820f6bd3563",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "XeroAPI/Xero-OpenAPI@f8cf55be5de745938d073fbeab0a6820f6bd3563",
+        "notes": [
+          "Official Xero OpenAPI description repository: https://github.com/XeroAPI/Xero-OpenAPI",
+          "Pinned source path: xero_accounting.yaml (Xero Accounting API, OpenAPI 3.0.0, spec version 16.0.0)",
+          "Pinned commit date: 2026-06-03 (chore: bump version to 16.0.0)",
+          "Verified source SHA-256: 271539c6afbfda79dfb49e9c54cbcc8e3338e3c0f095df24811bb9408394991c",
+          "The committed manifest selects read-only Xero Accounting organisation, chart-of-accounts, and currency operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/f8cf55be5de745938d073fbeab0a6820f6bd3563/xero_accounting.yaml for source retrieval",
+          "GET https://api.xero.com/api.xro/2.0/Organisation for selected upstream operation",
+          "GET https://api.xero.com/api.xro/2.0/Accounts for selected upstream operation",
+          "GET https://api.xero.com/api.xro/2.0/Accounts/{AccountID} for selected upstream operation",
+          "GET https://api.xero.com/api.xro/2.0/Currencies for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/xero/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/xero.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/xero/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://raw.githubusercontent.com/XeroAPI/Xero-OpenAPI/f8cf55be5de745938d073fbeab0a6820f6bd3563/xero_accounting.yaml"
+}

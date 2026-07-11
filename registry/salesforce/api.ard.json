@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:salesforce",
+  "displayName": "Salesforce",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Salesforce REST read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "openapi",
+    "read-only",
+    "salesforce",
+    "salesforce-rest"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "salesforce-rest-api-docs@2026-07-09",
+    "sourceDigest": "sha256:b8382baefa521883e95207fda83234dc02e94dff4439abe938cbf737bcacab19",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm",
+        "type": "http",
+        "digest": "sha256:b8382baefa521883e95207fda83234dc02e94dff4439abe938cbf737bcacab19",
+        "ref": "salesforce-rest-api-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "salesforce-rest-api-docs@2026-07-09",
+        "notes": [
+          "Official Salesforce REST API documentation page for REST API resources.",
+          "Salesforce-owned GitHub searches did not locate a first-party OpenAPI document for this selected REST subset; this manifest pins the official documentation source used for the catalog entry.",
+          "Canonical source URL: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm",
+          "Verified source SHA-256: b8382baefa521883e95207fda83234dc02e94dff4439abe938cbf737bcacab19",
+          "The committed manifest selects read-only Salesforce REST API discovery and limits operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm for source retrieval",
+          "GET https://<salesforce-instance>/services/data/ for selected upstream operation",
+          "GET https://<salesforce-instance>/services/data/{apiVersion}/ for selected upstream operation",
+          "GET https://<salesforce-instance>/services/data/{apiVersion}/sobjects for selected upstream operation",
+          "GET https://<salesforce-instance>/services/data/{apiVersion}/limits for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/salesforce/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/salesforce.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/salesforce/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_list.htm"
+}

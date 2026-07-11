@@ -1,0 +1,64 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:dropbox",
+  "displayName": "Dropbox",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Dropbox Sign signature requests read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "dropbox",
+    "dropbox-sign",
+    "e-signature",
+    "generated",
+    "openapi",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "31136f9035133acb5f055a94f24e006857210fdb",
+    "sourceDigest": "sha256:2ea3f04008afe945d45ba8a6da41c4f1612cc899ba0c96cf36b4da00ce7419ec",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/hellosign/hellosign-openapi/31136f9035133acb5f055a94f24e006857210fdb/openapi.yaml",
+        "type": "http",
+        "digest": "sha256:2ea3f04008afe945d45ba8a6da41c4f1612cc899ba0c96cf36b4da00ce7419ec",
+        "ref": "31136f9035133acb5f055a94f24e006857210fdb",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "hellosign/hellosign-openapi@31136f9035133acb5f055a94f24e006857210fdb:openapi.yaml",
+        "notes": [
+          "Dropbox's core file-storage API is published only as a Stone spec (https://github.com/dropbox/dropbox-api-spec), not a first-party OpenAPI document.",
+          "Dropbox owns Dropbox Sign (formerly HelloSign), which publishes an official first-party OpenAPI 3.0.3 document; this Dropbox-family OpenAPI entry targets that spec.",
+          "Official Dropbox Sign OpenAPI repository: https://github.com/hellosign/hellosign-openapi",
+          "Pinned source path: openapi.yaml",
+          "Pinned commit date: 2026-06-19T06:27:28Z",
+          "Pinned Git blob SHA: 2ad008a0af65e267eca61dfe2c7cf75db29f458d",
+          "OpenAPI document info: title \"Dropbox Sign API\", version 3.0.0",
+          "Verified source SHA-256: 2ea3f04008afe945d45ba8a6da41c4f1612cc899ba0c96cf36b4da00ce7419ec",
+          "The committed manifest selects read-only Dropbox Sign signature request list/get operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/hellosign/hellosign-openapi/31136f9035133acb5f055a94f24e006857210fdb/openapi.yaml for source retrieval",
+          "GET https://api.hellosign.com/v3/signature_request/list for selected upstream operation",
+          "GET https://api.hellosign.com/v3/signature_request/{signature_request_id} for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/dropbox/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/dropbox.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/dropbox/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://raw.githubusercontent.com/hellosign/hellosign-openapi/31136f9035133acb5f055a94f24e006857210fdb/openapi.yaml"
+}
