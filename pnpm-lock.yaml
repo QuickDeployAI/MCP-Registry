@@ -152,6 +152,22 @@ importers:
         specifier: workspace:*
         version: link:../workspace-config
 
+  packages/importers/acp-agent-manifest-2-mcp:
+    dependencies:
+      '@quickdeployai/importer-core':
+        specifier: workspace:*
+        version: link:../../core/importer-core
+      '@quickdeployai/registry-schemas':
+        specifier: workspace:*
+        version: link:../../schemas/registry-schemas
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.9(@types/node@24.13.2)(vite@8.1.3(@types/node@24.13.2)(esbuild@0.28.1)(tsx@4.23.0)(yaml@2.9.0))
+
   packages/importers/agent-skills-2-mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -502,6 +518,9 @@ importers:
 
   packages/runtime/mcp-host:
     dependencies:
+      '@quickdeployai/acp-agent-manifest-2-mcp':
+        specifier: workspace:*
+        version: link:../../importers/acp-agent-manifest-2-mcp
       '@quickdeployai/grpc-2-mcp':
         specifier: workspace:*
         version: link:../../importers/grpc-2-mcp

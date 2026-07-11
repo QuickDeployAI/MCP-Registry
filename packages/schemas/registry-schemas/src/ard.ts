@@ -234,9 +234,8 @@ export function mediaTypeToCapabilityKinds(mediaType: string): readonly ArdCapab
 
 /**
  * Bridge a source-definition media type to the `x-2-mcp` importer engine that parses
- * it (see packages/mcp-importers/*). Returns `undefined` when no importer exists yet
- * (ACP-manifest is recognized but unmapped —
- * provisional), mirroring getImporterConfigSchema()'s `| undefined` convention.
+ * it (see packages/importers/*). Returns `undefined` when no importer exists yet,
+ * mirroring getImporterConfigSchema()'s `| undefined` convention.
  */
 export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [OPENAPI_MEDIA_TYPE]: "openapi-2-mcp",
@@ -249,6 +248,7 @@ export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [ARAZZO_MEDIA_TYPE]: "arazzo-2-mcp",
   [POSTMAN_COLLECTION_MEDIA_TYPE]: "postman-2-mcp",
   [HAR_MEDIA_TYPE]: "har-2-mcp",
+  [ACP_AGENT_MANIFEST_MEDIA_TYPE]: "acp-agent-manifest-2-mcp",
   [CAPABILITY_TO_MEDIA_TYPE["agent-skill"]]: "agent-skills-2-mcp",
   [AI_SKILL_MD_MEDIA_TYPE]: "agent-skills-2-mcp",
   [RSS_FEED_MEDIA_TYPE]: "feed-2-mcp",

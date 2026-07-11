@@ -155,6 +155,32 @@ describe("ARD projection host", () => {
     expect(await toolNames(host)).toEqual([exposedName]);
   });
 
+  it("dispatches ACP agent manifests and applies transport/skill projection config", async () => {
+    const entry: ArdEntry = {
+      identifier: "urn:air:quickdeploy.ai:agent:research-assistant",
+      displayName: "Research Assistant",
+      type: "application/acp-agent-manifest+json",
+      data: {
+        name: "Research Assistant",
+        transport: "http",
+        skills: ["search", "summarize"],
+      },
+    };
+    const projection = McpProjectionConfigSchema.parse({
+      entryRef: entry.identifier,
+      config: {
+        defaults: { transport: "slim", skillAllowlist: ["search"] },
+      },
+      deployment: { transport: "stdio" },
+    });
+
+    expect(resolveParserByMediaType(entry.type)).toBeDefined();
+    const host = await createMcpHost({ entry, projection });
+    expect(host.ready.parser.name).toBe("acp-agent-manifest-2-mcp");
+    expect(host.diagnostics.at(-1)?.message).toContain('transport resolved as "slim"');
+    expect(await toolNames(host)).toEqual([]);
+  });
+
   it("uses projection deployment auth for streamable HTTP", async () => {
     const projection = McpProjectionConfigSchema.parse({
       ...petstoreProjection,

@@ -252,6 +252,13 @@ describe("McpManifestSchema", () => {
         maxSteps: { type: "integer", minimum: 1 },
       },
     });
+    expect(getImporterConfigSchema("acp-agent-manifest-2-mcp")).toMatchObject({
+      type: "object",
+      properties: {
+        transport: { type: "string", enum: ["http", "slim", "acp"] },
+        skillAllowlist: { type: "array", items: { type: "string" } },
+      },
+    });
   });
 
   it("validates manifest config defaults against the referenced importer schema", () => {
