@@ -6,6 +6,7 @@ import {
   ArdEntrySchema,
   ArdSearchRequestSchema,
   ACP_AGENT_MANIFEST_MEDIA_TYPE,
+  API_MANIFEST_MEDIA_TYPE,
   ARAZZO_MEDIA_TYPE,
   ARD_CATALOG_MEDIA_TYPE,
   ARD_REGISTRY_MEDIA_TYPE,
@@ -273,6 +274,7 @@ describe("source-definition artifacts + capability kinds", () => {
     );
     expect(sourceMediaTypeToImporterEngine(ARAZZO_MEDIA_TYPE)).toBe("arazzo-2-mcp");
     expect(sourceMediaTypeToImporterEngine(OPENRPC_MEDIA_TYPE)).toBe("openrpc-2-mcp");
+    expect(sourceMediaTypeToImporterEngine(API_MANIFEST_MEDIA_TYPE)).toBe("api-manifest-2-mcp");
   });
 
   it("defaults import modes by source artifact shape", () => {
