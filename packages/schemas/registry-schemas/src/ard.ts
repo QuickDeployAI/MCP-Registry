@@ -134,6 +134,8 @@ export const ARAZZO_MEDIA_TYPE = "application/vnd.oai.arazzo+json";
 export const POSTMAN_COLLECTION_MEDIA_TYPE = "application/vnd.postman.collection+json";
 export const HAR_MEDIA_TYPE = "application/vnd.har+json";
 export const ACP_AGENT_MANIFEST_MEDIA_TYPE = "application/acp-agent-manifest+json";
+/** Microsoft API Manifest (apiDependencies{}) — distinct from ACP_AGENT_MANIFEST_MEDIA_TYPE. */
+export const API_MANIFEST_MEDIA_TYPE = "application/vnd.apimanifest+json";
 export const AI_SKILL_MD_MEDIA_TYPE = "application/ai-skill+md";
 export const RSS_FEED_MEDIA_TYPE = "application/rss+xml";
 export const QUICKDEPLOY_OKF_MEDIA_TYPE = "application/vnd.quickdeploy.okf+json";
@@ -157,6 +159,7 @@ export const SOURCE_ARTIFACT_MEDIA_TYPES: ReadonlySet<string> = new Set([
   POSTMAN_COLLECTION_MEDIA_TYPE,
   HAR_MEDIA_TYPE,
   ACP_AGENT_MANIFEST_MEDIA_TYPE,
+  API_MANIFEST_MEDIA_TYPE,
   AI_SKILL_MD_MEDIA_TYPE,
   RSS_FEED_MEDIA_TYPE,
   QUICKDEPLOY_OKF_MEDIA_TYPE,
@@ -210,6 +213,7 @@ export const MEDIA_TYPE_TO_CAPABILITY_KINDS: Record<string, readonly ArdCapabili
   [GRPC_PROTO_MEDIA_TYPE]: ["api-contract", "tool"],
   [POSTMAN_COLLECTION_MEDIA_TYPE]: ["api-contract", "tool"],
   [HAR_MEDIA_TYPE]: ["api-contract", "tool"],
+  [API_MANIFEST_MEDIA_TYPE]: ["api-contract", "tool"],
   [ARAZZO_MEDIA_TYPE]: ["workflow"],
   [CAPABILITY_TO_MEDIA_TYPE.mcp]: ["provider", "tool", "resource", "prompt", "task"],
   [CAPABILITY_TO_MEDIA_TYPE.a2a]: ["agent", "skill"],
@@ -249,6 +253,7 @@ export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [POSTMAN_COLLECTION_MEDIA_TYPE]: "postman-2-mcp",
   [HAR_MEDIA_TYPE]: "har-2-mcp",
   [ACP_AGENT_MANIFEST_MEDIA_TYPE]: "acp-agent-manifest-2-mcp",
+  [API_MANIFEST_MEDIA_TYPE]: "api-manifest-2-mcp",
   [CAPABILITY_TO_MEDIA_TYPE["agent-skill"]]: "agent-skills-2-mcp",
   [AI_SKILL_MD_MEDIA_TYPE]: "agent-skills-2-mcp",
   [RSS_FEED_MEDIA_TYPE]: "feed-2-mcp",
@@ -268,6 +273,7 @@ export function defaultImportModeFor(mediaType: string): ArdImportMode {
     case OPENRPC_MEDIA_TYPE:
     case POSTMAN_COLLECTION_MEDIA_TYPE:
     case HAR_MEDIA_TYPE:
+    case API_MANIFEST_MEDIA_TYPE:
       return "operation-level";
     case JSON_RPC_MEDIA_TYPE:
     case WSDL_MEDIA_TYPE:
