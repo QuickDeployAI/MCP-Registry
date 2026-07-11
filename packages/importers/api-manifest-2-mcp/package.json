@@ -29,7 +29,8 @@
     "@quickdeployai/importer-core": "workspace:*",
     "@quickdeployai/proxy-core": "workspace:*",
     "@quickdeployai/registry-schemas": "workspace:*",
-    "openapi-types": "^12.1.3"
+    "openapi-types": "^12.1.3",
+    "tsx": "catalog:"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
