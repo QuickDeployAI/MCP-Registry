@@ -1,0 +1,13 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:openrpc-petstore",
+  "displayName": "OpenRPC Petstore",
+  "type": "application/vnd.open-rpc+json",
+  "description": "Petstore JSON-RPC method projected from an OpenRPC document.",
+  "tags": ["openrpc", "json-rpc", "petstore", "fixture"],
+  "version": "0.1.0",
+  "url": "file://packages/importers/openrpc-2-mcp/fixtures/petstore.openrpc.json",
+  "metadata": {
+    "importMode": "method-level",
+    "capabilityKinds": ["api-contract", "tool"]
+  }
+}
