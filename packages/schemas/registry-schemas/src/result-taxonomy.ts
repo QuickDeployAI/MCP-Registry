@@ -4,7 +4,7 @@ import {
   getCapabilityCategory,
   type CapabilityCategory,
   type CapabilityType,
-} from "./capability";
+} from "./capability.js";
 
 /**
  * Plain-English, protocol-free labels for each capability type. Marketplace

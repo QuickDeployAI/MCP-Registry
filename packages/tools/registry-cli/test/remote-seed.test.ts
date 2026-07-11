@@ -42,8 +42,9 @@ describe("remote catalog seed", () => {
       ),
     );
 
-    expect(entries).toHaveLength(23);
-    expect(entries.map((entry) => entry.name).sort()).toEqual([
+    const remotes = entries.filter((entry) => (entry.remotes?.length ?? 0) > 0);
+    expect(remotes).toHaveLength(23);
+    expect(remotes.map((entry) => entry.name).sort()).toEqual([
       "ai.llamaindex/llamaparse-mcp",
       "com.atlassian/rovo-mcp",
       "com.cloudflare/ai-gateway-mcp",
@@ -69,7 +70,7 @@ describe("remote catalog seed", () => {
       "tech.neon/mcp",
     ]);
 
-    for (const entry of entries) {
+    for (const entry of remotes) {
       const curation = quickDeployRegistryCuration(entry);
       expect(entry.remotes?.[0]?.url, entry.name).toMatch(/^https:\/\//);
       expect(curation?.verifiedStatus, entry.name).toBe("review");

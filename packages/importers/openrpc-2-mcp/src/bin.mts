@@ -1,10 +1,13 @@
 #!/usr/bin/env tsx
 import { buildOpenRpcTools, loadOpenRpcDocument, type BuildOpenRpcToolsOptions } from "./index.js";
+import { serveMcpTools } from "@quickdeployai/importer-core/mcp-tools";
 
 type CommonOptions = {
   spec?: string;
   endpoint?: string;
   transport?: "http" | "ws";
+  port?: number;
+  mcpPath?: string;
 };
 
 type CallOptions = CommonOptions & {
@@ -14,12 +17,28 @@ type CallOptions = CommonOptions & {
 
 const [command, ...args] = process.argv.slice(2);
 
-if (command === "catalog") {
+if (command === "serve") {
+  const options = parseCommonOptions(args);
+  const tools = await buildTools(options);
+  await serveMcpTools({
+    name: "openrpc-2-mcp",
+    version: "0.1.0",
+    tools,
+    port: options.port,
+    mcpPath: options.mcpPath,
+  });
+} else if (command === "catalog") {
   const options = parseCommonOptions(args);
   const tools = await buildTools(options);
   process.stdout.write(
     `${JSON.stringify(
-      tools.map(({ execute: _execute, parameters: _parameters, ...tool }) => tool),
+      tools.map(({ name, description, method, paramStructure, inputSchema }) => ({
+        name,
+        description,
+        method,
+        paramStructure,
+        inputSchema,
+      })),
       null,
       2,
     )}\n`,
@@ -38,6 +57,7 @@ if (command === "catalog") {
   process.stdout.write(
     [
       "Usage:",
+      "  openrpc-2-mcp serve --spec <file.openrpc.json|url> --endpoint <url> [--transport http|ws] [--port 3000] [--mcp-path /mcp]",
       "  openrpc-2-mcp catalog --spec <file.openrpc.json|url> --endpoint <url> [--transport http|ws]",
       "  openrpc-2-mcp call --spec <file.openrpc.json|url> --endpoint <url> --method <name> [--args '<json>'] [--transport http|ws]",
       "",
@@ -72,6 +92,14 @@ function parseCommonOptions(args: string[]): CommonOptions {
         break;
       case "--transport":
         options.transport = requireOption(value, arg) === "ws" ? "ws" : "http";
+        index += 1;
+        break;
+      case "--port":
+        options.port = Number(requireOption(value, arg));
+        index += 1;
+        break;
+      case "--mcp-path":
+        options.mcpPath = requireOption(value, arg);
         index += 1;
         break;
       default:

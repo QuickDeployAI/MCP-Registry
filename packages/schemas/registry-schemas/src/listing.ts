@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CapabilityTypeSchema } from "./capability";
+import { CapabilityTypeSchema } from "./capability.js";
 
 /**
  * Where a listing's capability comes from:

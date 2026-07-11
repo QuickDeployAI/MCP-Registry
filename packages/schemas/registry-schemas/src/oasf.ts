@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { CapabilityType } from "./capability";
-import type { InferenceResult } from "./inference";
+import type { CapabilityType } from "./capability.js";
+import type { InferenceResult } from "./inference.js";
 
 /**
  * OASF (Open Agentic Schema Framework) interop. AGNTCY's Agent Directory (`dir`)

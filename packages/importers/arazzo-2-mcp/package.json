@@ -1,13 +1,14 @@
 {
   "name": "@quickdeployai/arazzo-2-mcp",
   "version": "0.1.0",
-  "private": true,
-  "description": "Arazzo workflow artifact importer utilities for QuickDeployAI derived workflow capabilities.",
+  "description": "Standalone Arazzo workflow to MCP server.",
   "bin": {
-    "arazzo-2-mcp": "./src/bin.mts"
+    "arazzo-2-mcp": "./dist/bin.mjs"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "src",
+    "dist",
     "fixtures",
     "README.md"
   ],
@@ -15,51 +16,45 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./sources": {
-      "types": "./src/sources.ts",
-      "import": "./src/sources.ts",
-      "default": "./src/sources.ts"
+      "types": "./dist/sources.d.ts",
+      "default": "./dist/sources.js"
     },
     "./runtime-expressions": {
-      "types": "./src/runtime-expressions.ts",
-      "import": "./src/runtime-expressions.ts",
-      "default": "./src/runtime-expressions.ts"
+      "types": "./dist/runtime-expressions.d.ts",
+      "default": "./dist/runtime-expressions.js"
     },
     "./success-criteria": {
-      "types": "./src/success-criteria.ts",
-      "import": "./src/success-criteria.ts",
-      "default": "./src/success-criteria.ts"
+      "types": "./dist/success-criteria.d.ts",
+      "default": "./dist/success-criteria.js"
     },
     "./runner": {
-      "types": "./src/runner.ts",
-      "import": "./src/runner.ts",
-      "default": "./src/runner.ts"
+      "types": "./dist/runner.d.ts",
+      "default": "./dist/runner.js"
     },
     "./tools": {
-      "types": "./src/tools.ts",
-      "import": "./src/tools.ts",
-      "default": "./src/tools.ts"
+      "types": "./dist/tools.d.ts",
+      "default": "./dist/tools.js"
     }
   },
   "scripts": {
-    "start": "tsx src/bin.mts",
+    "start": "node dist/bin.mjs serve",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "tsc --noEmit"
+    "test": "pnpm build && vitest run",
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@quickdeployai/importer-core": "workspace:*",
     "@quickdeployai/proxy-core": "workspace:*",
-    "@quickdeployai/registry-schemas": "workspace:*",
     "openapi-types": "^12.1.3",
     "tsx": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "catalog:",
     "@types/node": "^22.0.0",
     "typescript": "^5.8.3",
     "vitest": "^4.1.9"

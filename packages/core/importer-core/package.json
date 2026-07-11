@@ -23,6 +23,10 @@
     "./parser": {
       "types": "./dist/parser.d.ts",
       "default": "./dist/parser.js"
+    },
+    "./mcp-tools": {
+      "types": "./dist/mcp-tools.d.ts",
+      "default": "./dist/mcp-tools.js"
     }
   },
   "main": "./dist/index.js",
@@ -38,7 +42,9 @@
     "test": "tsc -p tsconfig.build.json && node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@microsoft/mxc-sdk": "^0.7.0"
+    "@microsoft/mxc-sdk": "^0.7.0",
+    "@modelcontextprotocol/sdk": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@quickdeployai/mcp-registry-workspace-config": "workspace:*",

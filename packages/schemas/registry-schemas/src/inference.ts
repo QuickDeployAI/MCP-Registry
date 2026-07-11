@@ -1,4 +1,4 @@
-import type { CapabilityType } from "./capability";
+import type { CapabilityType } from "./capability.js";
 
 /**
  * Manifest inference. Given a parsed artifact (server.json, agent card, SKILL.md

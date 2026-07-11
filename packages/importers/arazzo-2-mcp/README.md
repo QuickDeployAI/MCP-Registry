@@ -4,6 +4,17 @@ Arazzo 1.0.x/1.1 workflow importer and runtime projection for QuickDeployAI.
 It turns OpenAPI Initiative Arazzo documents into workflow capabilities and one
 executable MCP tool per selected workflow.
 
+```bash
+npx @quickdeployai/arazzo-2-mcp serve \
+  --spec ./workflow.arazzo.json \
+  --source petstore=https://api.example.com \
+  --port 3000
+```
+
+The standalone server exposes tools over stdio and streamable HTTP at `/mcp`;
+`/ping` is its readiness endpoint. Repeat `--source name=url` to override
+source-description base URLs.
+
 The package is intentionally pure and runtime-agnostic: it validates Arazzo
 documents, emits one `workflow` capability per Arazzo workflow, maps steps to
 the existing workflow model (`triggers`, `steps`, `required_capabilities`), and

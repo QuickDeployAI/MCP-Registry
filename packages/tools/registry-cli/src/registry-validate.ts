@@ -345,7 +345,11 @@ async function discoverRegistryEntries(
       });
       continue;
     }
-    entries.push({ path: relativePath, origin: "remote", document: parsed.data });
+    entries.push({
+      path: relativePath,
+      origin: relativePath.startsWith("registry/quickdeploy/") ? "manifest" : "remote",
+      document: parsed.data,
+    });
   }
   return entries;
 }

@@ -1,6 +1,18 @@
 # @quickdeployai/openrpc-2-mcp
 
-OpenRPC to MCP importer utilities.
+OpenRPC to MCP importer utilities and standalone MCP server.
+
+```bash
+npx @quickdeployai/openrpc-2-mcp serve \
+  --spec ./petstore.openrpc.json \
+  --endpoint https://rpc.example.com \
+  --port 3000
+```
+
+The server exposes MCP simultaneously over stdio and streamable HTTP at
+`http://localhost:3000/mcp`; `/ping` is the readiness endpoint. Use
+`--transport ws` for a WebSocket JSON-RPC upstream and `--mcp-path` to change
+the HTTP path.
 
 This package owns the OpenRPC document model and JSON-RPC runtime projection. It
 loads OpenRPC JSON from inline objects/strings, local files, `file:` URLs, and

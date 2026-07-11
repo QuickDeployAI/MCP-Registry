@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/openrpc-2-mcp",
+  "version": "0.1.0",
+  "description": "Standalone MCP server that projects OpenRPC methods into executable JSON-RPC tools.",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@quickdeployai/openrpc-2-mcp",
+      "version": "0.1.0"
+    }
+  ]
+}
