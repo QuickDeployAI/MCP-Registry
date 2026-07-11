@@ -196,10 +196,13 @@ describe("McpManifestSchema", () => {
     expect(getImporterConfigSchema("openrpc-2-mcp")).toMatchObject({
       type: "object",
       properties: {
-        endpoint: { type: "string", format: "uri" },
-        transport: { type: "string" },
+        endpointUrl: { type: "string", format: "uri" },
+        transport: { type: "string", enum: ["http", "ws"] },
+        paramStructure: { type: "string", enum: ["by-name", "by-position", "either"] },
+        allowMethods: { type: "array", items: { type: "string" } },
+        denyMethods: { type: "array", items: { type: "string" } },
       },
-      required: ["endpoint"],
+      required: ["endpointUrl"],
     });
     expect(getImporterConfigSchema("feed-2-mcp")).toMatchObject({
       type: "object",
