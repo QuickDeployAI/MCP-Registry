@@ -21,6 +21,7 @@ import {
   QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE,
   RSS_FEED_MEDIA_TYPE,
   isSourceArtifactMediaType,
+  JSON_RPC_MEDIA_TYPE,
   mediaTypeToCapability,
   mediaTypeToCapabilityKinds,
   minimalTrustManifest,
@@ -275,6 +276,7 @@ describe("source-definition artifacts + capability kinds", () => {
     );
     expect(sourceMediaTypeToImporterEngine(ARAZZO_MEDIA_TYPE)).toBe("arazzo-2-mcp");
     expect(sourceMediaTypeToImporterEngine(OPENRPC_MEDIA_TYPE)).toBe("openrpc-2-mcp");
+    expect(sourceMediaTypeToImporterEngine(JSON_RPC_MEDIA_TYPE)).toBe("openrpc-2-mcp");
     expect(sourceMediaTypeToImporterEngine(RSS_FEED_MEDIA_TYPE)).toBe("feed-2-mcp");
     expect(sourceMediaTypeToImporterEngine(QUICKDEPLOY_GIT_REPOSITORY_MEDIA_TYPE)).toBe(
       "git-2-mcp",

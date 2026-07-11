@@ -235,7 +235,7 @@ export function mediaTypeToCapabilityKinds(mediaType: string): readonly ArdCapab
 /**
  * Bridge a source-definition media type to the `x-2-mcp` importer engine that parses
  * it (see packages/mcp-importers/*). Returns `undefined` when no importer exists yet
- * (JSON-RPC / ACP-manifest are recognized but unmapped —
+ * (ACP-manifest is recognized but unmapped —
  * provisional), mirroring getImporterConfigSchema()'s `| undefined` convention.
  */
 export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
@@ -243,6 +243,7 @@ export const SOURCE_MEDIA_TYPE_TO_IMPORTER_ENGINE: Record<string, string> = {
   [OPENAPI_YAML_MEDIA_TYPE]: "openapi-2-mcp",
   [ASYNCAPI_MEDIA_TYPE]: "asyncapi-2-mcp",
   [OPENRPC_MEDIA_TYPE]: "openrpc-2-mcp",
+  [JSON_RPC_MEDIA_TYPE]: "openrpc-2-mcp",
   [WSDL_MEDIA_TYPE]: "wsdl-2-mcp",
   [GRPC_PROTO_MEDIA_TYPE]: "grpc-2-mcp",
   [ARAZZO_MEDIA_TYPE]: "arazzo-2-mcp",

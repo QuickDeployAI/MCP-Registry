@@ -526,14 +526,32 @@ export const OPENRPC_2_MCP_CONFIG_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
-    endpoint: {
+    endpointUrl: {
       type: "string",
       format: "uri",
       description: "JSON-RPC endpoint used by generated OpenRPC tools.",
     },
     transport: {
       type: "string",
+      enum: ["http", "ws"],
       description: "JSON-RPC transport: http or ws.",
+    },
+    paramStructure: {
+      type: "string",
+      enum: ["by-name", "by-position", "either"],
+      description: "Default JSON-RPC parameter encoding when a method does not declare one.",
+    },
+    allowMethods: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+      description: "Optional allow-list of JSON-RPC method names.",
+    },
+    denyMethods: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+      description: "Optional deny-list of JSON-RPC method names.",
     },
     headers: {
       type: "object",
@@ -546,7 +564,7 @@ export const OPENRPC_2_MCP_CONFIG_SCHEMA = {
       description: "Per-call JSON-RPC timeout in milliseconds.",
     },
   },
-  required: ["endpoint"],
+  required: ["endpointUrl"],
 } as const satisfies ImporterConfigJsonSchema;
 
 export const ARAZZO_2_MCP_CONFIG_SCHEMA = {
