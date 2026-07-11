@@ -20,6 +20,28 @@ describe("registry-cli validate", () => {
     expect(result.entryCount).toBeGreaterThan(0);
   });
 
+  it("rejects a public package with a runtime dependency on a private workspace package", async () => {
+    const rootDir = await fixtureRoot();
+    await seedWorkspacePackage(rootDir, "packages/core/private-core", {
+      name: "@quickdeployai/private-core",
+      version: "1.0.0",
+      private: true,
+    });
+    await seedWorkspacePackage(rootDir, "packages/importers/public-importer", {
+      name: "@quickdeployai/public-importer",
+      version: "1.0.0",
+      dependencies: { "@quickdeployai/private-core": "workspace:*" },
+    });
+
+    const result = await validateRegistryEntries({ rootDir });
+    expect(result.violations).toContainEqual(
+      expect.objectContaining({
+        code: "public-package-private-workspace-dependency",
+        name: "@quickdeployai/public-importer",
+      }),
+    );
+  });
+
   it("flags an unsupported server.json schema vintage", async () => {
     const rootDir = await fixtureRoot();
     await seedPackageServer(rootDir, {
@@ -240,6 +262,16 @@ describe("registry-cli validate", () => {
 
 async function fixtureRoot(): Promise<string> {
   return mkdtemp(join(tmpdir(), "registry-cli-validate-"));
+}
+
+async function seedWorkspacePackage(
+  rootDir: string,
+  path: string,
+  document: Record<string, unknown>,
+): Promise<void> {
+  const targetDir = join(rootDir, path);
+  await mkdir(targetDir, { recursive: true });
+  await writeFile(join(targetDir, "package.json"), JSON.stringify(document, null, 2));
 }
 
 async function seedPackageServer(

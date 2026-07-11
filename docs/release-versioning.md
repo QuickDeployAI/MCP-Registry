@@ -9,8 +9,8 @@ the monorepo at `marketplace/mcp/servers.json`.
 
 ## Release Flow
 
-1. Add a changeset for each public package under `packages/importers/*`,
-   `packages/runtime/*`, or `packages/tools/*`.
+1. Add a changeset for each public package under `packages/core/*`,
+   `packages/importers/*`, `packages/runtime/*`, or `packages/tools/*`.
 2. Run `pnpm version:packages` to apply changesets and then validate registry
    version sync.
 3. Update the matching `registry/<provider>/*.server.json` or
@@ -33,6 +33,12 @@ publishing new workspace-owned packages.
 Only entries under `registry/<provider>/` are catalog sources. Package metadata
 under `packages/**` and local throwaway implementations are not published into
 the registry catalog.
+
+Public workspace packages must not have runtime `workspace:` dependencies on
+private packages. Shared cores used by public importers remain release-managed
+and publishable until those runtime dependencies are removed. The registry
+validation gate enforces this to prevent packages that work only inside the
+workspace from reaching npm consumers.
 
 ## OCI Images
 
@@ -75,3 +81,4 @@ The gate checks:
 - generated `servers.json` versions match their source `server.json` or
   `McpManifest`
 - OCI package entries include a `sha256` digest and version tag
+- public packages do not depend at runtime on private workspace packages
