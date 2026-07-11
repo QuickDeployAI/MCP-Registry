@@ -34,6 +34,7 @@ export type RegistryValidationCode =
   | "name-namespace-mismatch"
   | "version-not-exact"
   | "duplicate-name"
+  | "public-package-private-workspace-dependency"
   | "mcpb-missing-file-sha256"
   | "oci-missing-digest-pin";
 
@@ -85,12 +86,62 @@ export async function validateRegistryEntries(
     validateEntry(entry, violations);
   }
   validateNoDuplicateNames(entries, violations);
+  await validateWorkspacePackagePublishability(options.rootDir, violations);
 
   return {
     ok: violations.length === 0,
     entryCount: entries.length,
     violations,
   };
+}
+
+interface WorkspacePackage {
+  name: string;
+  path: string;
+  private: boolean;
+  dependencies: Record<string, unknown>;
+}
+
+async function validateWorkspacePackagePublishability(
+  rootDir: string,
+  violations: RegistryValidationViolation[],
+): Promise<void> {
+  const packageFiles = await findFiles(join(rootDir, "packages"), (name, path) =>
+    name === "package.json" && !path.includes(`${sep}node_modules${sep}`) && !path.includes(`${sep}dist${sep}`)
+  );
+  const packages: WorkspacePackage[] = [];
+
+  for (const file of packageFiles) {
+    const path = normalizePath(relative(rootDir, file));
+    const document = JSON.parse(await readFile(file, "utf8")) as Record<string, unknown>;
+    if (typeof document.name !== "string") continue;
+    packages.push({
+      name: document.name,
+      path,
+      private: document.private === true,
+      dependencies: isRecord(document.dependencies) ? document.dependencies : {},
+    });
+  }
+
+  const byName = new Map(packages.map((pkg) => [pkg.name, pkg]));
+  for (const pkg of packages) {
+    if (pkg.private) continue;
+    for (const [dependencyName, specifier] of Object.entries(pkg.dependencies)) {
+      if (typeof specifier !== "string" || !specifier.startsWith("workspace:")) continue;
+      const dependency = byName.get(dependencyName);
+      if (!dependency?.private) continue;
+      violations.push({
+        code: "public-package-private-workspace-dependency",
+        path: pkg.path,
+        name: pkg.name,
+        message: `Runtime dependency ${dependencyName} uses ${specifier}, but ${dependency.path} is private and cannot be installed by npm consumers.`,
+      });
+    }
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function formatRegistryValidationViolations(
