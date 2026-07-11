@@ -1,0 +1,57 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:chargebee",
+  "displayName": "Chargebee",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated Chargebee subscription billing events/webhooks MCP catalog manifest.",
+  "tags": [
+    "asyncapi",
+    "billing",
+    "chargebee",
+    "events",
+    "generated",
+    "read-only",
+    "subscriptions",
+    "webhooks"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://apidocs.chargebee.com/docs/api/events",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "chargebee-api-v2-events",
+        "notes": [
+          "Official Chargebee Events & Webhooks API reference: https://apidocs.chargebee.com/docs/api/events",
+          "Webhook endpoint configuration reference: https://apidocs.chargebee.com/docs/api/webhook_endpoints",
+          "Chargebee does not publish a formal AsyncAPI document; this manifest models the documented event_type catalog as PUBLISH channels.",
+          "The committed manifest selects a read-only, representative subset of subscription/invoice/payment lifecycle event types.",
+          "Chargebee REST/event API authenticates with HTTP Basic auth using the site API key as the username and an empty password."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://apidocs.chargebee.com/docs/api/events for source retrieval",
+          "PUBLISH channel://subscription_created for selected upstream event",
+          "PUBLISH channel://invoice_generated for selected upstream event",
+          "PUBLISH channel://payment_succeeded for selected upstream event"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://apidocs.chargebee.com/docs/api/events"
+}

@@ -1,0 +1,54 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:sec-edgar",
+  "displayName": "SEC EDGAR",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for SEC EDGAR filings feed.",
+  "tags": [
+    "feed",
+    "filings",
+    "generated",
+    "read-only",
+    "sec-edgar"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "sourceRef": "sec-edgar-current-filings-atom@2026-07-09",
+    "sourceDigest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom",
+        "type": "http",
+        "digest": "sha256:aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290",
+        "ref": "sec-edgar-current-filings-atom@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "sec-edgar-current-filings-atom@2026-07-09",
+        "notes": [
+          "Official SEC.gov RSS/Atom feeds documentation page (https://www.sec.gov/about/rss-feeds) links this canonical EDGAR current-filings Atom feed endpoint.",
+          "This manifest selects the public, unauthenticated EDGAR current 10-K filings Atom feed; no API key or account is required.",
+          "Canonical documentation URL: https://www.sec.gov/about/rss-feeds",
+          "Verified documentation page SHA-256: aebf78d214da5d27550acb018f010f6843b26fa63d9c48f84305073ed1a0e290"
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=10-k&company=&dateb=&owner=include&start=0&count=40&output=atom"
+}

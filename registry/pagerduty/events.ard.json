@@ -1,0 +1,56 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:pagerduty",
+  "displayName": "PagerDuty",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated PagerDuty Events API v2 incident event MCP catalog manifest.",
+  "tags": [
+    "asyncapi",
+    "events",
+    "generated",
+    "incident-management",
+    "pagerduty",
+    "read-only",
+    "webhooks"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "pagerduty-events-api-v2",
+        "notes": [
+          "Official PagerDuty Events API v2 reference: https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api",
+          "Overview: https://developer.pagerduty.com/docs/events-api-v2-overview",
+          "PagerDuty does not publish a formal AsyncAPI document; this manifest models the documented event_action enum (trigger/acknowledge/resolve) as PUBLISH channels.",
+          "The Events API v2 endpoint is POST https://events.pagerduty.com/v2/enqueue.",
+          "PagerDuty authenticates Events API v2 calls with an integration routing_key carried in the JSON request body rather than an HTTP header; this manifest models it as an api-key-style env ref, with body placement handled by the importer."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api for source retrieval",
+          "PUBLISH channel://trigger for selected upstream event",
+          "PUBLISH channel://acknowledge for selected upstream event",
+          "PUBLISH channel://resolve for selected upstream event"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://developer.pagerduty.com/api-reference/f80f5db9acbe3-pager-duty-v2-events-api"
+}

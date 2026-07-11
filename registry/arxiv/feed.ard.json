@@ -1,0 +1,49 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:arxiv",
+  "displayName": "arXiv",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for the arXiv cs.AI RSS feed.",
+  "tags": [
+    "arxiv",
+    "feed",
+    "generated",
+    "papers",
+    "research",
+    "rss"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://rss.arxiv.org/rss/cs.AI",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "rss-2.0",
+        "notes": [
+          "arXiv publishes official RSS 2.0 and Atom news feeds for every active subject class, documented at https://info.arxiv.org/help/rss.html (byte-verified sha256:05e71cab8ab42d3aed374ce1ee6442019ff6f919df21acf0ad8a66c70a6bf7e5 across two fetches on 2026-07-09). Feed URLs are constructed as https://rss.arxiv.org/rss/<category> (or /atom/<category>); this manifest pins the cs.AI (Artificial Intelligence) category as a representative feed. Feeds are re-generated daily at midnight US Eastern time.",
+          "See also https://info.arxiv.org/help/rss_specifications.html for the RSS item field specification, and arXiv's API Terms of Use."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://rss.arxiv.org/rss/cs.AI"
+}

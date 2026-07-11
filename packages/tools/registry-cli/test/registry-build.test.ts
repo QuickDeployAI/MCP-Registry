@@ -5,7 +5,12 @@ import { tmpdir } from "node:os";
 import { mkdtemp } from "node:fs/promises";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
-import { McpManifestSchema } from "@quickdeployai/registry-schemas";
+import {
+  McpManifestSchema,
+  QUICKDEPLOY_ARD_ENTRY_META_KEY,
+  QUICKDEPLOY_MCP_PROJECTION_META_KEY,
+  QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY,
+} from "@quickdeployai/registry-schemas";
 import {
   buildRegistryArtifacts,
   checkGeneratedRegistryArtifacts,
@@ -25,7 +30,7 @@ describe("registry build artifacts", () => {
       const rootDir = await fixtureRoot();
       await seedIgnoredPackageServer(rootDir);
       await seedRemote(rootDir);
-      await seedManifest(rootDir);
+      await seedArdProjection(rootDir);
 
       const artifacts = await buildRegistryArtifacts({ rootDir });
       expect(artifacts.serversJson.servers.map((server) => server.name)).toEqual([
@@ -55,9 +60,9 @@ describe("registry build artifacts", () => {
           id: "quickdeploy",
           entries: [
             {
-              kind: "mcp-manifest",
+              kind: "ard-projection",
               name: "ai.quickdeploy/petstore",
-              path: "registry/quickdeploy/petstore.mcp.yaml",
+              path: "registry/quickdeploy/petstore.ard.json",
               version: "1.0.0",
             },
           ],
@@ -77,7 +82,9 @@ describe("registry build artifacts", () => {
               identifier: "ghcr.io/quickdeployai/mcp-host",
               runtimeArguments: [
                 "run",
-                "registry/quickdeploy/petstore.mcp.yaml",
+                "registry/quickdeploy/petstore.ard.json",
+                "--projection",
+                "registry/quickdeploy/petstore.projection.json",
                 "--transport",
                 "streamable-http",
               ],
@@ -85,6 +92,17 @@ describe("registry build artifacts", () => {
           ],
         }),
       );
+      const petstore = artifacts.serversJson.servers.find(
+        (server) => server.name === "ai.quickdeploy/petstore",
+      );
+      expect(petstore?._meta).not.toHaveProperty(QUICKDEPLOY_REGISTRY_MANIFEST_META_KEY);
+      expect(petstore?._meta?.[QUICKDEPLOY_ARD_ENTRY_META_KEY]).toMatchObject({
+        identifier: "urn:air:quickdeploy.ai:mcp:petstore",
+        type: "application/vnd.oai.openapi+json",
+      });
+      expect(petstore?._meta?.[QUICKDEPLOY_MCP_PROJECTION_META_KEY]).toMatchObject({
+        entryRef: "urn:air:quickdeploy.ai:mcp:petstore",
+      });
     },
     REGISTRY_BUILD_TEST_TIMEOUT_MS,
   );
@@ -684,5 +702,31 @@ async function seedManifest(rootDir: string): Promise<void> {
       "    type: none",
       "",
     ].join("\n"),
+  );
+}
+
+async function seedArdProjection(rootDir: string): Promise<void> {
+  const targetDir = join(rootDir, "registry", "quickdeploy");
+  await mkdir(targetDir, { recursive: true });
+  await writeFile(
+    join(targetDir, "petstore.ard.json"),
+    JSON.stringify({
+      identifier: "urn:air:quickdeploy.ai:mcp:petstore",
+      displayName: "Petstore",
+      type: "application/vnd.oai.openapi+json",
+      version: "1.0.0",
+      url: "https://petstore3.swagger.io/api/v3/openapi.json",
+      tags: ["openapi", "petstore"],
+    }),
+  );
+  await writeFile(
+    join(targetDir, "petstore.projection.json"),
+    JSON.stringify({
+      kind: "McpProjectionConfig",
+      entryRef: "urn:air:quickdeploy.ai:mcp:petstore",
+      select: { requests: [{ method: "get", uriTemplate: "/pet/{petId}" }] },
+      expose: { tools: [{ from: "GET /pet/{petId}", name: "get_pet" }] },
+      deployment: { transport: "streamable-http", auth: { type: "none" } },
+    }),
   );
 }

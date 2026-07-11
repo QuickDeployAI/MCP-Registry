@@ -6,7 +6,10 @@ import {
   type OfficialServerJsonDocument,
   type ServerJsonPackage,
 } from "@quickdeployai/registry-schemas";
-import { compileManifestToServerJson } from "./registry-build";
+import { compileArdProjectionToServerJson, compileManifestToServerJson } from "./registry-build";
+
+const ARD_ENTRY_EXTENSION = ".ard.json";
+const PROJECTION_CONFIG_EXTENSION = ".projection.json";
 
 /**
  * The generic mcp-host runtime image every projection-backed (unbaked) entry
@@ -60,7 +63,8 @@ interface DiscoveredEntry {
 }
 
 /**
- * Validate every registry source (`registry/<provider>/*.mcp.*` and
+ * Validate every registry source (`registry/<provider>/*.ard.json` plus its
+ * projection, legacy `registry/<provider>/*.mcp.*`, and
  * `registry/<provider>/*.server.json`)
  * against the rules the servers.json build doesn't already enforce by
  * construction: name format + namespace ownership, exact (non-range) versions,
@@ -236,11 +240,18 @@ async function discoverRegistryEntries(
   const files = await findFiles(registryDir, (name, path) => {
     const relativePath = normalizePath(relative(rootDir, path));
     if (relativePath === "registry/index.json") return false;
-    return isMcpManifestFileName(name) || isServerManifestFileName(name);
+    return isArdEntryFileName(name) || isMcpManifestFileName(name) || isServerManifestFileName(name);
+  });
+
+  const discovered = new Set(files);
+  const preferredFiles = files.filter((path) => {
+    if (!isMcpManifestFileName(path)) return true;
+    const basePath = path.replace(/\.mcp\.(json|ya?ml)$/i, "");
+    return !discovered.has(`${basePath}${ARD_ENTRY_EXTENSION}`);
   });
 
   const entries: DiscoveredEntry[] = [];
-  for (const file of files) {
+  for (const file of preferredFiles) {
     const relativePath = normalizePath(relative(rootDir, file));
     if (!isProviderRegistryPath(relativePath)) {
       violations.push({
@@ -248,6 +259,11 @@ async function discoverRegistryEntries(
         path: relativePath,
         message: "Registry sources must live under registry/<provider>/.",
       });
+      continue;
+    }
+    if (isArdEntryFileName(relativePath)) {
+      const entry = await parseArdProjectionEntry(rootDir, file, relativePath, violations);
+      if (entry) entries.push(entry);
       continue;
     }
     if (isMcpManifestFileName(relativePath)) {
@@ -281,6 +297,31 @@ async function discoverRegistryEntries(
     entries.push({ path: relativePath, origin: "remote", document: parsed.data });
   }
   return entries;
+}
+
+async function parseArdProjectionEntry(
+  rootDir: string,
+  file: string,
+  relativePath: string,
+  violations: RegistryValidationViolation[],
+): Promise<DiscoveredEntry | undefined> {
+  const projectionPath = `${relativePath.slice(0, -ARD_ENTRY_EXTENSION.length)}${PROJECTION_CONFIG_EXTENSION}`;
+  try {
+    const entry = JSON.parse(await readFile(file, "utf8")) as unknown;
+    const projection = JSON.parse(await readFile(join(rootDir, projectionPath), "utf8")) as unknown;
+    const document = compileArdProjectionToServerJson(entry, projection, {
+      entryPath: relativePath,
+      projectionPath,
+    });
+    return { path: relativePath, origin: "manifest", document };
+  } catch (error) {
+    violations.push({
+      code: "invalid-manifest",
+      path: relativePath,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return undefined;
+  }
 }
 
 async function parseManifestEntry(
@@ -342,6 +383,10 @@ function normalizePath(path: string): string {
 
 function isMcpManifestFileName(name: string): boolean {
   return name.endsWith(".mcp.json") || name.endsWith(".mcp.yaml") || name.endsWith(".mcp.yml");
+}
+
+function isArdEntryFileName(name: string): boolean {
+  return name.endsWith(ARD_ENTRY_EXTENSION);
 }
 
 function isServerManifestFileName(name: string): boolean {

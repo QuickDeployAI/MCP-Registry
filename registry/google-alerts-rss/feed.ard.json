@@ -1,0 +1,56 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:google-alerts-rss",
+  "displayName": "Google Alerts RSS",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for Google Alerts RSS delivery feeds.",
+  "tags": [
+    "alerts",
+    "feed",
+    "generated",
+    "google-alerts-rss",
+    "monitoring",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "sourceRef": "google-alerts-help@2026-07-09",
+    "sourceDigest": "sha256:dc029446b34585f2aa015652f4e7d3c1ca81fdd56b6cdfc56d301563b6df6b35",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://support.google.com/websearch/answer/4815696?hl=en",
+        "type": "http",
+        "digest": "sha256:dc029446b34585f2aa015652f4e7d3c1ca81fdd56b6cdfc56d301563b6df6b35",
+        "ref": "google-alerts-help@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "google-alerts-help@2026-07-09",
+        "notes": [
+          "Official Google Search Help page for creating and managing Google Alerts, including the RSS delivery option.",
+          "Google Alerts RSS feed URLs are private and per-alert (e.g. google.com/alerts/feeds/<user-id>/<feed-id>), generated only after a user creates an alert in their own Google account and selects RSS as the delivery method; there is no single fixed public Google Alerts feed URL to pin.",
+          "This manifest models the generic Google Alerts RSS delivery mechanism; the concrete per-alert feed URL is an operator-supplied deployment detail outside this manifest's fixed feed-2-mcp config schema.",
+          "Canonical source URL: https://support.google.com/websearch/answer/4815696?hl=en",
+          "Verified source SHA-256: dc029446b34585f2aa015652f4e7d3c1ca81fdd56b6cdfc56d301563b6df6b35"
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://support.google.com/websearch/answer/4815696?hl=en"
+}

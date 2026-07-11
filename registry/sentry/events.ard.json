@@ -1,0 +1,60 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:sentry",
+  "displayName": "Sentry",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated asyncapi-2-mcp MCP manifest for Sentry issue alert webhook events.",
+  "tags": [
+    "asyncapi",
+    "events",
+    "generated",
+    "sentry",
+    "webhooks"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "sentry-webhooks-docs@2026-07-09",
+    "sourceDigest": "sha256:ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
+        "type": "http",
+        "digest": "sha256:ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
+        "ref": "sentry-webhooks-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "sentry-webhooks-docs@2026-07-09",
+        "notes": [
+          "Official Sentry Integration Platform webhooks documentation: https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/",
+          "Sentry does not publish a first-party AsyncAPI/JSON Schema document for integration-platform webhooks; this manifest pins the official documentation entry point used for the catalog entry, matching the precedent set by the Salesforce/Airtable OpenAPI manifests.",
+          "Selected channel models Sentry's officially documented 'issue_alert' webhook resource, confirmed via the Sentry-Hook-Resource request header described in the docs.",
+          "Verified source SHA-256: ee0c847c7411c1aa73c79b49e824d79bcced8f0995931689d80087f588677e4a",
+          "Auth models the Sentry Client Secret used to compute the Sentry-Hook-Signature HMAC for inbound webhook payload verification, supplied via env ref only.",
+          "This is a read-only, inbound event receiver: no outbound mutating calls are made to Sentry."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/ for source retrieval",
+          "Inbound HTTPS POST from Sentry to the configured webhook endpoint for the selected issue_alert resource; no outbound calls to Sentry are required"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/sentry/events.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/asyncapi/sentry.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/asyncapi/sentry/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://docs.sentry.io/integrations/integration-platform/webhooks/issue-alerts/"
+}

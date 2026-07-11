@@ -1,0 +1,53 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:solace-event-portal",
+  "displayName": "Solace Event Portal",
+  "type": "application/vnd.asyncapi+json",
+  "description": "Generated asyncapi-2-mcp MCP manifest for Solace Event Portal event API publish operations.",
+  "tags": [
+    "asyncapi",
+    "event-portal",
+    "events",
+    "generated",
+    "pubsub",
+    "solace",
+    "solace-event-portal"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "event",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.asyncapi.com/docs/reference/bindings/solace",
+        "type": "http",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "solace binding 0.4.0",
+        "notes": [
+          "Solace Event Portal is a design-time event catalog; the AsyncAPI documents it exports are per-tenant/per-event-API, so there is no single downloadable official AsyncAPI document for the product itself.",
+          "The authoritative, versioned, machine-readable source is the official AsyncAPI Initiative Solace protocol binding specification: https://www.asyncapi.com/docs/reference/bindings/solace (binding version 0.4.0), which defines exactly how Solace queue/topic destinations, delivery mode, and operation bindings are expressed in AsyncAPI — this is what Event Portal's own AsyncAPI exporter emits.",
+          "Secondary reference: Solace Event Portal event API export documentation, https://docs.solace.com/Cloud/Event-Portal/event-portal-designer-event-apis.htm.",
+          "This manifest models a topic/queue publish operation using the Solace Destination Object shape (destinationType queue|topic, deliveryMode direct|persistent, topic.topicSubscriptions)."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.asyncapi.com/docs/reference/bindings/solace"
+}

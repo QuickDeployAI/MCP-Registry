@@ -1,0 +1,92 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:usda-recalls",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [
+      "/recalls/**"
+    ],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "feed.query",
+        "name": "query_usda_recalls_feed",
+        "deny": false
+      }
+    ],
+    "resources": [
+      {
+        "from": "feed:item",
+        "name": "usda_recalls_feed_item",
+        "deny": false
+      }
+    ],
+    "prompts": []
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "refreshMinutes": {
+          "type": "number",
+          "description": "Polling interval in minutes for refreshing the FSIS recall feed."
+        },
+        "maxItems": {
+          "type": "number",
+          "description": "Maximum number of retained feed items."
+        },
+        "includeContent": {
+          "type": "boolean",
+          "description": "Whether to include full item content in query responses."
+        }
+      }
+    },
+    "defaults": {
+      "refreshMinutes": 30,
+      "maxItems": 200,
+      "includeContent": true
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "http://www.fsis.usda.gov/RSS/usdarss.xml",
+      "type": "http",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "rss-2.0",
+      "notes": [
+        "Official USDA Food Safety and Inspection Service (FSIS) recall/public-health-alert RSS feed, referenced from the FSIS recalls page https://www.fsis.usda.gov/recalls and the FSIS news feeds & subscriptions page https://www.fsis.usda.gov/news-events/news-feeds-subscriptions.",
+        "fsis.usda.gov returns HTTP 403 to automated/unauthenticated fetches (confirmed via direct curl from this environment), so no fetched-page content digest is pinned here - matches the eBay Trading (QUI-391) and HubSpot (QUI-352) precedent for sources that block unauthenticated automated retrieval.",
+        "FSIS also launched a Recall and Public Health Alert API for structured access; the RSS feed remains the documented lightweight subscription channel and is used here for consistency with the other feed-2-mcp catalog entries.",
+        "The feed is public; no authentication is required."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET http://www.fsis.usda.gov/RSS/usdarss.xml for source retrieval and periodic polling"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/usda-recalls/feed.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/feed/usda-recalls.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/feed/usda-recalls/"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

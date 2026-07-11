@@ -1,0 +1,54 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:product-hunt",
+  "displayName": "Product Hunt",
+  "type": "application/rss+xml",
+  "description": "Generated feed-2-mcp MCP manifest for Product Hunt product feed.",
+  "tags": [
+    "feed",
+    "generated",
+    "product-hunt",
+    "read-only",
+    "tech"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "resource",
+      "tool"
+    ],
+    "importMode": "whole-artifact",
+    "sourceRef": "producthunt-atom-feed@2026-07-09",
+    "sourceDigest": "sha256:f199876501e9181b46d3c8be6bc084471ed2ecf16e0077420288cfdb74e32236",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://www.producthunt.com/feed",
+        "type": "http",
+        "digest": "sha256:f199876501e9181b46d3c8be6bc084471ed2ecf16e0077420288cfdb74e32236",
+        "ref": "producthunt-atom-feed@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "producthunt-atom-feed@2026-07-09",
+        "notes": [
+          "Official Product Hunt public Atom feed, verified live via direct fetch (application/atom+xml, 200 OK).",
+          "Feed content updates continuously as new products are posted; the pinned digest reflects the state at retrieval time.",
+          "Canonical source URL: https://www.producthunt.com/feed",
+          "Verified source SHA-256 at retrieval: f199876501e9181b46d3c8be6bc084471ed2ecf16e0077420288cfdb74e32236"
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "source-uri",
+          "configured-upstream"
+        ],
+        "filesystem": [
+          "generated-project-readwrite"
+        ],
+        "process": [
+          "none"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://www.producthunt.com/feed"
+}

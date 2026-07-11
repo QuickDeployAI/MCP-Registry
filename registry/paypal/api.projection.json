@@ -1,0 +1,115 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:paypal",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [
+      {
+        "method": "GET",
+        "uriTemplate": "/v2/invoicing/invoices"
+      },
+      {
+        "method": "GET",
+        "uriTemplate": "/v2/invoicing/invoices/{invoice_id}"
+      }
+    ],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "GET /v2/invoicing/invoices",
+        "name": "list_paypal_invoices",
+        "deny": false
+      },
+      {
+        "from": "GET /v2/invoicing/invoices/{invoice_id}",
+        "name": "get_paypal_invoice",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "bearer",
+      "valueFrom": {
+        "env": "PAYPAL_ACCESS_TOKEN"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "PayPal REST API base URL (live or sandbox)."
+        },
+        "requestTimeoutMs": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Per-request upstream timeout in milliseconds."
+        },
+        "mode": {
+          "type": "string",
+          "description": "Importer execution profile."
+        }
+      }
+    },
+    "defaults": {
+      "baseUrl": "https://api-m.paypal.com",
+      "requestTimeoutMs": 30000,
+      "mode": "read-only"
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/invoicing_v2.json",
+      "type": "http",
+      "digest": "sha256:b38ec179b0a904eed50825cd0b456e788569dc3fdb6efd08e131751f7cc19f52",
+      "ref": "90e8041ffe02d80c452d2b476bedd59a8d219bdc",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "paypal/paypal-rest-api-specifications@90e8041ffe02d80c452d2b476bedd59a8d219bdc:openapi/invoicing_v2.json",
+      "notes": [
+        "Official PayPal REST API specifications repository: https://github.com/paypal/paypal-rest-api-specifications",
+        "Pinned source path: openapi/invoicing_v2.json",
+        "Pinned commit date: 2026-04-07T22:49:49Z",
+        "Pinned Git blob SHA: 8b3eba0d26cd82c18bfe3b5008b672dc6459a0b9",
+        "OpenAPI document info: title \"Invoices\", version 2.6",
+        "Verified source SHA-256: b38ec179b0a904eed50825cd0b456e788569dc3fdb6efd08e131751f7cc19f52",
+        "The committed manifest selects read-only PayPal Invoicing list/get operations only."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/invoicing_v2.json for source retrieval",
+        "GET https://api-m.paypal.com/v2/invoicing/invoices for selected upstream operation",
+        "GET https://api-m.paypal.com/v2/invoicing/invoices/{invoice_id} for selected upstream operation"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/paypal/api.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/openapi/paypal.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/openapi/paypal/"
+      ],
+      "process": [
+        "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+        "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

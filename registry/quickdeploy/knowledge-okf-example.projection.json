@@ -1,0 +1,100 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:knowledge-okf-example",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "corpusGlobs": [
+      "**/*.md",
+      "**/*.mdx"
+    ]
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "bundleUri": {
+          "type": "string",
+          "description": "OKF bundle source URI."
+        },
+        "maxChars": {
+          "type": "number",
+          "description": "Maximum characters per chunk."
+        },
+        "overlap": {
+          "type": "number",
+          "description": "Overlap characters between adjacent chunks."
+        },
+        "embeddingModel": {
+          "type": "string",
+          "description": "Embedding model used for vector indexing."
+        },
+        "embeddingDimensions": {
+          "type": "number",
+          "description": "Embedding vector dimensions."
+        },
+        "queryableMetadata": {
+          "type": "array",
+          "description": "Metadata fields exposed for search filters."
+        }
+      }
+    },
+    "defaults": {
+      "bundleUri": "git+https://github.com/example/generated-openwiki.git#main",
+      "maxChars": 1200,
+      "overlap": 240,
+      "embeddingModel": "text-embedding-3-small",
+      "embeddingDimensions": 1536,
+      "queryableMetadata": [
+        "type",
+        "tags",
+        "resource"
+      ]
+    }
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "knowledge.search",
+        "name": "knowledge_search"
+      },
+      {
+        "from": "knowledge.getDocument",
+        "name": "knowledge_get_document"
+      },
+      {
+        "from": "knowledge.refresh",
+        "name": "knowledge_refresh"
+      }
+    ]
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "bundleUri": {
+          "type": "string"
+        },
+        "maxChars": {
+          "type": "number"
+        },
+        "overlap": {
+          "type": "number"
+        },
+        "embeddingModel": {
+          "type": "string"
+        },
+        "embeddingDimensions": {
+          "type": "number"
+        },
+        "queryableMetadata": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

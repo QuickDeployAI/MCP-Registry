@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:airtable",
+  "displayName": "Airtable",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Airtable Web API read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "airtable",
+    "airtable-web-api",
+    "generated",
+    "openapi",
+    "read-only"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "airtable-web-api-docs@2026-07-09",
+    "sourceDigest": "sha256:b5cd8b097170376bb051200cdf57e9a809c6743e855d9d10bff805ace6165d2c",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://airtable.com/developers/web/api/introduction",
+        "type": "http",
+        "digest": "sha256:b5cd8b097170376bb051200cdf57e9a809c6743e855d9d10bff805ace6165d2c",
+        "ref": "airtable-web-api-docs@2026-07-09",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "airtable-web-api-docs@2026-07-09",
+        "notes": [
+          "Official Airtable Web API documentation page for the API introduction.",
+          "Airtable does not publish a first-party OpenAPI/Swagger document; only community-generated converters exist. This manifest pins the official documentation source used for the catalog entry, matching the Salesforce/HubSpot precedent (QUI-351/QUI-352).",
+          "Canonical source URL: https://airtable.com/developers/web/api/introduction",
+          "Verified source SHA-256: b5cd8b097170376bb051200cdf57e9a809c6743e855d9d10bff805ace6165d2c",
+          "Selected operations cross-checked against the official per-endpoint docs pages: list-bases, get-base-schema, list-records.",
+          "The committed manifest selects read-only Airtable list-bases, base-schema, and list-records operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://airtable.com/developers/web/api/introduction for source retrieval",
+          "GET https://api.airtable.com/v0/meta/bases for selected upstream operation",
+          "GET https://api.airtable.com/v0/meta/bases/{baseId}/tables for selected upstream operation",
+          "GET https://api.airtable.com/v0/{baseId}/{tableIdOrName} for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/airtable/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/airtable.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/airtable/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://airtable.com/developers/web/api/introduction"
+}

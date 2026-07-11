@@ -1,0 +1,74 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:grpc-greeter",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "grpcMethods": [
+      {
+        "service": "quickdeploy.fixture.Greeter",
+        "method": "SayHello"
+      },
+      {
+        "service": "quickdeploy.fixture.Greeter",
+        "method": "DescribeProfile"
+      }
+    ]
+  },
+  "auth": [],
+  "config": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "gRPC host:port endpoint."
+        },
+        "protoPath": {
+          "type": "string",
+          "description": "Local proto file used by the runtime proxy."
+        }
+      }
+    },
+    "defaults": {
+      "protoPath": "./packages/importers/grpc-2-mcp/fixtures/greeter.proto"
+    }
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "quickdeploy.fixture.Greeter/SayHello",
+        "name": "quickdeploy_fixture_greeter_say_hello"
+      },
+      {
+        "from": "quickdeploy.fixture.Greeter/DescribeProfile",
+        "name": "quickdeploy_fixture_greeter_describe_profile"
+      }
+    ]
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {
+      "endpoint": {
+        "type": "string",
+        "description": "gRPC host:port endpoint."
+      }
+    },
+    "configSchema": {
+      "type": "object",
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

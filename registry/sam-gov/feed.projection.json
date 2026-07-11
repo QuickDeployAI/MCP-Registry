@@ -1,0 +1,105 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:sam-gov",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [
+      "/opportunities/**"
+    ],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "feed.query",
+        "name": "query_sam_gov_feed",
+        "deny": false
+      }
+    ],
+    "resources": [
+      {
+        "from": "feed:item",
+        "name": "sam_gov_feed_item",
+        "deny": false
+      }
+    ],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "api-key",
+      "in": "query",
+      "name": "api_key",
+      "valueFrom": {
+        "env": "SAM_GOV_API_KEY"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "refreshMinutes": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Refresh interval for feed polling and cache updates."
+        },
+        "maxItems": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Maximum feed items retained in the MCP corpus."
+        },
+        "includeContent": {
+          "type": "boolean",
+          "description": "Whether full feed content is exposed in resources."
+        }
+      }
+    },
+    "defaults": {
+      "refreshMinutes": 1440,
+      "maxItems": 100,
+      "includeContent": true
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://open.gsa.gov/api/get-opportunities-public-api/",
+      "type": "http",
+      "digest": "sha256:448b85ab4a22e33d139295cb1d6a3a6384b685a936d8c645dd12e69ed938fa62",
+      "ref": "sam-gov-opportunities-api-v2@2026-07-09",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "sam-gov-opportunities-api-v2@2026-07-09",
+      "notes": [
+        "Official GSA-hosted documentation for the SAM.gov Get Opportunities API (Production v2: https://api.sam.gov/opportunities/v2/search).",
+        "Active opportunity notices are updated daily; archived notices are updated weekly, per the official documentation.",
+        "Requires a SAM.gov-issued API key passed as the api_key query parameter (api.data.gov key ecosystem); env ref only, no literal secrets.",
+        "Canonical source URL: https://open.gsa.gov/api/get-opportunities-public-api/",
+        "Verified source SHA-256: 448b85ab4a22e33d139295cb1d6a3a6384b685a936d8c645dd12e69ed938fa62"
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "source-uri",
+        "configured-upstream"
+      ],
+      "filesystem": [
+        "generated-project-readwrite"
+      ],
+      "process": [
+        "none"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}

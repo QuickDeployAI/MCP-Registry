@@ -1,0 +1,61 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:slack",
+  "displayName": "Slack",
+  "type": "application/vnd.oai.openapi+json",
+  "description": "Generated Slack Web API read-only OpenAPI MCP catalog manifest.",
+  "tags": [
+    "generated",
+    "openapi",
+    "read-only",
+    "slack",
+    "slack-web-api"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ],
+    "importMode": "operation-level",
+    "sourceRef": "dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+    "sourceDigest": "sha256:742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+    "legacyMetadata": {
+      "ai.quickdeploy.codegen/source": {
+        "uri": "https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json",
+        "type": "http",
+        "digest": "sha256:742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+        "ref": "dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+        "retrievedAt": "2026-07-09",
+        "sourceVersion": "slackapi/slack-api-specs@dfea73e06d146c368d7f94b52ac90796dc4e27e1",
+        "notes": [
+          "Official Slack platform spec repository: https://github.com/slackapi/slack-api-specs (now archived/read-only)",
+          "Pinned source path: web-api/slack_web_openapi_v2.json (Slack Web API, Swagger/OpenAPI 2.0, spec version 1.7.0)",
+          "Pinned commit date: 2020-10-06 (October 2020 spec updates), the last commit touching this file",
+          "Verified source SHA-256: 742a5c977180a829df8767cf57bc417d99b3713583aee83741efb9c08ca731e7",
+          "The committed manifest selects read-only Slack auth, team, users, and conversations list operations only."
+        ]
+      },
+      "ai.quickdeploy.codegen/policy": {
+        "network": [
+          "GET https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json for source retrieval",
+          "GET https://slack.com/api/auth.test for selected upstream operation",
+          "GET https://slack.com/api/team.info for selected upstream operation",
+          "GET https://slack.com/api/users.list for selected upstream operation",
+          "GET https://slack.com/api/conversations.list for selected upstream operation"
+        ],
+        "filesystem": [
+          "Read committed manifest registry/slack/api.mcp.json",
+          "Read committed generated test packages/tools/registry-cli/test/generated/openapi/slack.test.ts",
+          "Read/write gitignored generated project .generated/mcp-codegen/openapi/slack/"
+        ],
+        "process": [
+          "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+          "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+        ],
+        "generatedExecution": "openshell-mxc-only",
+        "unavailableRuntime": "fail-closed"
+      }
+    }
+  },
+  "url": "https://raw.githubusercontent.com/slackapi/slack-api-specs/dfea73e06d146c368d7f94b52ac90796dc4e27e1/web-api/slack_web_openapi_v2.json"
+}

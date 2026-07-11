@@ -1,0 +1,19 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:arazzo-adoption",
+  "displayName": "Arazzo Adoption Workflow",
+  "type": "application/vnd.oai.arazzo+json",
+  "description": "Two-step support-ticket workflow projected from an Arazzo document.",
+  "tags": [
+    "arazzo",
+    "workflow",
+    "fixture"
+  ],
+  "version": "0.1.0",
+  "metadata": {
+    "capabilityKinds": [
+      "workflow"
+    ],
+    "importMode": "workflow-level"
+  },
+  "url": "file://packages/importers/arazzo-2-mcp/fixtures/adoption-workflow.arazzo.json"
+}

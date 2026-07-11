@@ -1,0 +1,121 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:google-workspace",
+  "importerVersionRange": "^0.1.0",
+  "select": {
+    "requests": [
+      {
+        "method": "GET",
+        "uriTemplate": "/drive/v3/files"
+      },
+      {
+        "method": "GET",
+        "uriTemplate": "/drive/v3/files/{fileId}"
+      },
+      {
+        "method": "GET",
+        "uriTemplate": "/drive/v3/about"
+      }
+    ],
+    "grpcMethods": [],
+    "pythonFunctions": [],
+    "skills": [],
+    "knowledgeSources": [],
+    "corpusGlobs": [],
+    "workflows": []
+  },
+  "expose": {
+    "tools": [
+      {
+        "from": "GET /drive/v3/files",
+        "name": "list_drive_files",
+        "deny": false
+      },
+      {
+        "from": "GET /drive/v3/files/{fileId}",
+        "name": "get_drive_file",
+        "deny": false
+      },
+      {
+        "from": "GET /drive/v3/about",
+        "name": "get_drive_about",
+        "deny": false
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "auth": [
+    {
+      "type": "bearer",
+      "valueFrom": {
+        "env": "GOOGLE_WORKSPACE_ACCESS_TOKEN"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Google Drive API base URL."
+        },
+        "requestTimeoutMs": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Per-request upstream timeout in milliseconds."
+        },
+        "mode": {
+          "type": "string",
+          "description": "Importer execution profile."
+        }
+      }
+    },
+    "defaults": {
+      "baseUrl": "https://www.googleapis.com/drive/v3",
+      "requestTimeoutMs": 30000,
+      "mode": "read-only"
+    },
+    "ai.quickdeploy.codegen/source": {
+      "uri": "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+      "type": "http",
+      "digest": "sha256:94c58bcc6993d8c4903c81f1c9a2d904c8af86b5e53813d093a6594cf26c6679",
+      "ref": "drive:v3@20260707",
+      "retrievedAt": "2026-07-09",
+      "sourceVersion": "drive:v3@20260707",
+      "notes": [
+        "Official Google API Discovery Service document for Google Drive API v3.",
+        "Google documents Discovery documents as machine-readable metadata for Google APIs.",
+        "Google publishes Discovery documents for these Workspace APIs rather than a first-party OpenAPI repository; this manifest pins the official source document used for selected read-only Drive operations."
+      ]
+    },
+    "ai.quickdeploy.codegen/policy": {
+      "network": [
+        "GET https://www.googleapis.com/discovery/v1/apis/drive/v3/rest for source retrieval",
+        "GET https://www.googleapis.com/drive/v3/files for selected upstream operation",
+        "GET https://www.googleapis.com/drive/v3/files/{fileId} for selected upstream operation",
+        "GET https://www.googleapis.com/drive/v3/about for selected upstream operation"
+      ],
+      "filesystem": [
+        "Read committed manifest registry/google-workspace/api.mcp.json",
+        "Read committed generated test packages/tools/registry-cli/test/generated/openapi/google-workspace.test.ts",
+        "Read/write gitignored generated project .generated/mcp-codegen/openapi/google-workspace/"
+      ],
+      "process": [
+        "Run pnpm build/test scripts only inside OpenShell-backed MXC isolation",
+        "Run node only as invoked by generated project package scripts inside OpenShell-backed MXC isolation"
+      ],
+      "generatedExecution": "openshell-mxc-only",
+      "unavailableRuntime": "fail-closed"
+    }
+  },
+  "deployment": {
+    "transport": "streamable-http",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {}
+  }
+}
