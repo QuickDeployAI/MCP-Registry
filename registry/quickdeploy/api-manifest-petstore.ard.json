@@ -1,0 +1,21 @@
+{
+  "identifier": "urn:air:quickdeploy.ai:mcp:api-manifest-petstore",
+  "displayName": "API Manifest Petstore",
+  "type": "application/vnd.apimanifest+json",
+  "description": "Petstore HTTP operations selected by a Microsoft API Manifest.",
+  "tags": [
+    "api-manifest",
+    "openapi",
+    "petstore",
+    "fixture"
+  ],
+  "version": "0.1.0",
+  "url": "file://packages/importers/api-manifest-2-mcp/fixtures/petstore.apimanifest.json",
+  "metadata": {
+    "importMode": "operation-level",
+    "capabilityKinds": [
+      "api-contract",
+      "tool"
+    ]
+  }
+}
