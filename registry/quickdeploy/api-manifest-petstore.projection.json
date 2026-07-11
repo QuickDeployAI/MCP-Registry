@@ -1,0 +1,45 @@
+{
+  "kind": "McpProjectionConfig",
+  "entryRef": "urn:air:quickdeploy.ai:mcp:api-manifest-petstore",
+  "importerVersionRange": "^0.1.0",
+  "auth": [
+    {
+      "type": "oauth2",
+      "valueFrom": {
+        "env": "PETSTORE_OAUTH_TOKEN"
+      }
+    }
+  ],
+  "config": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "dependencyKey": {
+          "type": "string"
+        },
+        "deploymentBaseUrlOverride": {
+          "type": "string"
+        }
+      }
+    },
+    "defaults": {
+      "dependencyKey": "petstore"
+    }
+  },
+  "deployment": {
+    "transport": "stdio",
+    "auth": {
+      "type": "none"
+    },
+    "userConfig": {
+      "dependencyKey": {
+        "type": "string",
+        "description": "API Manifest dependency to expose."
+      },
+      "deploymentBaseUrlOverride": {
+        "type": "string",
+        "description": "Runtime base URL for the selected API dependency."
+      }
+    }
+  }
+}
