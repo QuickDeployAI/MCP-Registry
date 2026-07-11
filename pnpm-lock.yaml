@@ -502,12 +502,9 @@ importers:
 
   packages/runtime/mcp-host:
     dependencies:
-      '@quickdeployai/arazzo-2-mcp':
+      '@quickdeployai/grpc-2-mcp':
         specifier: workspace:*
-        version: link:../../importers/arazzo-2-mcp
-      '@quickdeployai/git-2-mcp':
-        specifier: workspace:*
-        version: link:../../importers/git-2-mcp
+        version: link:../../importers/grpc-2-mcp
       '@quickdeployai/importer-core':
         specifier: workspace:*
         version: link:../../core/importer-core
@@ -517,6 +514,9 @@ importers:
       '@quickdeployai/registry-schemas':
         specifier: workspace:*
         version: link:../../schemas/registry-schemas
+      '@quickdeployai/wsdl-2-mcp':
+        specifier: workspace:*
+        version: link:../../importers/wsdl-2-mcp
       tsx:
         specifier: 'catalog:'
         version: 4.23.0

@@ -1,24 +1,22 @@
 export type {
   ArdSurfaceResult,
   CreateArdSurfaceOptions,
-  HostEngine,
+  CreateMcpHostOptions,
   HostReadyState,
+  HttpHost,
   HostSurface,
   HostTool,
   JsonRpcRequest,
   JsonRpcResponse,
   McpHost,
-  ResolvedEngine,
 } from "./runtime";
 export {
   createArdSurface,
   createMcpHost,
   createParserRegistry,
   defaultArtifactParsers,
-  defaultEngines,
-  resolveEngine,
   resolveParserByMediaType,
   startHttpHost,
 } from "./runtime";
-export { loadManifestFile, loadUserConfigFile } from "./manifest-loader";
+export { loadProjectedEntry, loadUserConfigFile, type ProjectedEntry } from "./projection-loader";
 export { readStdioFrames, writeStdioFrame } from "./stdio";

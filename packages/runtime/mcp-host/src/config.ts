@@ -2,7 +2,7 @@ import {
   credentialBindingsFromMcpAuth,
   credentialEnvironmentVariables,
 } from "@quickdeployai/importer-core";
-import type { McpManifest } from "@quickdeployai/registry-schemas/mcp-manifest";
+import type { McpProjectionConfig } from "@quickdeployai/registry-schemas/mcp-projection";
 import { ConfigValidationError } from "./errors";
 
 export type HostConfig = {
@@ -11,17 +11,17 @@ export type HostConfig = {
 };
 
 export function resolveHostConfig(
-  manifest: McpManifest,
+  projection: McpProjectionConfig,
   userConfig: Record<string, unknown>,
   env: NodeJS.ProcessEnv = process.env,
 ): HostConfig {
-  const defaults = manifest.spec.config?.defaults ?? {};
+  const defaults = projection.config?.defaults ?? {};
   const values = { ...defaults, ...userConfig };
-  const schema = manifest.deployment.configSchema ?? manifest.spec.config?.schema;
+  const schema = projection.deployment.configSchema ?? projection.config?.schema;
   validateJsonSchemaLike(schema, values, "config");
 
   const secrets: Record<string, string> = {};
-  for (const auth of manifest.spec.auth) {
+  for (const auth of projection.auth) {
     const variables = credentialEnvironmentVariables(credentialBindingsFromMcpAuth([auth]));
     for (const variable of variables) {
       const value = env[variable.name];
@@ -34,7 +34,7 @@ export function resolveHostConfig(
     }
   }
 
-  const inboundAuth = manifest.deployment.auth;
+  const inboundAuth = projection.deployment.auth;
   if (inboundAuth?.type === "bearer" && inboundAuth.tokenFrom) {
     const envName = inboundAuth.tokenFrom.env;
     const value = env[envName];
