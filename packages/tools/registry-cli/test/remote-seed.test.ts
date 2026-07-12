@@ -43,9 +43,10 @@ describe("remote catalog seed", () => {
     );
 
     const remotes = entries.filter((entry) => (entry.remotes?.length ?? 0) > 0);
-    expect(remotes).toHaveLength(23);
+    expect(remotes).toHaveLength(24);
     expect(remotes.map((entry) => entry.name).sort()).toEqual([
       "ai.llamaindex/llamaparse-mcp",
+      "ai.quickdeploy/apollo-graphql",
       "com.atlassian/rovo-mcp",
       "com.cloudflare/ai-gateway-mcp",
       "com.cloudflare/api-mcp",
