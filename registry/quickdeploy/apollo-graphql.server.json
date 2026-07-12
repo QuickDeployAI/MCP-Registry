@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.quickdeploy/apollo-graphql",
+  "version": "1.16.0",
+  "description": "QuickDeploy-operated Apollo MCP Server exposing curated read-only GraphQL operations for the QuickDeployAI platform.",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://apollo-mcp.quickdeploy.ai/mcp"
+    }
+  ],
+  "_meta": {
+    "ai.quickdeploy.registry/curation": {
+      "verifiedStatus": "review",
+      "category": "dev-platform",
+      "isOfficial": true,
+      "tags": ["apollo", "graphql", "quickdeploy", "remote"]
+    },
+    "ai.quickdeploy.registry/auth": {
+      "type": "runtime-oauth",
+      "notes": "Clients discover the QuickDeploy Supabase OAuth issuer at connect time; access remains subject to the authenticated user's platform policies."
+    },
+    "ai.quickdeploy.registry/review": {
+      "providerOwnedEndpoint": true,
+      "termsReviewed": true,
+      "stabilityReviewed": false,
+      "notes": "QuickDeploy operates the endpoint using Apollo's pinned v1.16.0 container and a curated read-only operation set. Keep verifiedStatus at review until production stability evidence is complete."
+    }
+  }
+}

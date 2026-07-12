@@ -253,18 +253,30 @@
       "id": "apollo-mcp-server",
       "name": "Apollo MCP Server",
       "category": "dev-platform",
-      "disposition": "deploy-recipe",
+      "disposition": "remote-ref",
       "source_issue": "QUI-248",
+      "endpoint": {
+        "url": "https://apollo-mcp.quickdeploy.ai/mcp",
+        "transport": "streamable-http"
+      },
+      "auth": {
+        "type": "oauth2",
+        "notes": "Runtime OAuth through the QuickDeploy Supabase issuer; the endpoint exposes only curated read-only operations."
+      },
       "deploy_recipe": {
         "summary": "Run Apollo's official container image in front of a GraphQL endpoint using curated .graphql operation files (or a GraphOS persisted-query manifest) as the tool source; avoid whole-schema introspection mode by default. See docs/recipes/apollo-mcp-deploy.md.",
         "runtime": "rust",
-        "auth_notes": "No native auth of its own; passes through whatever headers/credentials the underlying GraphQL endpoint requires."
+        "auth_notes": "The QuickDeploy deployment validates runtime OAuth through the Supabase issuer and forwards only approved identity and correlation headers to the GraphQL gateway."
       },
       "curation": {
-        "provenance": "vendor-official",
-        "boundary": "Wrap, don't build: graphql-2-mcp is a crowded vendor-owned category and Apollo's own server is the production-grade answer for it."
+        "provenance": "quickdeploy-operated-vendor-runtime",
+        "boundary": "Wrap, don't build: QuickDeploy operates Apollo's official pinned server with a curated read-only operation set instead of generating tools from an entire GraphQL schema."
       },
       "references": [
+        {
+          "title": "QuickDeploy Apollo MCP endpoint",
+          "url": "https://apollo-mcp.quickdeploy.ai/mcp"
+        },
         {
           "title": "apollographql/apollo-mcp-server",
           "url": "https://github.com/apollographql/apollo-mcp-server"
